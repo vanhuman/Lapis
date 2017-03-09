@@ -35,14 +35,14 @@ s.waitForBoot({
 		midiSrc: "MUL,EXT", // filtering allowed midi sources; comma-separated list with possibly: MUL = Motu Ultralite, IAC1, IAC2, IAC3, LPK
 		quantize:  0, // if value = 1 then loops of zone4 and zone3 will be quantized to cfg.bmp
 		bpm: 120, // BPM in quantize case
-		copySamples: 1, // set to 1 to activate sample copy on load - make sure the folder /Data/Samples/~project exists
+		copySamples: 0, // set to 1 to activate sample copy on load - make sure the folder /Data/Samples/~project exists
 		crashMode: 1, // set to 0 to disable patterns on zone8play1
 		bufferViewPlayHeadFreq: 20, // freqency of playhead refresh in bufferView
 		bufferViewRefreshFreq: 0.5, // frequency of bufferView refresh while recording
 		bufferViewBlocksize: 512, // block size for reading soundfile in bufferview
 		bufferViewDeferRead: 1, // defer of reading file in buffer after buffer.write
 		sampleDir: "/Users/Robert/---data---/audio/samples/", // location of samples
-		docDir: Document.current.dir, // current location
+		docDir: Document.dir++"/Lapis/", // current location
 		libDir: "Data/", // library files location
 		localAddr: NetAddr("127.0.0.1", 57120), // to send OSC to other SC programs
 		touchOSCAddr: NetAddr("169.254.0.3", 57120), // to send OSC to an iPod running TouchOSC
@@ -333,7 +333,7 @@ s.waitForBoot({
 	sampleFile = (cfg.libDir++"SampleLists/"++~project++".scd").loadRelative[0];
 	sampleListLV1 = sampleFile[0];
 	sampleListLV2 = sampleFile[1];
-	sampleListLX = sampleFile[2]; // blue keysets 1, 2 & 3 & green keyset 1
+	sampleListLX = sampleFile[2]; // blue keysets 1, 2 & 3 and green keysets 1 & 2
 	if(sampleFile.size > 3, { // sample list settings for diskPlay synth triggered by green keysets 2 & 3
 		diskPlay.put('sampleList', sampleFile[3].sampleList);
 		if(sampleFile[3].att.size >= diskPlay.sampleList.size,

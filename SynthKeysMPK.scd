@@ -65,7 +65,7 @@ s.waitForBoot({
 		midiFilterPitchExtMidi: [\EXT,[0,1,2,3,12]], // MIDI filter for note msgs in case external MIDI is enabled
 		midiFilterConfig: [\MUL, [0,2]], // MIDI filter for configuration msgs (currently RED1,RED4,BLACK5)
 		recLen: 6, // recording length for SampleKeys
-		docDir: Document.current.dir,
+		docDir: Document.dir++"/Lapis/",
 		libDir: "/Data/",
 		copySamples: 0, // set to 1 to activate sample copy on load - make sure the folder /Data/Samples/~project exists
 		sampleLoadBack: nil, // array of paths to sample files to load on hatswitch-back

@@ -40,7 +40,7 @@ s.waitForBoot({
 	var cfg = (
 		processLen: sRate * 30,
 		localAddr: NetAddr("127.0.0.1", 57120),
-		docDir: Document.current.dir,
+		docDir: Document.dir++"/Lapis/",
 		libDir: "Data/",
 		startMeter: 1, // start meter window
 		startCueMix: 0, // start Motu CueMix FX
@@ -57,11 +57,14 @@ s.waitForBoot({
 	var inGain = Array.newClear(4), inGainLabel, inGainLabel2;
 	var outMonitorAttLabel, outMonitorAttVal, outMainAttLabel, outMainAttVal;
 	var oscOn = 0;
-	//var imageFileList = ["flower2","flower4","flower5","flower7","flower8","flower9","flower11"];
-	var imageFileList = ["sound"];
+	// var imageFileList = ["flower2","flower4","flower5","flower7","flower8","flower1","flower11"], imageSame = false;
+	var imageFileList = ["sound"], imageSame = false;
+	// var imageFileList = ["Point1","Point2","Point3","Point4","Point5","Point6"], imageSame = true;
 	var imageFileDone = Array.new(imageFileList.size);
 	var fontLabel = Font("Helvetica",12), fontButton = Font("Helvetica",12), fontSmall = Font("Helvetica",9);
 	var isRecording = 0;
+
+	cfg.docDir.postln;
 
 	~aBus = nil; // refresh global vars
 	"GlobalVars.scd".loadRelative();
@@ -238,37 +241,34 @@ s.waitForBoot({
 			});
 		},
 		{ // display images
-				while(
-					{imageFound == 0},
-					{
-						imageFileIndex = imageFileList.size.rand;
-						if(imageFileDone.includes(imageFileIndex), {},
-							{
-								imageFileDone.add(imageFileIndex);
-								imageFound = 1;
-								if(imageFileDone.size == imageFileList.size, {imageFileDone = Array.new(imageFileList.size)});
-						});
-				});
-				imageFile = imageFileList[imageFileIndex];
-
-				imageObj = Image.new(cfg.docDir ++ "/" ++ cfg.libDir ++ "Images/" ++ imageFile ++ "-1.png");
-				if(~wLiveSamplerAvail.notNil, {
-					~wLiveSampler.view.backgroundImage_(imageObj);
-					~wLiveSampler.background_(colorBg);
-				});
-				imageObj = Image.new(cfg.docDir ++ "/" ++ cfg.libDir ++ "Images/" ++ imageFile ++ "-2.png");
-				if(~wSynthKeysAvail.notNil, {
-					~wSynthKeys.view.backgroundImage_(imageObj);
-					~wSynthKeys.background_(colorBg);
-				});
-				imageObj = Image.new(cfg.docDir ++ "/" ++ cfg.libDir ++ "Images/" ++ imageFile ++ "-3.png");
-				if(~wControllersAvail.notNil, {
-					~wControllers.view.backgroundImage_(imageObj);
-					~wControllers.background_(colorBg);
-				});
-				imageObj = Image.new(cfg.docDir ++ "/" ++ cfg.libDir ++ "Images/" ++ imageFile ++ "-4.png");
-				~wInOut.view.backgroundImage_(imageObj);
-				~wInOut.background_(colorBg);
+			while(
+				{imageFound == 0}, {
+					imageFileIndex = imageFileList.size.rand;
+					if(imageFileDone.includes(imageFileIndex).not, {
+						imageFileDone.add(imageFileIndex);
+						imageFound = 1;
+						if(imageFileDone.size == imageFileList.size, {imageFileDone = Array.new(imageFileList.size)});
+					});
+			});
+			imageFile = imageFileList[imageFileIndex];
+			imageObj = Image.new(cfg.docDir ++ "/" ++ cfg.libDir ++ "Images/" ++ imageFile ++ if(imageSame,{""},{"-1"}) ++ ".png");
+			if(~wLiveSamplerAvail.notNil, {
+				~wLiveSampler.view.backgroundImage_(imageObj);
+				~wLiveSampler.background_(colorBg);
+			});
+			imageObj = Image.new(cfg.docDir ++ "/" ++ cfg.libDir ++ "Images/" ++ imageFile ++ if(imageSame,{""},{"-2"}) ++ ".png");
+			if(~wSynthKeysAvail.notNil, {
+				~wSynthKeys.view.backgroundImage_(imageObj);
+				~wSynthKeys.background_(colorBg);
+			});
+			imageObj = Image.new(cfg.docDir ++ "/" ++ cfg.libDir ++ "Images/" ++ imageFile ++ if(imageSame,{""},{"-3"}) ++ ".png");
+			if(~wControllersAvail.notNil, {
+				~wControllers.view.backgroundImage_(imageObj);
+				~wControllers.background_(colorBg);
+			});
+			imageObj = Image.new(cfg.docDir ++ "/" ++ cfg.libDir ++ "Images/" ++ imageFile ++ if(imageSame,{""},{"-4"}) ++ ".png");
+			~wInOut.view.backgroundImage_(imageObj);
+			~wInOut.background_(colorBg);
 		});
 	};
 
@@ -610,7 +610,8 @@ s.waitForBoot({
 			fSetImage.value();
 			fProjectInfo.value();
 			// start system preferences display
-			(Document.dir++"/System.scd").load();
+			if(~wSystem.notNil, {~wSystem.close});
+			{(cfg.docDir++"System.scd").load()}.defer(0.1);
 		});
 		// N posts Node info
 		if((keycode ==45), {s.queryAllNodes();});

@@ -14,9 +14,8 @@
 
 if((~aBus.isNil || ~projectList.isNil), {
 
-	~projectID = \sh;
-	~projectList = (sh: "Shackle", ab: "ABATTOIR", sp: "Spoon3", kid: "Kids", cr: "Crack", dg: "DetuningGuitar", sp2: "SpoonDuo", dr: "Drone", mw: "MoneyForYourWhaleII", eu: "Eurapco", sn: "SacredNoise", gm: "SoundOfTheMachine", pot: "ParishOfTama"
-		// tic: "TubesInChains", vv: "VanVan", fr: "Free", gc: "Gedachtenconcert", pa: "Parish", isp: "IstanPOOL"
+	~projectID = \lcm;
+	~projectList = (sh: "Shackle", ab: "ABATTOIR", sp: "Spoon3", kid: "Kids", cr: "Crack", dg: "DetuningGuitar", sp2: "SpoonDuo", dr: "Drone", mw: "MoneyForYourWhaleII", eu: "Eurapco", sn: "SacredNoise", gm: "SoundOfTheMachine", pot: "ParishOfTama", lcm: "LCM"
 	);
 	~projectNotes = (cr: "/Crack/Crack Notes.rtf");
 
@@ -85,8 +84,6 @@ if((~aBus.isNil || ~projectList.isNil), {
 
 	~colorOn = Color.green(0.9);
 	~colorOn2 = Color.yellow;
-	//	~colorOn = Color.yellow(0.9); // signal color ON
-	//	~colorOn = Color.new255(50,255,50); // signal color ON
 
 	~alwaysOnTop = 0; 	// Controller and In/Outputs windows on top or not
 	~midiOutInit = 1; 	//  set to 1 to initialize MIDI out

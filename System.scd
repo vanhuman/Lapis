@@ -25,6 +25,7 @@ s.waitForBoot({
 	});
 
 	~wSystem.front;
+
 	// {if(~wSystem.notNil, {~wSystem.close})}.defer(15);
 })
 )
