@@ -18,10 +18,11 @@ s.waitForBoot({
 
 	//////////////// variables ////////////////////////////////
 
-	var pID = 1;
+	var pID = 2;
 	var synthListMain = [
 		"adcirc",
 		"bocAmpMod2",
+		"bocAmpMod2b",
 		"bocAmpMod3",
 		"bocAmpMod4",
 		"darkHorns0",
@@ -35,12 +36,21 @@ s.waitForBoot({
 		"pitchShifter",
 		"Prime",
 		"SampleKeys",
-		"SinAmpMod3"
+		"SinAmpMod3",
+		"SampleKeysNoPitch"
 	];
 	var project = (
 		synthList: [
+			[7,2,2,3,4,5,6,7,8,9,10,11,12,13,14,15],
 			[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],
-			[14,14,14,14,4,5,6,7,8,9,10,11,12,0,15,15],
+			[15,15,15,15,4,5,6,7,8,9,10,11,12,0,15,15],
+			[17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17]
+		],
+		semiShiftList: [
+			0.dup(16),
+			0.dup(16),
+			[12,-12,-4] ++ 0.dup(13),
+			0.dup(16)
 		],
 		sampleList: [
 			[
@@ -59,32 +69,55 @@ s.waitForBoot({
 				nil, nil, nil,nil,
 				nil, nil, nil,nil,
 				nil, nil, nil,nil
-			]
+			],
+			[
+				"SynthKeys/TBD/bassen48.wav",
+				"SynthKeys/TBD/bourdon60.wav",
+				"SynthKeys/TBD/bassdrum.wav",
+				"SynthKeys/kistorgel8.aif",
+				nil, nil, nil,nil,
+				nil, nil, nil,nil,
+				nil, nil, nil,nil
+			],
+			nil!16
 		]
 	);
 	var cfg = (
 		version: "SynthArray",
 		synthList: project.synthList[pID],
+		semiShiftList: project.semiShiftList[pID],
 		sampleList: project.sampleList[pID],
 		drumList0: [
-			"2/FK_Kick2.aif B0.aif", "2/FK_KickFK.aif",
-			"2/FK_closedHHV F#1.aif", "2/FK_HiHatDry3 F#0.aif",
-			"1/TH-SD01.aif", "1/TH-SD02.aif",
-			"1/TH-HHO-01a.aif", "1/TH-HHO-02a.aif"
+			"6/plankje1.wav", "6/plankje2.wav",
+			"6/plankje3.wav", "6/plankje4.wav",
+			"6/plankje5.wav", "6/plankje6.wav",
+			"6/plankje7.wav", "6/plankje8.wav"
 		],
+		// drumList0: [
+		// 	"2/FK_Kick2.aif B0.aif", "2/FK_KickFK.aif",
+		// 	"2/FK_closedHHV F#1.aif", "2/FK_HiHatDry3 F#0.aif",
+		// 	"1/TH-SD01.aif", "1/TH-SD02.aif",
+		// 	"1/TH-HHO-01a.aif", "1/TH-HHO-02a.aif"
+		// ],
 		// drumList0: [
 		// 	"3/FK_FloorTV D5 -15.wav","3/FK_FloorTV D5 -15.wav",
 		// 	"3/FK_Ride1.aif D#2.aif","3/FK_Ride1.aif D#2.aif",
 		// 	"3/FK_Snare6.aif C#0.aif","3/FK_Snare6.aif C#0.aif",
 		// 	"3/FK_Crash1.aif C4.aif", "3/FK_Crash1.aif C4.aif"
 		// ],
+		// drumList1: [
+		// 	"1/TH-BD01.aif", "1/TH-BD02-b.aif",
+		// 	"2/FK_closedHHV F#1.aif", "2/FK_HiHatDry3 F#0.aif",
+		// 	"1/TH-SD01.aif", "1/TH-SD02.aif",
+		// 	"1/TH-HHO-01a.aif", "1/TH-HHO-02a.aif"
+		// ],
 		drumList1: [
-			"1/TH-BD01.aif", "1/TH-BD02-b.aif",
-			"2/FK_closedHHV F#1.aif", "2/FK_HiHatDry3 F#0.aif",
-			"1/TH-SD01.aif", "1/TH-SD02.aif",
-			"1/TH-HHO-01a.aif", "1/TH-HHO-02a.aif"
+			"5/BassDist1.wav", "5/BassDist2.wav",
+			"5/ClapDist1.wav", "5/ClapDist2.wav",
+			"5/HihatDist1.wav", "5/HihatDist2.wav",
+			"5/SnareDist1.wav", "5/SnareDist2.wav"
 		],
-		midiFilterPitch: [\IAC2, (0..15)], // MIDI filter for note msgs; format [source, [midichannels]]
+		midiFilterPitch: [\IAC2, (0..15),\LPK, (0..15)], // MIDI filter for note msgs; format [source, [midichannels]]
 		recLen: 6, // recording length for SampleKeys
 		libDir: Document.dir++"Lapis/Data/"
 	);
@@ -102,6 +135,7 @@ s.waitForBoot({
 	var fInitOutput, fBufferRead, fGetInChan, midiSrcIndex;
 	var cutoffBus = {Bus.control(s,1).set(0.5)}.dup(16), efxBus = {Bus.control(s,1).set(0.5)}.dup(16);
 	var pitchBus = {Bus.control(s,1).set(0.5)}.dup(16), distBus = {Bus.control(s,1).set(1)}.dup(16);
+	var drumVolBus = {Bus.control(s,1).set(0.5)}.dup(16), drumFilterBus = {Bus.control(s,1).set(1)}.dup(16);
 	var notesArray = Array.newClear(16), notesPrev = Array.newClear(16), sampleKeysFile = Array.newClear(16);
 	var synthGainBus = {Bus.control(s,1).set(0)}.dup(16), selectedSynthList = cfg.synthList;
 
@@ -207,11 +241,11 @@ s.waitForBoot({
 					// start synth
 					if( notesArray[chan][note].isNil, {
 						notesArray[chan][note] = Synth(synthListMain[selectedSynthList[chan]], [
-							\freq1, note.midicps(~tuningA), \gate, 1, \cutoffBus, cutoffBus[chan].index, \efxBus, efxBus[chan].index,
-							\pitchBus, pitchBus[chan].index, \distBus, distBus[chan].index, \velocity, vel,
+							\freq1, (note+cfg.semiShiftList[chan]).midicps(~tuningA), \gate, 1, \cutoffBus, cutoffBus[chan].index,
+							\efxBus, efxBus[chan].index, \pitchBus, pitchBus[chan].index, \distBus, distBus[chan].index, \velocity, vel,
 							\inChan1, fGetInChan.value()[0], \inChan2, fGetInChan.value()[1],
 							\prevFreq, notesPrev[chan].midicps(~tuningA), \synthGainBus, synthGainBus[chan].index,
-							\buffer, ~synthKeysBuf[chan]
+							\drumFilterBus, drumFilterBus[chan].index, \drumVolBus, drumVolBus[chan].index, \buffer, ~synthKeysBuf[chan]
 						], target: ~aBus.synthGroup);
 						// count notes
 						{ 	countPlay[chan] = countPlay[chan] + 1;
@@ -269,6 +303,14 @@ s.waitForBoot({
 		if(midiSrcIndex.notNil,{ // check midi source
 			if(cfg.midiFilterPitch[midiSrcIndex+1].indexOf(chan).notNil, { // check whether midi chan is allowed
 
+				16.do { |chan|
+					if(controlList[chan]==1, {
+						// ("Control channel" + chan + "ON, updating busses").postln;
+						if( num==4, { drumVolBus[chan].set(val) }); // volume/distortion drumsets
+						if( num==5, { drumFilterBus[chan].set(val) }); // filter drumsets
+					});
+				}
+
 			});
 		}); // filter to control pitch material
 	},
@@ -284,7 +326,7 @@ s.waitForBoot({
 
 		16.do { |chan|
 			if(controlList[chan]==1, {
-				("Control channel" + chan + "ON, updating busses").postln;
+				// ("Control channel" + chan + "ON, updating busses").postln;
 				case
 				{ cookie == 16 }		// X-axis
 				{ cutoffBus[chan].set(val/1024) }
@@ -344,7 +386,7 @@ s.waitForBoot({
 				if(dragTemp.isString, {dragTemp = dragTemp.split(nl)}); // if only one file is dragged, make it into an array with this trick
 				dragTemp.postln;
 				sampleKeysFile[chan] = dragTemp[0];
-				fBufferRead.value(dragTemp[0], channel: chan, absolutePath: false);
+				fBufferRead.value(dragTemp[0], channel: chan, absolutePath: true);
 			});
 		);
 		// dropdown for Synth select per MIDI channel
@@ -352,7 +394,7 @@ s.waitForBoot({
 			.font_(fontLabel).background_(Color.white).canFocus_(true)
 			.items_(synthListMain)
 			.action_({ |p|
-				if(p.item == "SampleKeys", { loadFileSK[chan].visible = true }, { loadFileSK[chan].visible = false });
+				if( (p.item == "SampleKeys") || (p.item == "SampleKeysNoPitch") , { loadFileSK[chan].visible = true }, { loadFileSK[chan].visible = false });
 				selectedSynthList[chan] = p.value;
 			})
 		);

@@ -1,11 +1,11 @@
-// LiveSampler by Robert van Heumen 2011-2015.
+// LiveSampler by Robert van Heumen 2011-2018.
 // Based upon a setup in STEIM's LiSa combined with junXion.
-// Tested with SC 3.7.
+// Tested with SC 3.8.0
 
 // Dependencies:
 //	GlobalVars.scd for global variable definitions
-//	cfg.libraryBase/Patterns.scd for patterns definitions
-//	cfg.libraryBase/SampleLists/~project.scd for sample load mapping
+//	cfg.libDir/Patterns.scd for patterns definitions
+//	cfg.libDir/SampleLists/~project.scd for sample load mapping
 //	InOut.scd for audio routing
 //	Controllers.scd for controller OSC data
 //	LapisStatus.scd for status display (when enabled)
@@ -116,6 +116,7 @@ s.waitForBoot({
 		mulHPF31: Env.new([1,1,20,50],[0.3,0.5,0.2],[\lin, \lin, \lin]),
 		pitch41: ControlSpec.new(0.8,1.2,\lin),
 		pitch412: ControlSpec.new(0.1,1.9,\lin),
+		ffSpeed41: ControlSpec.new(0.2,2,\lin),
 		len41: Env.xyc([[0, 0.2,\exp],[64, 30, \lin],[127, 60]]), // van 0.1 naar 60 sec
 		ff41: ControlSpec.new(200,20000,\exp),
 		len61: ControlSpec.new(10, 0.03,\exp), // van 10 sec naar 0,03 sec
@@ -216,7 +217,7 @@ s.waitForBoot({
 		midiLV2Fader11: Bus.control(s,1).set(0), midiLV2Fader12: Bus.control(s,1).set(0), midiLV2Fader13: Bus.control(s,1).set(0),
 		midiLV2Fader14: Bus.control(s,1).set(1),
 		midiLV2Fader15: Bus.control(s,1).set(1), midiLV2Fader16: Bus.control(s,1).set(0.7),
-		midiLV2KnobA1: Bus.control(s,1).set(spec.len41.at(64)),
+		midiLV2KnobA1: Bus.control(s,1).set(spec.len41.at(64)), midiLV2KnobA2: Bus.control(s,1).set(0.5),
 		midiLV2KnobB1: Bus.control(s,1).set(0), midiLV2KnobB2: Bus.control(s,1).set(0.5), midiLV2KnobB3: Bus.control(s,1).set(0.5),
 		midiLV2KnobC1: Bus.control(s,1).set(0), midiLV2KnobC2: Bus.control(s,1).set(1), midiLV2KnobC3: Bus.control(s,1).set(0),
 		midiLV2KnobD1: Bus.control(s,1).set(0), midiLV2KnobD2: Bus.control(s,1).set(0), midiLV2KnobD3: Bus.control(s,1).set(0),
@@ -249,7 +250,7 @@ s.waitForBoot({
 	var screenHeight = Window.screenBounds.height, screenWidth = Window.screenBounds.width;
 	var dispBaseBtn, dispBaseBtn2, dispDisablePitch, dispDisableStartPos;
 	var colorOff = Color.white;
-	var fontLabel = Font("Helvetica",12), fontButton = Font("Helvetica",12);
+	var fontLabel = Font(~font,10), fontButton = Font(~font,12), fontBufferView = Font("Helvetica", 10);
 
 	// bufferView
 	var bufferView = Array.newClear(6), curPlayHead = 0, curRecHead = 0, fileBufferView = SoundFile.new().dup(6);
@@ -311,6 +312,10 @@ s.waitForBoot({
 
 	// load global variables
 	"GlobalVars.scd".loadRelative();
+
+	// project specific
+	if(~projectID == \lcm, { (Document.dir++"Loop-Copy-Mutate/LoadRecordings.scd").load() });
+	// if(~projectID == \sh, { (Document.dir++"Shackle/Curves.scd").load() });
 
 	zone8.patt1Def = 0; // default pattern
 	zone8.patt1 = (cfg.libDir++"Patterns.scd").loadRelative[0][0]; // load pattern definitions
@@ -388,7 +393,7 @@ s.waitForBoot({
 		var playHead;
 		// update bufferView
 		if(~showBufferView == 1,{
-			playHead = (Phasor.ar(1,1, start, start + (len*sRate), start)) % BufFrames.kr(mainBuf);
+            playHead = (Phasor.ar(1,1, start, start + (len*sRate), start)) % BufFrames.kr(mainBuf);
 			SendReply.kr(Impulse.kr(cfg.bufferViewPlayHeadFreq), "/playHead", [playHead/sRate, start/sRate, len], recZone);
 			SendReply.kr(Impulse.kr(cfg.bufferViewRefreshFreq),"/bufferViewRefresh", start, recZone);
 		});
@@ -569,9 +574,10 @@ s.waitForBoot({
 	////////// Zone 4 MIDI //////////////////////////////////////
 
 	SynthDef(\zone4play1, {
-		arg gate, lenBus, startPosition = 0, ampBus, distBus, pitchBus, pitch2Bus, ffBus;
-		var trig, sig, lenBusVal, playHead, sign, trig2;
+		arg gate, lenBus, startPosition = 0, ampBus, distBus, pitchBus, pitch2Bus, ffBus, ffSpeedBus;
+		var trig, sig, lenBusVal, playHead, sign, trig2, ffSpeedVal;
 
+		ffSpeedVal = spec.ffSpeed41.map(In.kr(ffSpeedBus,1));
 		lenBusVal = In.kr(lenBus,1);
 		//	trig = Impulse.ar(1 / IEnvGen.kr(spec.len41, In.kr(lenBus,1)));
 		trig = Impulse.ar(1 / lenBusVal);
@@ -598,7 +604,9 @@ s.waitForBoot({
 		) * EnvGen.kr(Env.adsr(0.05,0,1,0.05), gate, doneAction: 2);
 		sig = IEnvGen.kr(spec.amp21, In.kr(ampBus,1)) * sig;
 		sig = spec.dist21.map(In.kr(distBus,1)) * sig;
-		sig = RLPF.ar(sig, spec.ff41.map(In.kr(ffBus,1) + (0.2 * LFNoise1.kr(2))), 0.5 + (0.1 * LFNoise1.kr(1)));
+		sig = RLPF.ar(sig, spec.ff41.map(In.kr(ffBus,1) + (0.2 * LFNoise1.kr(ffSpeedVal))), 0.5 + (0.1 * LFNoise1.kr(1)));
+		// sig = RLPF.ar(sig, spec.ff41.map(In.kr(ffBus,1) + (0.2 * LFNoise1.kr(0.2))), 0.5 + (0.1 * LFNoise1.kr(1)));
+		// sig = RLPF.ar(sig, spec.ff41.map(In.kr(ffBus,1) + (0.2 * LFNoise1.kr(2))), 0.5 + (0.1 * LFNoise1.kr(1)));
 		Out.ar(~aBus.outA, sig);
 	}).send(s);
 
@@ -2129,7 +2137,8 @@ s.waitForBoot({
 				dpIndex = note - 72; // diskPlay array index
 				if(diskPlay.buf[dpIndex].notNil, { // a sample is defined for this index and file is found
 					if(diskPlay.playing[dpIndex] == 0, { // if not playing, start the synth
-						("diskPlay"++diskPlay.numChan[dpIndex]++":" + diskPlay.sampleList[dpIndex] + "from" + diskPlay.start[dpIndex] + "to" + diskPlay.len[dpIndex] + "secs" ).postln;
+						("diskPlay"++diskPlay.numChan[dpIndex]++":" + diskPlay.sampleList[dpIndex] + "from" +
+							diskPlay.start[dpIndex] + "to" + diskPlay.len[dpIndex] + "secs" ).postln;
 
 						// cue soundfile into a buffer
 						diskPlay.buf[dpIndex].close;
@@ -2894,7 +2903,8 @@ s.waitForBoot({
 							\distBus, cBus.midiLV2CrossFader.index,
 							\pitchBus, cBus.midiLV2JoyY.index,
 							\pitch2Bus, cBus.midiLV2JoyY2.index,
-							\ffBus, cBus.midiLV2JoyX.index
+							\ffBus, cBus.midiLV2JoyX.index,
+							\ffSpeedBus, cBus.midiLV2KnobA2.index
 						], target: ~aBus.synthGroup);
 						fCountZones.value("P+", 1);
 						// update curZoneStart & curZoneLen
@@ -2971,7 +2981,8 @@ s.waitForBoot({
 						\distBus, cBus.midiLV2CrossFader.index,
 						\pitchBus, cBus.midiLV2JoyY.index,
 						\pitch2Bus, cBus.midiLV2JoyY2.index,
-						\ffBus, cBus.midiLV2JoyX.index
+						\ffBus, cBus.midiLV2JoyX.index,
+						\ffSpeedBus, cBus.midiLV2KnobA2.index
 					], target: ~aBus.synthGroup);
 					// update curZoneLen
 					if(curZone == "41", {fSetCurZone.value("41", nil, spec.len41.at(value*127) * sRate)});
@@ -2997,6 +3008,10 @@ s.waitForBoot({
 					], target: ~aBus.synthGroup);
 				});
 			});
+			if((chan==9 && num==57), {
+				// set bus
+				cBus.midiLV2KnobA2.set(value);
+			});
 			// absolute regstart
 			if((chan==11 && num==1), {
 				// set start position
@@ -3012,7 +3027,8 @@ s.waitForBoot({
 						\distBus, cBus.midiLV2CrossFader.index,
 						\pitchBus, cBus.midiLV2JoyY.index,
 						\pitch2Bus, cBus.midiLV2JoyY2.index,
-						\ffBus, cBus.midiLV2JoyX.index
+						\ffBus, cBus.midiLV2JoyX.index,
+						\ffSpeedBus, cBus.midiLV2KnobA2.index
 					], target: ~aBus.synthGroup);
 					// update curZoneStart
 					if(curZone == "41", {
@@ -4251,11 +4267,11 @@ s.waitForBoot({
 			.setSelectionColor(0, bufferViewColors[4])
 			.setSelectionColor(1, bufferViewColors[5]);
 		});
-		bufferViewLab[0] = StaticText(~wBufferView, Rect(20,10,500,15)).font_(Font("Helvetica",10))
+		bufferViewLab[0] = StaticText(~wBufferView, Rect(20,10,500,15)).font_(fontBufferView)
 		.string_("A                      10                       20                       30                      40                       50                      60");
-		bufferViewLab[1] = StaticText(~wBufferView, Rect(475 + 20,10,700,15)).font_(Font("Helvetica",10))
+		bufferViewLab[1] = StaticText(~wBufferView, Rect(475 + 20,10,700,15)).font_(fontBufferView)
 		.string_("B          70                      80                       90                     100                     110                    120                    130                     140                     150");
-		bufferViewLab[2] = StaticText(~wBufferView, Rect(20,240,1120,15)).font_(Font("Helvetica",10))
+		bufferViewLab[2] = StaticText(~wBufferView, Rect(20,240,1120,15)).font_(fontBufferView)
 		.string_("C                     160                     170                    180                     190                    200                    210                     220                    230                     240                    250                     260                    270                     280                     290                    300");
 
 		// keyboard tracking
@@ -4285,7 +4301,7 @@ s.waitForBoot({
 
 	// display LapisStatus window
 	if(~lapisStatus == 1, {
-		LapisStatus.new(inputPeakChans: ~aBus.inputPeakChans, inputPeakStartChan: ~aBus.inputPeakStartChan)
+		LapisStatus.new(inputPeakChans: ~aBus.inputPeakChans, inputPeakStartChan: ~aBus.inputPeakStartChan, font: ~font)
 	});
 
 	// initialize local output
@@ -4319,6 +4335,8 @@ s.waitForBoot({
 		//	if(~wInOutAvail.notNil, {~wInOut.close});
 		//	if(~wSynthKeysAvail.notNil, {~wSynthKeys.close});
 		if(~wLapis.notNil, {~wLapis.close});
+		if(~wLoadRecordings.notNil, { ~wLoadRecordings.close });
+		if(~wCurves.notNil, {~wCurves.close});
 		~wLiveSamplerAvail = nil;
 		if(~wBufferView.notNil, {~wBufferView.close});
 	});
@@ -4331,7 +4349,8 @@ s.waitForBoot({
 	//~testSampleList = ["melodic/mel tokyo almu03"];
 	//~testSampleList = ["speeldoosmelodyTS-part1.aif"];
 	//~testSampleList = ["v monks.aiff"];
-	~testSampleList = ["melodic/mel violins1.aif"];
+	// ~testSampleList = ["melodic/mel violins1.aif"];
+	~testSampleList = ["noisepan.aiff"];
 
 }); // wait for boot
 

@@ -1,28 +1,28 @@
-// Shackle sample list
+// Spoon3 2017 sample list
 // a=LV1 b=LV2 c=LX (blue/green)
 
 a = (
 	// LV1
 	2: ["stoel2-Dis_b.aiff"],
-	10: ["dr_AmbIntrigue2+Light1b.aif"],
+	10: ["dr_AmbIntrigue2+Light1b.aif"],	// -- Where is everyone
 	18: ["GDRVH/BoC2 A97-1.aif", "melodic/mel tokyo01b.wav"],
-	26: ["amawaveseq2detune.aiff"],
+	26: ["GDRVH/002 ARP25 noise Synton filter part1.aif"], 	// --- Rara Avis
 	34: ["MOROS/08-proc3-proc1-13-proc1-proc1.wav"],
-	42: ["mortrob1.wav"],
-	50: ["plankje4SN1-Thonk Hectic_a.aiff"],
+	42: ["morten/morten perc4", "morten/morten perc3"], // --- Business Suit --- Jumped
+	50: ["plankje4SN1-Thonk Hectic_a.aiff"], 	// -- Jumped
 	58: ["lh-snare1-16bit.aif", "lh-snare4-16bit.aif", "lh-snare3-16bit-pt2.aif"]
 );
 
 b = (
 	// LV2
-	2: ["studio1_02.aif"],
+	2: ["nate03.aif"],	// --- Distance
 	10: ["lh-gaffertape1-16bit.aif", "lh-snare3-16bit-pt1.aif"],
 	18: ["GDRVH/015 ARP25 SF lome beat part 1.aif"],
-	26: ["aphextwin/10 partial gen [switched outputs with FM from 1osc] afx1.wav","aphextwin/MODULART3 [schmoo pulse].wav","aphextwin/nqz9 chaos rave. 1st edit +6.wav"],
+	26: ["rain1filter1.aiff", "rain1.aiff"],	// --- Distance
 	34: ["trapper2part2.aif", "trapper6part2.aif"],
-	42: ["MOROS//11-proc1-proc1.aif"],
+	42: ["MOROS/11-proc1-proc1.aif"],
 	50: ["MOROS/07-proc1-proc1.aif"],
-	58: ["sines/s3 long01part.aiff", "sines/s3 long04 soft no pitch voices.aif"]
+	58: ["sines/s3 long01part.aiff", "sines/s3 long04 soft no pitch voices.aif"] 	// --- Kingdom
 );
 
 c = (
@@ -30,13 +30,13 @@ c = (
 	24: ["MOROS/15-proc3-proc3.aif"],
 	25: ["Parish/cementmixer1processed1.wav"],
 	26: ["speeldooscol.aif", "distorted/d mortB01.wav", "speeldoosTSFFT.aif"],
-	27: ["glas&lepel10VRSP2+.aiff"],
-	28: ["melodic/mel 310-melodie-low"],
-	29: ["gstein-rustling1.wav"],
+	27: ["glas&lepel10VRSP2+.aiff"], 	// --- Time
+	28: ["horns sine1.aif"], 	// --- Kingdom --- Ants
+	29: ["voice/tcp_d2_17_english_man_irdial.wav"],
 	30: ["aphextwin/avril altdelay.wav", "melodic/MDfreeze/theme_03_shortb.wav"],
 	31: ["station1 rbeq2", "MOROS/10-proc1-proc2.wav" , "solitude/sol verwketel1EQ2part"],
 	32: ["GDRVH/004 ARP25 noise part1.aif"],
-	33: ["plankje2SN1m-Slack_a.aiff"],
+	33: ["plankje2SN1m-Slack_a.aiff"],	// -- Jumped
 	34: ["silent/ampmod vlow1m.aiff"],
 	35: ["MOROS/01-proc1-proc3.aif"],
 
@@ -68,18 +68,19 @@ c = (
 	58: ["Jasper/J slide1.wav"], '58out': "B",
 
 	// LX green
-	60: ["MOROS/03-proc1-proc3.aif"],
-	61: ["env firecrackle1.aiff", "glas&lepel10a.aiff"],
+	60: ["MOROS/03-proc1-proc3.aif"], // --- Distance
+	61: ["env firecrackle1.aiff", "glas&lepel10a.aiff"], // --- Ants
 	62: ["ferr tendus1.aiff"],
-	63: ["LPcracklebuf.wav"],
-	64: ["drink/dr karperlop2.aif", "solitude/sol kraakpart"],
+	63: ["LPcracklebuf"],	// -- Where is everyone
+	64: ["drink/dr karperlop2.aif", "solitude/sol kraakpart"],	// --- Tasty Plum
 	65: ["morten/morten perc1.wav", "morten/morten perc3.wav", "morten/morten perc4.wav"],
 	66: ["voer/deadscsi.aiff ts10 stereo.aiff", "th chsession2mo-Dis.aiff"],
 	67: ["GDRVH/011 ARP25 Sy-Dis2 part1.aif"],
 	68: ["MOROS/15-proc3-proc1.aif"],
 	69: ["gitaarruis.wav", "dm/dm2 ula tape.wav", "dm/dm2 ula tape.wav"],
-	70: ["MOROS/11-proc3-proc1.aif"],
-	71: ["plankje3SN1.aiff"]
+	70: ["MOROS/11-proc3-proc1.aif"], // --- Time
+	// 70: ["env st davids tent1b.aiff", "placard_m/pl tou bekertje2-part1.aif"],	// --- Time
+	71: ["GDRVH/002.3.4.2 part.aif"]	// --- Distance
 );
 
 d = ( // LX green keyset 2 -- settings for justPlay synth
@@ -89,7 +90,6 @@ d = ( // LX green keyset 2 -- settings for justPlay synth
 		"310/Fear of Zamfir1.wav",
 		"310/Indifferent1.wav",
 		"310/Lamb1.wav",
-		"310/Pharmacy1.wav",
 		"310/Raincarnation1.wav",
 		"310/Urban1.wav",
 

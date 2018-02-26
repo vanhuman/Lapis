@@ -20,11 +20,37 @@ var ardDig3enable = 1, ardDig3, ardDig3prev = 0;
 var ardAna1avail, ardAna2avail, ardDig2avail, ardDig3avail;
 var hidLabel, ex3dAvail, ex3dPro;
 var iac1ID = 0, iac1i, mulID = 0, lpkID = 0, extID = 0, mulAvail, midiLabel, iac1Avail, lpkAvail, extAvail, iac2ID = 0;
-var fontLabel = Font("Helvetica",12), fontButton = Font("Helvetica",12);
+var fontLabel = Font(~font,10), fontButton = Font(~font,12);
 var hidRemap = 4; // number to add to HID cookies for remapping
 
 "GlobalVars.scd".loadRelative();
 if(~oscSrc == "jx", {"/Users/robert/---data---/audio/junXion/HID2SC.j4xml/".openOS});
+
+///////////////////////////////////////////// HID data acquisition //////////////////////////////////////
+
+HID.findAvailable.do {arg device;
+	var elidMapped, physValueMapped;
+	if(device.productName == "Logitech Extreme 3D", {
+		ex3dPro = HID.open(device.vendorID, device.productID);
+		// ex3dPro.postInfo; ex3dPro.postElements;
+		ex3dPro.action = { | value, physValue, rawValue,  arrayValue, usage, page, elid |
+			// "HID device action: ".post; [value, physValue, rawValue,  arrayValue, usage, page, elid].postln;
+			elidMapped = elid + hidRemap; // remap cookie ids
+			// remap values
+			case
+			{elid<12} {physValueMapped = (physValue+1)%2} // buttons
+			{(elid==12) || (elid==13)} {physValueMapped = 1023 - physValue} // X & Y
+			{(elid==15) || (elid==16)} {physValueMapped = 255 - physValue} // R & S
+			{elid==14} {physValueMapped = 7 - (physValue.round(1) / 45)} // Hat
+			;
+			// ("cookie, map, value, map" + [elid, elidMapped,physValue,physValueMapped]).postln;
+			localAddr.sendMsg("/hid/ex3d", elidMapped, physValueMapped);
+		};
+	});
+};
+
+// code for old HIDDeviceService at the end of this file, just to be sure
+
 
 ///////////////////////////////////////////// Arduino data acquisition //////////////////////////////////////
 
@@ -94,31 +120,6 @@ if(portName.notNil, {
 // }, "/fluisterButton").fix;
 
 
-///////////////////////////////////////////// HID data acquisition //////////////////////////////////////
-
-HID.findAvailable.do {arg device;
-	var elidMapped, physValueMapped;
-	if(device.productName == "Logitech Extreme 3D", {
-		ex3dPro = HID.open(device.vendorID, device.productID);
-		// ex3dPro.postInfo; ex3dPro.postElements;
-		ex3dPro.action = { | value, physValue, rawValue,  arrayValue, usage, page, elid |
-			// "HID device action: ".post; [value, physValue, rawValue,  arrayValue, usage, page, elid].postln;
-			elidMapped = elid + hidRemap; // remap cookie ids
-			// remap values
-			case
-			{elid<12} {physValueMapped = (physValue+1)%2} // buttons
-			{(elid==12) || (elid==13)} {physValueMapped = 1023 - physValue} // X & Y
-			{(elid==15) || (elid==16)} {physValueMapped = 255 - physValue} // R & S
-			{elid==14} {physValueMapped = 7 - (physValue.round(1) / 45)} // Hat
-			;
-			// ("cookie, map, value, map" + [elid, elidMapped,physValue,physValueMapped]).postln;
-			localAddr.sendMsg("/hid/ex3d", elidMapped, physValueMapped);
-		};
-	});
-};
-
-// code for old HIDDeviceService at the end of this file, just to be sure
-
 
 ///////////////////////////////////////////// MIDI acquisition //////////////////////////////////////
 
@@ -156,7 +157,8 @@ MIDIClient.sources.size.do({|i|
 	case
 	// MOTU Ultralite, Ploytec MIDI Cable -> MUL
 	{
-		(MIDIClient.sources[i].device == "UltraLite mk3 Hybrid") && (MIDIClient.sources[i].name == "MIDI Port")
+		((MIDIClient.sources[i].device == "UltraLite mk3 Hybrid") || (MIDIClient.sources[i].device == "UltraLite mk3 Hybrid #2"))
+		&& (MIDIClient.sources[i].name == "MIDI Port")
 	}
 	{
 		mulID = MIDIClient.sources[i].uid;

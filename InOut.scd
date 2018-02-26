@@ -54,14 +54,15 @@ s.waitForBoot({
 	var specOutAmpNoArd = Env.xyc([[0.0, 0.0, \lin], [0.001, 0.001,\exp],[0.2, 0.2, \lin],[0.5, 1.0], [1,1.0]]);
 	var screenHeight = Window.screenBounds.height, screenWidth = Window.screenBounds.width;
 	var mainOutChan, mainOutLabel, monOutLabel, monOutChan, inputLabel, inputChan;
-	var inGain = Array.newClear(4), inGainLabel, inGainLabel2;
+	var inGain = Array.newClear(4), inGainLabel;
 	var outMonitorAttLabel, outMonitorAttVal, outMainAttLabel, outMainAttVal;
 	var oscOn = 0;
 	// var imageFileList = ["flower2","flower4","flower5","flower7","flower8","flower1","flower11"], imageSame = false;
-	var imageFileList = ["sound"], imageSame = false;
+	// var imageFileList = ["sound"], imageSame = false;
 	// var imageFileList = ["Point1","Point2","Point3","Point4","Point5","Point6"], imageSame = true;
+	var imageFileList = ["Sleeuwits", "Stankowski"], imageSame = false;
 	var imageFileDone = Array.new(imageFileList.size);
-	var fontLabel = Font("Helvetica",12), fontButton = Font("Helvetica",12), fontSmall = Font("Helvetica",9);
+	var fontLabel, fontButton, fontSmall;
 	var isRecording = 0;
 
 	cfg.docDir.postln;
@@ -69,6 +70,7 @@ s.waitForBoot({
 	~aBus = nil; // refresh global vars
 	"GlobalVars.scd".loadRelative();
 	~processBuf = Buffer.alloc(s, cfg.processLen, 2);
+	fontLabel = Font(~font,10); fontButton = Font(~font,12); fontSmall = Font(~font,9);
 	s.recChannels_(~aBus.recChannels); ("Number of recording channels set to" + s.recChannels).postln;
 
 	///////////////////////////////////////////// Output Synths //////////////////////////////////////
@@ -147,7 +149,7 @@ s.waitForBoot({
 		});
 
 		// main output
-		if(~aBus.outMainStereo == 0, {sig = Mix.new(sig);});	// if mono mixdown to one channel
+		if(~aBus.outMainStereo == 0, {sig = Mix.new(sig);});
 		Out.ar(~aBus.outMainChan, mainAtt * sig);
 	}).add;
 
@@ -179,6 +181,7 @@ s.waitForBoot({
 				"InOut: output stopped.".postln;
 			},
 			{ // init sound
+				("outMainStereo=" + ~aBus.outMainStereo).postln;
 				~aBus.inGroup = Group.new();
 				~aBus.synthGroup = Group.new(~aBus.inGroup, \addAfter);
 				~aBus.outputGroup = Group.new(~aBus.synthGroup, \addAfter);
@@ -192,7 +195,9 @@ s.waitForBoot({
 				~aBus.outBLsynth = Synth(\outBusBL, [\volBus, ardAna1Bus.index,
 					\gate,1], target: ~aBus.outputGroup);
 				~aBus.outMainsynth = Synth(\outBusMain, [\gate,1,
-					\monAtt,~aBus.outMonitorAtt.asFloat,\mainAtt,~aBus.outMainAtt.asFloat,\resampAtt,~aBus.outResamplingAtt.asFloat],
+					\monAtt, ~aBus.outMonitorAtt.asFloat, \mainAtt, ~aBus.outMainAtt.asFloat, \resampAtt, ~aBus.outResamplingAtt.asFloat,
+					\outMainStereo, ~aBus.outMainStereo
+				],
 				target: ~aBus.mainGroup);
 				mainOutChan.background_(~colorOn);
 				if(~aBus.outMonitor == 1, {monOutChan.background_(~colorOn)});
@@ -486,14 +491,10 @@ s.waitForBoot({
 	.background_(Color.white)
 	.states_([[~aBus.inChan1.asString ++ "," ++ ~aBus.inChan2.asString]]);
 
-	inGainLabel2 = StaticText(~wInOut, Rect(150, 1, 100, 10))
-	.background_(Color.white.alpha_(0.7))
-	.font_(fontSmall)
-	// .align_(\center)
-	.string_("50        51        52        53");
-
 	// input channel levels
 	4.do {arg i;
+		StaticText(~wInOut, Rect(146+(i*30), -2, 20, 15))
+		.background_(Color.white.alpha_(0.7)).font_(fontSmall).string_(50+i).align_(\center);
 		inGain[i] = (SmoothNumberBox(~wInOut, Rect(140+(i*30), 9, 30, 22))
 			.border_(1)
 			.radius_(3)
@@ -637,11 +638,13 @@ s.waitForBoot({
 		});
 	});
 
+	// give SC some time to breathe
+	s.sync;
+
 	// load controllers, livesampler and synthkeys
 	if(~wControllersAvail.isNil, {"Controllers.scd".loadRelative});
 	if(~lisa.notNil, {~lisa.loadRelative()});
 	if(~sk.notNil, {~sk.loadRelative()});
-
 	// w = Window("dummy").front; w.close;
 	~wInOut.front;
 	if(~alwaysOnTop == 1, {~wInOut.alwaysOnTop_(true)});

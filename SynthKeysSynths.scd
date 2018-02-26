@@ -51,6 +51,30 @@ SynthDef.new(\bocAmpMod2, { // similar to bocAmpMod but without the second RLPF 
 	Out.ar(~aBus.outBL, sig);
 }).send(s);
 
+SynthDef.new(\bocAmpMod2b, { // similar to bocAmpMod but without the second RLPF and amplitude modulation
+	arg freq1, gate, cutoffBus, efxBus, pitchBus, velocity, distBus, synthGainBus;
+	var sig, cutoffVal, resVal, pitchVal, distVal, velocityVal;
+
+	velocityVal = IEnvGen.kr(~synthKeysSpec.velocity, velocity);
+	cutoffVal = IEnvGen.kr(~synthKeysSpec.cutoff1, In.kr(cutoffBus,1));
+	resVal = IEnvGen.kr(~synthKeysSpec.res, In.kr(efxBus,1));
+	pitchVal = IEnvGen.kr(~synthKeysSpec.pitch, In.kr(pitchBus,1));
+	distVal = IEnvGen.kr(~synthKeysSpec.dist6, In.kr(distBus,1));
+
+	freq1 = freq1 * pitchVal;
+	sig = RLPF.ar(
+		LFTri.ar(SinOsc.ar(2)*1.01 + (freq1 + (8.midicps(~tuningA)/128))) *
+		LFTri.ar(SinOsc.ar(2)*1.03 + (freq1 + (5.midicps(~tuningA)/128))) *
+		LFTri.ar(SinOsc.ar(2) + (freq1 - (3.midicps(~tuningA)/128))),
+		cutoffVal, resVal);
+	sig = Pan2.ar(sig,Rand(-0.2,0.2));
+	sig = sig * distVal * velocityVal * EnvGen.kr(Env.adsr(0.01,0.1,0.3,0.5,2), gate, doneAction: 2);
+	sig = 2 * FreeVerb2.ar(sig[0],sig[1]);
+	sig = sig * IEnvGen.kr(~synthKeysSpec.synthGain, In.kr(synthGainBus,1));
+
+	Out.ar(~aBus.outBL, sig);
+}).send(s);
+
 SynthDef.new(\bocAmpMod3, { // similar to bocAmpMod but without amplitude modulation and a bigger flutter
 	arg freq1, gate, cutoffBus, efxBus, pitchBus, velocity, distBus, synthGainBus;
 	var sig, ampmodVal, velocityVal, cutoffVal, resVal, pitchVal, distVal;
@@ -306,15 +330,15 @@ SynthDef.new(\FilterNoise, {
 	// freq1 = freq1/4;
 	freq1 = max(freq1,10);
 	rqVal = { LFNoise1.kr(0.3).range(0.1,0.5) }!2;  // rqVal = bandwidth / freq
-	brfFreq = { ( { (Rand(0.2,40) * freq1)%20000 }!6 ) ++ ( { (Rand(40,200) * freq1)%20000 }!4 ) }!2;
+	// brfFreq = { ( { (Rand(0.2,40) * freq1)%20000 }!6 ) ++ ( { (Rand(40,200) * freq1)%20000 }!4 ) }!2;
 	// brfFreq.poll(0.01);
 	// [envAttVal,0.1,envSusVal,envRelVal,envPkVal].poll(0.01);
 
 	sig = BPF.ar(WhiteNoise.ar(0.1), [freq1,freq1*0.9], rqVal, mul: (72 / (freq1.cpsmidi)) * (0.1/rqVal) ) ;
-	brfFreq[0].size.do { |i|
-		sig[0] = BRF.ar(sig[0], brfFreq[0][i], LFNoise1.kr( LFNoise0.kr(0.3).range(0.1,0.4) ).range(0.05,0.9));
-		sig[1] = BRF.ar(sig[1], brfFreq[1][i], LFNoise1.kr( LFNoise0.kr(0.2).range(0.1,0.4) ).range(0.05,0.9));
-	};
+	// brfFreq[0].size.do { |i|
+	// 	sig[0] = BRF.ar(sig[0], brfFreq[0][i], LFNoise1.kr( LFNoise0.kr(0.3).range(0.1,0.4) ).range(0.05,0.9));
+	// 	sig[1] = BRF.ar(sig[1], brfFreq[1][i], LFNoise1.kr( LFNoise0.kr(0.2).range(0.1,0.4) ).range(0.05,0.9));
+	// };
 	sig[0] = LPF.ar(sig[0], LFNoise1.kr(0.1).range(100,cutoffVal));
 	sig[1] = LPF.ar(sig[1], LFNoise1.kr(0.12).range(100,cutoffVal));
 	sig = ( (1-mixVal) * sig ) + ( mixVal * PitchShift.ar(sig, windowSize: 0.1, pitchRatio: 0.5, mul:2) );
@@ -378,6 +402,27 @@ SynthDef.new(
 			0,
 			1
 		) * EnvGen.kr(Env.adsr(0.05,0,1,0.05), gate, doneAction: 2);
+		sig = sig * distVal * velocityVal;
+		sig = RLPF.ar(sig, cutoffVal, 0.5);
+		sig = sig * IEnvGen.kr(~synthKeysSpec.synthGain, In.kr(synthGainBus,1));
+
+		Out.ar(~aBus.outBL, sig);
+}).send(s);
+
+SynthDef.new(
+	\SampleKeysNoPitch, {
+		arg freq1, gate, cutoffBus, efxBus, velocity, pitchBus, distBus, synthGainBus, buffer = ~synthKeysBuf;
+		var sig, cutoffVal, lenVal, pitchVal, distVal, trig, freq1hz, flutterVal, velocityVal, flutSpdVal;
+
+		velocityVal = IEnvGen.kr(~synthKeysSpec.velocity, velocity);
+		cutoffVal = IEnvGen.kr(~synthKeysSpec.cutoff3, In.kr(cutoffBus,1));
+		flutterVal = IEnvGen.kr(~synthKeysSpec.flutter, In.kr(cutoffBus,1));
+		lenVal = IEnvGen.kr(~synthKeysSpec.len, In.kr(efxBus,1));
+		flutSpdVal = IEnvGen.kr(~synthKeysSpec.flutspd, In.kr(efxBus,1));
+		pitchVal = IEnvGen.kr(~synthKeysSpec.pitch, In.kr(pitchBus,1));
+		distVal = IEnvGen.kr(~synthKeysSpec.dist4, In.kr(distBus,1));
+
+		sig = PlayBufCF.ar(2, buffer, BufRateScale.kr(buffer), 1, 0, 1) * EnvGen.kr(Env.adsr(0.05,0,1,0.05), gate, doneAction: 2);
 		sig = sig * distVal * velocityVal;
 		sig = RLPF.ar(sig, cutoffVal, 0.5);
 		sig = sig * IEnvGen.kr(~synthKeysSpec.synthGain, In.kr(synthGainBus,1));

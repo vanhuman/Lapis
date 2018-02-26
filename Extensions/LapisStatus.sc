@@ -1,22 +1,24 @@
 LapisStatus {
 
-	var respStatus, inputPeakResp;
+	var inputPeakResp;
 
 	*new
 	{
-		arg marginX = 10, marginY = 10, height = 25, win, posX = 20, posY = 50, inputPeakChans = 0, inputPeakStartChan = 0;
+		arg marginX = 10, marginY = 10, height = 25, win, posX = 20, posY = 50, inputPeakChans = 0, inputPeakStartChan = 0,
+		font = "Helvetica";
 
-		^super.new.initLapisStatus(marginX, marginY, height, win, posX, posY, inputPeakChans, inputPeakStartChan);
+		^super.new.initLapisStatus(marginX, marginY, height, win, posX, posY, inputPeakChans, inputPeakStartChan, font);
 	}
 
 	initLapisStatus
 	{
-		arg marginX, marginY, height, win, posX, posY, inputPeakChans, inputPeakStartChan;
+		arg marginX, marginY, height, win, posX, posY, inputPeakChans, inputPeakStartChan, font;
 
 		var localWin = 0, screenHeight = Window.screenBounds.height;
-		var dispBaseBtn, dispBaseBtn2, dispDisablePitch, dispDisableStartPos, dispPlay, dispRec, dispEfx, dispPlaySK, susStatus, prgSK, zone8patt, bInputPeak = Array.newClear(16);
+		var dispBaseBtn, dispBaseBtn2, dispDisablePitch, dispDisableStartPos, dispPlay, dispRec, dispEfx, dispPlaySK, susStatus, bpmSK, zone8patt, bInputPeak = Array.newClear(16);
 		var colorStatus = [Color.white, Color.green(0.9), Color.yellow];
-		var fontButton = Font("Helvetica",height-6);
+		var fontButton = Font(font,height-6);
+		var fontLabel = Font(font, 8);
 		var textWidth = 42, nbrWidth = 35, space = 4, heightExtra = 0;
 
 		if(inputPeakChans > 0) { heightExtra = textWidth + (3*space) };
@@ -107,14 +109,18 @@ LapisStatus {
 		.background_(Color.white)
 		.states_([["Sus"]]);
 
-		prgSK = SmoothButton(win, Rect(marginX+(5*(textWidth+space))+(4*(nbrWidth+space)),marginY,textWidth,height))
+		StaticText(win, Rect(marginX+(5*(textWidth+space))+(4*(nbrWidth+space))+12,marginY-16,textWidth,height))
+		.string_("bpm").font_(fontLabel);
+		bpmSK = SmoothButton(win, Rect(marginX+(5*(textWidth+space))+(4*(nbrWidth+space)),marginY,textWidth,height))
 		.border_(1)
 		.radius_(3)
 		.canFocus_(false)
 		.font_(fontButton)
 		.background_(Color.white)
-		.states_([["P1"]]);
+		.states_([["bpm"]]);
 
+		StaticText(win, Rect(marginX+(6*(textWidth+space))+(4*(nbrWidth+space))+8,marginY-16,nbrWidth,height))
+		.string_("patt").font_(fontLabel);
 		zone8patt = SmoothButton(win, Rect(marginX+(6*(textWidth+space))+(4*(nbrWidth+space)),marginY,nbrWidth,height))
 		.border_(1)
 		.radius_(3)
@@ -124,14 +130,12 @@ LapisStatus {
 		.background_(Color.white)
 		.states_([["0"]]);
 
-		inputPeakChans.do { |channel|
-			if( channel >= inputPeakStartChan, {
+		forBy(inputPeakStartChan, inputPeakStartChan+inputPeakChans-1, 1, { |channel|
 				bInputPeak[channel] = Button(win, Rect(10 + (channel*(textWidth+space)),45,textWidth,textWidth))
 				.states_([ [(channel+1),Color.black,Color.white] , [(channel+1),Color.white,Color.red] ]);
-			});
-		};
+		});
 
-		respStatus = OSCresponderNode(nil, "/lapistatus", {arg time, responder, msg;
+		OSCdef(\lapisStatus, {arg msg;
 			var type, val;
 			type = msg[1].asString;
 			val = msg[2].asInt;
@@ -145,8 +149,9 @@ LapisStatus {
 			{type == "countEfx"} {{dispEfx.states_([[val.asString]])}.defer()}
 			{type == "countPlaySK"} {{dispPlaySK.states_([[val.asString]])}.defer()}
 			{type == "sustain"} {{susStatus.background_(colorStatus[val])}.defer()}
-			{type == "shift"} {{prgSK.background_(colorStatus[val])}.defer()}
-			{type == "prgSK"} {{prgSK.states_([["P"++(val+1)]])}.defer()}
+			{type == "shift"} {{bpmSK.background_(colorStatus[val])}.defer()}
+			// {type == "prgSK"} {{prgSK.states_([["P"++(val+1)]])}.defer()}
+			{type == "midiBPM"} {{bpmSK.states_([[val.asString]])}.defer()}
 			{type == "zone8pattNbr"} {
 				if(val != zone8patt.states[0][0].asInt, {
 				{zone8patt.states_([[val.asString]]); zone8patt.background_(colorStatus[1])}.defer()
@@ -154,21 +159,19 @@ LapisStatus {
 			}
 			{type == "zone8pattAct"} { {zone8patt.states_([[val.asString]]); zone8patt.background_(colorStatus[0])}.defer()}
 			;
-		}).add;
+		}, "/lapistatus").fix;
 
 		if(inputPeakChans > 0, {
 			inputPeakResp = OSCFunc( {|msg|
-				inputPeakChans.do {|channel|
-					if( channel >= inputPeakStartChan, {
-						var baseIndex = 3 + (2*channel);
-						var rmsValue = msg.at(baseIndex + 1);
-						var value = rmsValue.ampdb.linlin(-80, 0, 0, 1);
-						{
-							if(value > 0.1) { bInputPeak[channel].value = 1 };
-							if(value < 0.05) { bInputPeak[channel].value = 0 };
-						}.defer();
-					});
-				}
+				forBy(inputPeakStartChan, inputPeakStartChan+inputPeakChans-1, 1, { |channel|
+					var baseIndex = 3 + (2*channel);
+					var rmsValue = msg.at(baseIndex + 1);
+					var value = rmsValue.ampdb.linlin(-80, 0, 0, 1);
+					{
+						if(value > 0.1) { bInputPeak[channel].value = 1 };
+						if(value < 0.05) { bInputPeak[channel].value = 0 };
+					}.defer();
+				});
 			}, ("/localhostInLevels").asSymbol).fix;
 		});
 
@@ -181,7 +184,7 @@ LapisStatus {
 	stop
 	{
 		//	"Removing OSC responder".postln;
-		respStatus.remove;
+		OSCdef(\lapisStatus).remove;
 		inputPeakResp.remove;
 	}
 

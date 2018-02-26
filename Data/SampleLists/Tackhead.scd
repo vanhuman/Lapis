@@ -3,10 +3,8 @@
 
 a = (
 	// LV1
-	2: ["CodeKlavier/piano-1.wav"], // ------------ LIMIT
-	// 2: ["stoel2-Dis_b.aiff"], // ------------ LIMIT
-	// 10: ["dr_AmbIntrigue2+Light1b.aif"], // ------------ BOW
-	10: ["KingMidas/Water.wav"],
+	2: ["stoel2-Dis_b.aiff"], // ------------ LIMIT
+	10: ["dr_AmbIntrigue2+Light1b.aif"], // ------------ BOW
 	18: ["GDRVH/BoC2 A97-1.aif", "melodic/mel tokyo01b.wav"], // ------------ EYE
 	26: ["amawaveseq2detune.aiff"], // ------------ ANCHOR SCREW
 	34: ["MOROS/08-proc3-proc1-13-proc1-proc1.wav"],
@@ -43,17 +41,15 @@ c = (
 	35: ["MOROS/01-proc1-proc3.aif"], // ------------ BOLT
 
 	// LX blue keyset 2
-	36: ["voice/PlayerPianosR1_ed1.wav"],
-	37: ["v apache gun kill.aiff"],
-	38: ["aphextwin/@FX-MATRIXT7b.wav", "voice/v voicemail300404.aif"],
-	// 39: ["voice/PlayerPianosR1_ed2.wav"],
-	39: ["Tackhead/Reagan shoot back.wav", "Tackhead/Reagan race problems.wav"],
+	36: ["Tackhead/Reagan shoot back.wav", "Tackhead/Reagan race problems.wav"],
+	37: ["Tackhead/Thatcher compete.wav", "Tackhead/Thatcher compete.wav"],
+	38: ["v apache gun kill.aiff"],
+	39: ["voice/PlayerPianosR1_ed2.wav"],
 	40: ["prince/this is not a dream 1.wav","prince/this is not a dream 1.wav","Alien/moving on second.wav","Alien/moving on second.wav"],
 	41: ["sci-fi/countdown decimate.wav", "sci-fi/alien talk 2 decimate.wav" ],
 	42: ["CivPhase/What makes the smoke stand still.wav"],
 	43: ["voice/v videodr deb.aiff"],
-	// 44: ["SCrecDelay1.aif"],
-	44: ["Tackhead/Thatcher compete.wav", "Tackhead/Thatcher compete.wav"],
+	44: ["SCrecDelay1.aif"],
 	45: ["voice/v alien4 where the meat is.aiff"],
 	46: ["musicismath/nfbc Another Side of the Forest1.wav","musicismath/nfbc Another Side of the Forest2.wav"],
 	47: ["voice/tcp_d1_09_ready_ready_15728_irdial.wav","voice/tcp_d3_11_nnn_old_incarnation_irdial.wav"],
@@ -111,16 +107,12 @@ c = (
 	68: ["MOROS/15-proc3-proc1.aif"], // ------------ FORGE
 	69: ["gitaarruis.wav", "dm/dm2 ula tape.wav", "dm/dm2 ula tape.wav"], // ------------ CUFF
 	70: ["MOROS/11-proc3-proc1.aif"],
-	71: ["CodeKlavier/piano-1.wav"]
-	// 71: ["plankje3SN1.aiff"]
+	71: ["plankje3SN1.aiff"]
 );
 
 d = ( // LX green keyset 2 -- settings for justPlay synth
 	sampleList:
 		[
-		// "Eurapco loops/tmp/strings1.wav",
-		// "Eurapco loops/tmp/strings2.wav",
-
 		"Tackhead/Mind2.wav",
 		"Tackhead/Mind3.wav",
 		"Tackhead/Mind1.wav",
@@ -128,24 +120,14 @@ d = ( // LX green keyset 2 -- settings for justPlay synth
 		"Tackhead/Mission0.wav",
 		"Tackhead/Mission1.wav",
 
-		// "musicismath/music is math1.wav",
-		// "musicismath/music is math2.wav",
-		// "musicismath/music is math3.wav",
-		// "musicismath/music is math4.wav",
-		// "musicismath/music is math5.wav",
-		// "musicismath/music is math6.wav",
-
 		"Concord/dreamyLong1.wav",
 		"Concord/dreamyLong2.wav",
-		// "Concord/drumloop1.wav",
-		// "Concord/drumloop2.wav",
-		"KingMidas/Loving.wav",
-		"KingMidas/Mind.wav",
+		"Concord/drumloop1.wav",
+		"Concord/drumloop2.wav",
 		"Concord/shimmery1.wav",
 		"Concord/shimmeryLong1.wav",
 
-		"Automatic/ringo-zang2.wav",
-		// "Concord/theGoodLoop1.wav",
+		"Concord/theGoodLoop1.wav",
 		"box/Ni-Ten-Ichi-Ryu-33rpm-1-60.wav",
 		"box/Ni-Ten-Ichi-Ryu-33rpm-2-60.wav",
 		"box/Ni-Ten-Ichi-Ryu-33rpm-3-60.wav",
@@ -181,18 +163,12 @@ d = ( // LX green keyset 2 -- settings for justPlay synth
 	lp: 1.dup(24),
 	lpfOn: 1.dup(24),
 	rate: 1.dup(24)
-	// att: 0.1.dup(24),
-	// rel: [1,1,1,1,1,1, 1,1,0.1,0.1,1,1, 0.1,0.1,0.1,0.1,0.1,0.1, 1,1,1,1,1,1],
-	// lp: [0,0,0,0,0,0, 1,1,1,1,1,0, 0,1,1,1,1,1, 1,1,1,1,1,1],
-	// lpfOn: 1.dup(24),
-	// rate: 1.dup(6)++1.dup(6)++1.dup(6)++[1,1,1,1,1,1]
 	);
 
 e = ( // sample arrays for SynthKeys
 	back:
 		[
 		// "SynthKeys/rommel1.aiff",
-		"SynthKeys/Felipe-1.wav",
 		"SynthKeys/tone2.aiff",
 		"SynthKeys/VoiceWalzChorus1b.wav",
 		"SynthKeys/VoiceWalzChorus1c-part.wav",

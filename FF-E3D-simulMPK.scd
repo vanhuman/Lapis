@@ -34,7 +34,7 @@ var keyB, ardAna1;
 var bShift2, shift2 = 0;
 var backImage = "/Users/Robert/---data---/Audio/SC/Data/Images/yellow.png";
 
-var version = "1.0 MPK";
+var version = "1.0";
 var screenHeight = Window.screenBounds.height, screenWidth = Window.screenBounds.width;
 
 // change OSC source from jx to sc temporarily
@@ -44,42 +44,41 @@ var oscSrcOnStart = ~oscSrc;
 
 ///////////////////////////////////////////// GUI //////////////////////////////////////
 
-wFF = Window("Lapis Simulacrum " ++ version, Rect(20, (screenHeight - 670), 1150, 570)).background_(Color.white);
-// w.view.backgroundImage_(Image.new(backImage));
-wFF.drawFunc = {
-	rrand(10,15).do{|i|
-		Pen.color = [Color.grey,Color(0.0, 0.0, 0.7, 0.5)].wchoose([0.9,0.1]);
-		Pen.fillColor = Color.grey(0.95);
-		Pen.addRect(
-			Rect((wFF.bounds.width).rand, -2, 20, (wFF.bounds.height + 4))
-		);
-		// Pen.perform(\stroke);
-		Pen.fill;
-	};
-};
+wFF = Window("Lapis Simulacrum", Rect(20, (screenHeight - 670), 1150, 640)).background_(Color.white);
+// wFF.drawFunc = {
+// 	rrand(10,15).do{|i|
+// 		Pen.color = [Color.grey,Color(0.0, 0.0, 0.7, 0.5)].wchoose([0.9,0.1]);
+// 		Pen.fillColor = Color.grey(0.95);
+// 		Pen.addRect(
+// 			Rect((wFF.bounds.width).rand, -2, 20, (wFF.bounds.height + 4))
+// 		);
+// 		// Pen.perform(\stroke);
+// 		Pen.fill;
+// 	};
+// };
 
 
 //wFFsimul = Window("FaderFox Simulacrum " ++ version, Rect(20, (screenHeight - 570), 480, 380));
 //wE3Dsimul = Window("Extreme 3d Pro Simulacrum " ++ version, Rect((screenWidth - 770), (screenHeight - 570), 380, 380));
-wFFsimul = CompositeView(wFF, Rect(20, 20, 480, 380));
-wE3Dsimul = CompositeView(wFF, Rect(540, 0, 580, 400));
-wKeysimul = CompositeView(wFF, Rect(20, 450, 480, 200));
+wFFsimul = CompositeView(wFF, Rect(20, 20, 480, 400)).background_(Color.grey(0.9));
+wE3Dsimul = CompositeView(wFF, Rect(540, 20, 580, 450)).background_(Color.grey(0.9));
+wKeysimul = CompositeView(wFF, Rect(20, 450, 480, 170)).background_(Color.grey(0.9));
 
 //wFFsimul.background_(Color.white);
 //wE3Dsimul.background_(Color.white);
 
 //////// LV1.1 ////////
 
-lv11Label = StaticText(wFFsimul, Rect(60, 355, 200, 30));
-lv11Label.font = Font("Helvetica", 15);
+lv11Label = StaticText(wFFsimul, Rect(10, 355, 200, 30));
+lv11Label.font = Font("Monaco", 25);
 lv11Label.string = "LV1.1";
 
-lv12Label = StaticText(wFFsimul, Rect(220, 355, 200, 30));
-lv12Label.font = Font("Helvetica", 15);
+lv12Label = StaticText(wFFsimul, Rect(235, 355, 200, 30));
+lv12Label.font = Font("Monaco", 25);
 lv12Label.string = "LV1.2";
 
-lx2Label = StaticText(wFFsimul, Rect(380, 355, 200, 30));
-lx2Label.font = Font("Helvetica", 15);
+lx2Label = StaticText(wFFsimul, Rect(375, 355, 200, 30));
+lx2Label.font = Font("Monaco", 25);
 lx2Label.string = "LX2";
 
 joy1 = Slider2D(wFFsimul, Rect(10, 10, 65, 65))
@@ -246,6 +245,7 @@ bShift2 = (SmoothButton(wFFsimul, Rect(120, 340, 80, 15))
 	.radius_(3)
 	.border_(1)
 	.canFocus_(false)
+	.font_(Font("Monaco",12))
 	.states_([["shift", Color.white, Color(0.0, 0.0, 0.7, 0.5)],["shift", Color.black, Color.white]])
 	.action_({
 		shift2 = (shift2 + 1) % 2;
@@ -484,7 +484,7 @@ bmBlack.mouseDownAction = {arg box;
 
 ////////// Keys ////////
 
-bmKeysBankAgui = BoxMatrix(wKeysimul,Rect(30,0,100,50),4,2);
+bmKeysBankAgui = BoxMatrix(wKeysimul,Rect(110,20,100,50),4,2);
 bmKeysBankAgui.canFocus_(false);
 bmKeysBankAgui.defaultStyle.boxColor = Color(0.7, 0.0, 0.0, 0.5);
 bmKeysBankAgui.defaultStyle.borderColor = Color.black;
@@ -504,12 +504,12 @@ bmKeysBankAgui.mouseDownAction_({arg box;
 			localAddr.sendMsg("/midi/control", 0, bmKeysBankAmidi[box[\point].y][box[\point].x] , 0, "LPK");
 	});
 });
-bmKeysBankAgui.at(0@1).title = "   1";
-bmKeysBankAgui.at(3@1).title = " sus";
-bmKeysBankAgui.at(0@0).title = "   5";
-keysBankALabel = StaticText(wKeysimul, Rect(20, 60, 150, 30)).font_(Font("Helvetica", 15)).string_("MPK Pads Bank A");
+bmKeysBankAgui.at(0@1).title_("  1").font_(Font("Monaco",10));
+bmKeysBankAgui.at(3@1).title_("sus").font_(Font("Monaco",10));
+bmKeysBankAgui.at(0@0).title_("  5").font_(Font("Monaco",10));
+keysBankALabel = StaticText(wKeysimul, Rect(88, 80, 150, 60)).font_(Font("Monaco", 25)).string_("MPK Pads\nBank A").align_(\center);
 
-bmKeysBankBgui = BoxMatrix(wKeysimul,Rect(190,0,100,50),4,2);
+bmKeysBankBgui = BoxMatrix(wKeysimul,Rect(270,20,100,50),4,2);
 bmKeysBankBgui.canFocus_(false);
 bmKeysBankBgui.defaultStyle.boxColor = Color(0.7, 0.0, 0.0, 0.5);
 bmKeysBankBgui.defaultStyle.borderColor = Color.black;
@@ -529,15 +529,15 @@ bmKeysBankBgui.mouseDownAction_({arg box;
 			localAddr.sendMsg("/midi/control", 0, bmKeysBankBmidi[box[\point].y][box[\point].x] , 0, "LPK");
 	});
 });
-bmKeysBankBgui.at(0@1).title = "   1";
-bmKeysBankBgui.at(0@0).title = "   5";
-keysBankBLabel = StaticText(wKeysimul, Rect(180, 60, 150, 30)).font_(Font("Helvetica", 15)).string_("MPK Pads Bank B");
+bmKeysBankBgui.at(0@1).title_("  1").font_(Font("Monaco",10));
+bmKeysBankBgui.at(0@0).title_("  5").font_(Font("Monaco",10));
+keysBankBLabel = StaticText(wKeysimul, Rect(248, 80, 150, 60)).font_(Font("Monaco", 25)).string_("MPK Pads\nBank B").align_(\center);
 
 ////////// Extreme 3D pro ////////
 
-joyE3Label = StaticText(wE3Dsimul, Rect(135, 375, 200, 30));
-joyE3Label.font = Font("Helvetica", 15);
-joyE3Label.string = "Joystick Extreme 3D Pro";
+joyE3Label = StaticText(wE3Dsimul, Rect(120, 375, 300, 60));
+joyE3Label.font = Font("Monaco", 25);
+joyE3Label.string = "Joystick\nExtreme 3D Pro";
 
 joyE3Dxy = Slider2D(wE3Dsimul, Rect(120, 120, 200, 200))
 .background_(Color.grey(0.9))
@@ -570,8 +570,7 @@ joyE3Ds = SmoothSlider(wE3Dsimul, Rect(120, 330, 200, 20))
 });
 
 joyE3Db1 = SmoothButton(wE3Dsimul, Rect(235, 50, 30, 30))
-.radius_(3)
-.border_(1);
+.radius_(3).border_(1).font_(Font("Monaco",12));
 joyE3Db1.canFocus = false;
 joyE3Db1.states = [["B1", Color.white, Color(0.0, 0.0, 0.7, 0.5)],["B1", Color.black, Color.white]];
 joyE3Db1.action_({
@@ -579,8 +578,7 @@ joyE3Db1.action_({
 });
 
 joyE3Db2 = SmoothButton(wE3Dsimul, Rect(120, 50, 30, 30))
-.radius_(3)
-.border_(1);
+.radius_(3).border_(1).font_(Font("Monaco",12));
 joyE3Db2.canFocus = false;
 joyE3Db2.states = [["B2", Color.white, Color(0.0, 0.0, 0.7, 0.5)],["B2", Color.black, Color.white]];
 joyE3Db2.action_({
@@ -588,8 +586,7 @@ joyE3Db2.action_({
 });
 
 joyE3Db5 = SmoothButton(wE3Dsimul, Rect(180, 30, 30, 30))
-.radius_(3)
-.border_(1);
+.radius_(3).border_(1).font_(Font("Monaco",12));
 joyE3Db5.canFocus = false;
 joyE3Db5.states = [["B5", Color.white, Color(0.0, 0.0, 0.7, 0.5)],["B5", Color.black, Color.white]];
 joyE3Db5.action_({
@@ -597,8 +594,7 @@ joyE3Db5.action_({
 });
 
 joyE3Db6 = SmoothButton(wE3Dsimul, Rect(290, 30, 30, 30))
-.radius_(3)
-.border_(1);
+.radius_(3).border_(1).font_(Font("Monaco",12));
 joyE3Db6.canFocus = false;
 joyE3Db6.states = [["B6", Color.white, Color(0.0, 0.0, 0.7, 0.5)],["B6", Color.black, Color.white]];
 joyE3Db6.action_({
@@ -607,8 +603,7 @@ joyE3Db6.action_({
 });
 
 joyE3Db3 = SmoothButton(wE3Dsimul, Rect(180, 70, 30, 30))
-.radius_(3)
-.border_(1);
+.radius_(3).border_(1).font_(Font("Monaco",12));
 joyE3Db3.canFocus = false;
 joyE3Db3.states = [["B3", Color.white, Color(0.0, 0.0, 0.7, 0.5)],["B3", Color.black, Color.white]];
 joyE3Db3.action_({
@@ -616,8 +611,7 @@ joyE3Db3.action_({
 });
 
 joyE3Db4 = SmoothButton(wE3Dsimul, Rect(290, 70, 30, 30))
-.radius_(3)
-.border_(1);
+.radius_(3).border_(1).font_(Font("Monaco",12));
 joyE3Db4.canFocus = false;
 joyE3Db4.states = [["B4", Color.white, Color(0.0, 0.0, 0.7, 0.5)],["B4", Color.black, Color.white]];
 joyE3Db4.action_({
@@ -625,8 +619,7 @@ joyE3Db4.action_({
 });
 
 joyE3Db9 = SmoothButton(wE3Dsimul, Rect(20, 220, 30, 30))
-.radius_(3)
-.border_(1);
+.radius_(3).border_(1).font_(Font("Monaco",12));
 joyE3Db9.canFocus = false;
 joyE3Db9.states = [["B9", Color.white, Color(0.0, 0.0, 0.7, 0.5)],["B9", Color.black, Color.white]];
 joyE3Db9.action_({
@@ -634,8 +627,7 @@ joyE3Db9.action_({
 });
 
 joyE3Db8 = SmoothButton(wE3Dsimul, Rect(60, 180, 30, 30))
-.radius_(3)
-.border_(1);
+.radius_(3).border_(1).font_(Font("Monaco",12));
 joyE3Db8.canFocus = false;
 joyE3Db8.states = [["B8", Color.white, Color(0.0, 0.0, 0.7, 0.5)],["B8", Color.black, Color.white]];
 joyE3Db8.action_({
@@ -645,8 +637,7 @@ joyE3Db8.action_({
 });
 
 joyE3Db7 = SmoothButton(wE3Dsimul, Rect(20, 180, 30, 30))
-.radius_(3)
-.border_(1);
+.radius_(3).border_(1).font_(Font("Monaco",12));
 joyE3Db7.canFocus = false;
 joyE3Db7.states = [["B7", Color.white, Color(0.0, 0.0, 0.7, 0.5)],["B7", Color.black, Color.white]];
 joyE3Db7.action_({
@@ -654,8 +645,7 @@ joyE3Db7.action_({
 });
 
 joyE3Db11 = SmoothButton(wE3Dsimul, Rect(20, 260, 30, 30))
-.radius_(3)
-.border_(1);
+.radius_(3).border_(1).font_(Font("Monaco",12));
 joyE3Db11.canFocus = false;
 joyE3Db11.states = [["B11", Color.white, Color(0.0, 0.0, 0.7, 0.5)],["B11", Color.black, Color.white]];
 joyE3Db11.action_({
@@ -663,15 +653,14 @@ joyE3Db11.action_({
 });
 
 joyE3Db12 = SmoothButton(wE3Dsimul, Rect(60, 260, 30, 30))
-.radius_(3)
-.border_(1);
+.radius_(3).border_(1).font_(Font("Monaco",12));
 joyE3Db12.canFocus = false;
 joyE3Db12.states = [["B12", Color.white, Color(0.0, 0.0, 0.7, 0.5)],["B12", Color.black, Color.white]];
 joyE3Db12.action_({
 	localAddr.sendMsg("/hid/ex3d", 15, 1);
 });
 
-joyE3DhsF = SmoothButton(wE3Dsimul, Rect(40, 30, 30, 30)).border_(1); // hatswitch forward
+joyE3DhsF = SmoothButton(wE3Dsimul, Rect(40, 30, 30, 30)).border_(1).font_(Font("Monaco",12)); // hatswitch forward
 joyE3DhsF.canFocus = false;
 joyE3DhsF.states = [["F", Color.white, Color(0.0, 0.0, 0.7, 0.5)],["F", Color.black, Color.white]];
 joyE3DhsF.action_({
@@ -685,7 +674,7 @@ joyE3DhsF.action_({
 	});
 });
 
-joyE3DhsL = SmoothButton(wE3Dsimul, Rect(20, 50, 30, 30)).border_(1); // hatswitch left
+joyE3DhsL = SmoothButton(wE3Dsimul, Rect(20, 50, 30, 30)).border_(1).font_(Font("Monaco",12)); // hatswitch left
 joyE3DhsL.canFocus = false;
 joyE3DhsL.states = [["L", Color.white, Color(0.0, 0.0, 0.7, 0.5)],["L", Color.black, Color.white]];
 joyE3DhsL.action_({
@@ -699,7 +688,7 @@ joyE3DhsL.action_({
 	});
 });
 
-joyE3DhsB = SmoothButton(wE3Dsimul, Rect(40, 70, 30, 30)).border_(1); // hatswitch backward
+joyE3DhsB = SmoothButton(wE3Dsimul, Rect(40, 70, 30, 30)).border_(1).font_(Font("Monaco",12)); // hatswitch backward
 joyE3DhsB.canFocus = false;
 joyE3DhsB.states = [["B", Color.white, Color(0.0, 0.0, 0.7, 0.5)],["B", Color.black, Color.white]];
 joyE3DhsB.action_({
@@ -713,7 +702,7 @@ joyE3DhsB.action_({
 	});
 });
 
-joyE3DhsR = SmoothButton(wE3Dsimul, Rect(60, 50, 30, 30)).border_(1); // hatswitch right
+joyE3DhsR = SmoothButton(wE3Dsimul, Rect(60, 50, 30, 30)).border_(1).font_(Font("Monaco",12)); // hatswitch right
 joyE3DhsR.canFocus = false;
 joyE3DhsR.states = [["R", Color.white, Color(0.0, 0.0, 0.7, 0.5)],["R", Color.black, Color.white]];
 joyE3DhsR.action_({
@@ -729,9 +718,9 @@ joyE3DhsR.action_({
 
 ////////// Arduino ////////
 
-arduinoLabel = StaticText(wE3Dsimul, Rect(465, 375, 200, 30));
-arduinoLabel.font = Font("Helvetica", 15);
-arduinoLabel.string = "Arduino pedal";
+arduinoLabel = StaticText(wE3Dsimul, Rect(465, 375, 200, 60));
+arduinoLabel.font = Font("Monaco", 25);
+arduinoLabel.string = "Arduino\nPedal";
 
 ardAna1 = SmoothSlider(wE3Dsimul, Rect(480, 120, 60, 200))
 .hilightColor_(Color(0.0, 0.0, 0.7, 0.5))
@@ -750,7 +739,7 @@ ardAna1 = SmoothSlider(wE3Dsimul, Rect(480, 120, 60, 200))
 
 v = Window("dummy").front; v.close;
 
-keyB = KeyboardWindow(bounds: Rect(450, 400, 600, 100));
+keyB = KeyboardWindow(bounds: Rect(550, 390, 600, 100));
 keyB.downAction = { |chan, note, velo|
 	localAddr.sendMsg("/midi/noteOn", chan, note + (12*~octave), velo, "LPK");
 };

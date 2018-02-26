@@ -27,6 +27,11 @@ s.waitForBoot({
 
 	//////////////// variables ////////////////////////////////
 
+	var
+	remote = NetAddrMon("169.254.0.1", 57121), // to Anne
+	local = NetAddrMon("127.0.0.1", 57120), // to localhost for SC
+	oscMsgAddr = "/bpm";
+
 	var cfg = (
 		synthList: [
 			"bocAmpMod4","bocAmpMod3","adcirc","--reserved for sustain--",
@@ -65,9 +70,13 @@ s.waitForBoot({
 		midiFilterPitchExtMidi: [\EXT,[0,1,2,3,12]], // MIDI filter for note msgs in case external MIDI is enabled
 		midiFilterConfig: [\MUL, [0,2]], // MIDI filter for configuration msgs (currently RED1,RED4,BLACK5)
 		recLen: 6, // recording length for SampleKeys
-		docDir: Document.dir++"/Lapis/",
-		libDir: "/Data/",
+		dataDir: Document.dir++"/Lapis/Data/",
 		copySamples: 0, // set to 1 to activate sample copy on load - make sure the folder /Data/Samples/~project exists
+		midiWrite: false, // whether to write the generated midi for drums to disk
+		midiJoySpeedControl: false, // whether joystick controls speed of midi beats
+		midiRandomWait: false, // whether to add a random factor to the wait time
+		midiDefer: 0.05, // when > 0, adds a random delay to midi notes, with this max
+		midiRestartSpeed: false, // when true, resets the speed on every new midi sequence
 		sampleLoadBack: nil, // array of paths to sample files to load on hatswitch-back
 		sampleLoadLeft: nil, // array of paths to sample files to load on hatswitch-left
 		sampleLoadRight: nil // array of paths to sample files to load on hatswitch-right
@@ -86,10 +95,11 @@ s.waitForBoot({
 	var dispPlay, countPlay = 0, susStatus, sustain = 0;
 	// var synth1select, synth1label, synth2select, synth2label, synth3select, synth3label, synth4select, synth4label, fSetSynth, shiftStatus,shift = 0;
 	var loadFileSK, screenHeight = Window.screenBounds.height, screenWidth = Window.screenBounds.width, pSynthList;
-	var fontLabel = Font("Helvetica",12), fontButton = Font("Helvetica",12), colorOff = Color.white;
+	var fontLabel = Font(~font,10), fontButton = Font(~font,12);
+	var colorOff = Color.white;
 
 	// logic
-	var fInitOutput, fBufferRead, fSustain, fSendLapisStatus, fGetInChan;
+	var fInitOutput, fBufferRead, fSustain, fSendLapisStatus, fGetInChan, fRoundMidiSpeed, fSendMsg;
 	var respNON, respNOF, respCTR, respHidEx3d, respPanic, respExtMidi;
 	var cutoffBus = Bus.control(s,1), efxBus = Bus.control(s,1), pitchBus = Bus.control(s,1), distBus = Bus.control(s,1);
 	var drumVolBus = Bus.control(s,1).set(0.5), drumFilterBus = Bus.control(s,1).set(1);
@@ -97,7 +107,7 @@ s.waitForBoot({
 	var notesArray = Array.newClear(16), zoneRec, notesPrev, activeSynths = 0.dup(16);
 	var prevVal, hsBackCount = -1, hsRightCount = -1, hsLeftCount = -1, hsStart, hsGap = 0.15;
 	var synthGainBus = {Bus.control(s,1).set(0)}.dup(16);
-	var fMidiSeq, tMidiSeq, midiSeqAct = 0, midiSeqChange = 0, midiSeqSpeedInit = 0.9, midiSeqSpeed = 1, midiSeqLenFact = 0.5, midiSeqMode = 1;
+	var fMidiSeq, tMidiSeq, midiSeqAct = 0, midiSeqChange = 0, midiSeqSpeedInit = 0.9, midiSeqSpeed = 1, midiSeqLenFact = 0.5, midiSeqMode = 1, midiFile, midiStart, midiBPM, midiPath, midiRecording = false;
 
 	// load global variables
 	"GlobalVars.scd".loadRelative();
@@ -107,8 +117,8 @@ s.waitForBoot({
 	~synthKeysDrumBuf0 = Array.newClear(8);
 	~synthKeysDrumBuf1 = Array.newClear(8);
 	8.do { |i|
-		~synthKeysDrumBuf0[i] = Buffer.read(s, cfg.docDir ++ cfg.libDir ++ "SynthKeys/Drum/" ++ cfg.drumList0[i]);
-		~synthKeysDrumBuf1[i] = Buffer.read(s, cfg.docDir ++ cfg.libDir ++ "SynthKeys/Drum/" ++ cfg.drumList1[i]);
+		~synthKeysDrumBuf0[i] = Buffer.read(s, cfg.dataDir ++ "SynthKeys/Drum/" ++ cfg.drumList0[i]);
+		~synthKeysDrumBuf1[i] = Buffer.read(s, cfg.dataDir ++ "SynthKeys/Drum/" ++ cfg.drumList1[i]);
 	};
 
 	// SynthKeys Specs
@@ -121,7 +131,7 @@ s.waitForBoot({
 	});
 
 	// samples to load for sampleplayback on hatswitch
-	sampleFile = (cfg.libDir++"SampleLists/"++~project++".scd").loadRelative[0];
+	sampleFile = ("Data/SampleLists/"++~project++".scd").loadRelative[0];
 	if(sampleFile.size > 4, {
 		cfg.sampleLoadBack = sampleFile[4].back;
 		cfg.sampleLoadLeft = sampleFile[4].left;
@@ -149,29 +159,29 @@ s.waitForBoot({
 
 	// generic buffer reading function
 	fBufferRead = {
-		arg sampleFile, counter = 0, position = "", absolutePath = 0;
-		f = SoundFile.new;
-		sampleFile = if(absolutePath == 0, {cfg.docDir++cfg.libDir ++ sampleFile}, {sampleFile});
-		if(f.openRead(sampleFile), {
+		arg samplePath, counter = 0, position = "", absolutePath = 0;
+		var soundFile = SoundFile.new;
+		samplePath = if(absolutePath == 0, {cfg.dataDir ++ samplePath}, {samplePath});
+		if(soundFile.openRead(samplePath), {
 			// prepare for loading mono samples
-			if( f.numChannels == 1, {m = 0;}, {m = 1;});
+			if( soundFile.numChannels == 1, {m = 0;}, {m = 1;});
 
 			// the actual read of the buffer
-			~synthKeysBuf.readChannel(sampleFile, channels: [0,m]);
+			~synthKeysBuf.readChannel(samplePath, channels: [0,m]);
 
 			// done
-			("\nSample read:" + counter + position + "--" + sampleFile).postln;
-			f.close;
+			("\nSample read:" + counter + position + "--" + samplePath).postln;
+			soundFile.close;
 
 			// to save sample files to backup location
 			if(cfg.copySamples == 1, {
-				("cp '" ++ sampleFile ++ "' " ++
-					cfg.docDir ++ "/" ++ cfg.libDir ++ "Samples/" ++ ~project ++ "/").postln;
-				("cp '" ++ sampleFile ++ "' " ++
-					cfg.docDir ++ "/" ++ cfg.libDir ++ "Samples/" ++ ~project ++ "/").unixCmd;
+				("cp '" ++ samplePath ++ "' " ++
+					cfg.dataDir ++ "Samples/" ++ ~project ++ "/").postln;
+				("cp '" ++ samplePath ++ "' " ++
+					cfg.dataDir ++ "Samples/" ++ ~project ++ "/").unixCmd;
 			});
 		}, {
-			("Soundfile" + sampleFile + "not found.").postln;
+			("Soundfile" + samplePath + "not found.").postln;
 		});
 	};
 
@@ -249,10 +259,46 @@ s.waitForBoot({
 		[inChan1,inChan2]
 	};
 
+	//////////////// MIDI sequence ////////////////////////////////
+
+	fRoundMidiSpeed = {
+		arg speed;
+		var bpm;
+		// convert to BPM, round and convert back
+		bpm = speed.reciprocal*120;
+		bpm = bpm.round(1);
+		speed = bpm.reciprocal*120;
+		[bpm, speed]
+	};
+
+	OSCdef(\synthKeysBpm, {
+		arg msg;
+		var bpm = msg[1];
+		("synthKeysBpm:" + msg).postln;
+		try {
+			bpm = bpm.asInteger;
+			if(bpm > 0, {
+				midiSeqSpeed = bpm.reciprocal*120;
+				("OSC: MIDI sequence speed set to" + bpm).postln;
+				fSendLapisStatus.value("midiBPM", bpm);
+			}, { ("OSC:" + msg[1] + "could not be converted to an integer").postln });
+		} { ("Could not convert" + msg[1] + "to integer").error };
+	}, "/bpm").fix;
+
+	// sending OSC to a NetAddr
+	fSendMsg = {
+		arg label, value;
+		var netaddr = if(~shackleRemoteClientsOnline == 1, { remote }, { local });
+		try
+		{ netaddr.sendMsg(label, value) }
+		{ ("\nNetAddr Error with"+label+value).postln; }
+	};
+
 	fMidiSeq = {
 		var count = if(~theBusyDrone==1, { rrand(5,10) }, { rrand(3,8) });
 		var seqNotes, seqLen = {[0.25,0.5].wchoose([0.8,0.2])}!count;
 		var note, len, factor = 1, factor2 = 1, vel = 127, changeCount = 0, totalTime = 0, midiChan = 15;
+		var midiDefer = 0, midiDur = 1;
 		case
 		{midiSeqMode == 1} {
 			seqNotes = {rrand(40,80)}!count;
@@ -260,7 +306,7 @@ s.waitForBoot({
 		{midiSeqMode == 2} {
 			seqNotes = [rrand(40,53)] ++ ( [rrand(40,53)] ++ ({rrand(50,80)}!(count-2)) ).scramble;
 		};
-		midiSeqSpeed = midiSeqSpeedInit;
+		if(cfg.midiRestartSpeed, { midiSeqSpeed = midiSeqSpeedInit });
 
 		// seqNotes =  [ 50, 67, 63, 46, 54, 66 ]; // nummer 1
 		// seqLen =  [ 0.5, 0.25, 0.5, 0.25, 0.5, 0.25 ];
@@ -280,7 +326,6 @@ s.waitForBoot({
 		// });
 		// seqLen = 1.3 * seqLen;
 
-
 		if(~theBusyDrone==1, {
 			"## The Busy Drone Mode!".postln;
 			midiChan = 0;
@@ -288,9 +333,24 @@ s.waitForBoot({
 									({ ((3..14)++(18..29)++(33..55)++(59..78)).choose }!(count-3));
 		});
 
-		("MIDI sequence mode" + midiSeqMode + "of" + count + "notes with a speed of" + (midiSeqSpeed.reciprocal*60*2).round(1) + "BPM" ).postln;
+		midiBPM = fRoundMidiSpeed.value(midiSeqSpeed)[0];
+		midiSeqSpeed = fRoundMidiSpeed.value(midiSeqSpeed)[1];
+
+		("MIDI sequence mode" + midiSeqMode + "of" + count + "notes with a speed of" + midiBPM + "BPM" ).postln;
 		("Notes: " + seqNotes).postln;
 		("Lengths: " + seqLen).postln;
+
+		// initialize MIDI file for write / note: BPM is not updated when changed in realtime!
+		if(cfg.midiWrite, {
+			midiPath = cfg.dataDir ++ "MIDI/" ++ Date.getDate.format("%y%m%d_%H%M%S") ++ ".mid";
+			("Writing MIDI file to" + midiPath).postln;
+			midiFile = SimpleMIDIFile( midiPath );
+			midiFile.init1( 1, midiBPM, "4/4" );
+			midiFile.timeMode = \seconds;
+			midiStart = SystemClock.seconds;
+			midiRecording = true;
+		});
+
 		if(~midiOutInit == 1, {
 			inf.do { |i|
 				note = seqNotes[i%count];
@@ -305,10 +365,20 @@ s.waitForBoot({
 				// });
 
 				(1/(factor*factor2)).do {
-					~midiOut.noteOn(midiChan,note,vel);
-					// {~midiOut.noteOff(midiChan,note,127); }.defer(factor*factor2*midiSeqSpeed*seqLen[i%count]*midiSeqLenFact);
-					{~midiOut.noteOff(midiChan,note,127); }.defer(factor*factor2*midiSeqSpeed*seqLen[i%count]*0.9);
-					(rrand(0.95,1.05)*factor*factor2*midiSeqSpeed*seqLen[i%count]).wait;
+					// trigger MIDI note ON
+					if(cfg.midiDefer > 0 and: { 0.1.coin }, { midiDefer = rrand(0, cfg.midiDefer) }, { midiDefer = 0 });
+					{ ~midiOut.noteOn(midiChan,note,vel) }.defer(midiDefer);
+					// schedule MIDI note OFF
+					midiDur = factor*factor2*midiSeqSpeed*seqLen[i%count];
+					if(cfg.midiJoySpeedControl, {
+						midiDur = midiDur * midiSeqLenFact; // factor set by joystick
+					});
+					{~midiOut.noteOff(midiChan,note,127); }.defer(midiDur * 0.9);
+					// save to MIDI file
+					if(cfg.midiWrite, { midiFile.addNote(note, 127, SystemClock.seconds - midiStart, midiDur) });
+					// wait
+					if(cfg.midiRandomWait, { midiDur = midiDur * rrand(0.95, 1.05) });
+					midiDur.wait;
 				};
 
 				if( (midiSeqChange == 1) || (i%50 == 49), {
@@ -386,7 +456,7 @@ s.waitForBoot({
 						{ 	countPlay = countPlay + 1;
 							dispPlay.states_([[countPlay.asString]]);
 							fSendLapisStatus.value("countPlaySK",countPlay);
-							fSendLapisStatus.value("prgSK",synth);
+								// fSendLapisStatus.value("prgSK",synth);
 						}.defer();
 					});
 				};
@@ -411,7 +481,7 @@ s.waitForBoot({
 						tMidiSeq = Task(fMidiSeq).start;
 					}, {
 						// stop MIDI sequence
-						tMidiSeq.stop;
+						tMidiSeq.stop; if(cfg.midiWrite and: { midiRecording }, { midiFile.write; midiRecording = false; });
 						"MIDI sequence stopped".postln;
 						midiSeqAct = 0;
 					});
@@ -424,7 +494,7 @@ s.waitForBoot({
 						tMidiSeq = Task(fMidiSeq).start;
 					}, {
 						// stop MIDI sequence
-						tMidiSeq.stop;
+						tMidiSeq.stop; if(cfg.midiWrite and: { midiRecording }, { midiFile.write; midiRecording = false; });
 						"MIDI sequence stopped".postln;
 						midiSeqAct = 0;
 					});
@@ -433,10 +503,18 @@ s.waitForBoot({
 					if(midiSeqAct == 1, { midiSeqChange = 1 })
 				});
 				if((chan == 2) && (note==20), { // MIDI sequence speed decrease
-					if(midiSeqAct == 1, { midiSeqSpeed = midiSeqSpeed / 0.9; ("New speed is" + (midiSeqSpeed.reciprocal*60*2).round(1) + "BPM (" + midiSeqSpeed + ")").postln; })
+					// if(midiSeqAct == 1, { midiSeqSpeed = midiSeqSpeed / 0.9; ("New speed is" + (midiSeqSpeed.reciprocal*60*2).round(1) + "BPM (" + midiSeqSpeed + ")").postln; })
+					midiSeqSpeed = midiSeqSpeed / 0.9;
+					("New speed is" + (midiSeqSpeed.reciprocal*60*2).round(1) + "BPM (" + midiSeqSpeed + ")").postln;
+					fSendMsg.value(oscMsgAddr, fRoundMidiSpeed.value(midiSeqSpeed)[0]);
+					fSendLapisStatus.value("midiBPM", fRoundMidiSpeed.value(midiSeqSpeed)[0]);
 				});
 				if((chan == 2) && (note==22), { // MIDI sequence speed increase
-					if(midiSeqAct == 1, { midiSeqSpeed = midiSeqSpeed * 0.9; ("New speed is" + (midiSeqSpeed.reciprocal*60*2).round(1) + "BPM ("+ midiSeqSpeed + ")").postln; })
+					// if(midiSeqAct == 1, { midiSeqSpeed = midiSeqSpeed * 0.9; ("New speed is" + (midiSeqSpeed.reciprocal*60*2).round(1) + "BPM ("+ midiSeqSpeed + ")").postln; })
+					midiSeqSpeed = midiSeqSpeed * 0.9;
+					("New speed is" + (midiSeqSpeed.reciprocal*60*2).round(1) + "BPM ("+ midiSeqSpeed + ")").postln;
+					fSendMsg.value(oscMsgAddr, fRoundMidiSpeed.value(midiSeqSpeed)[0]);
+					fSendLapisStatus.value("midiBPM", fRoundMidiSpeed.value(midiSeqSpeed)[0]);
 				});
 
 			});
@@ -527,7 +605,7 @@ s.waitForBoot({
 				// sustain
 				if( (num==64) && (val==1), {fSustain.value()}); // regular
 				if( (num==23) , {fSustain.value()}); // pad 4 on MPK
-				// set active synths (pads 1-8 in 2 banks on MPK / pad 4 for sustain, pad 8 not used)
+				// set active synths (pads 1-8 in 2 banks on MPK / pad 4 for sustain)
 				if( (num>=20) && (num<=35) && (num!=23), {
 					var synth = num-20;
 					activeSynths[synth] = val.ceil;
@@ -599,7 +677,7 @@ s.waitForBoot({
 			{cookie == 17} 		// Y-axis
 			{
 				if(~oscSrc == "jx", {val = (1-val) * 1024}); // junXion repair
-				// midiSeqLenFact = val.linlin(0,1024,0.1,0.9);
+				if(cfg.midiJoySpeedControl, { midiSeqLenFact = val.linlin(0,1024,0.1,0.9) });
 				pitchBus.set(val/1024)
 			}
 			{cookie == 19} 		// Rotation
@@ -779,11 +857,12 @@ s.waitForBoot({
 	~wSynthKeys.onClose_({
 		OSCdef(\skNON).free; OSCdef(\skNOF).free; OSCdef(\skCC).free;
 		OSCdef(\skEx3d).free; OSCdef(\skPanic).free; OSCdef(\skExtMidi).free;
+		OSCdef(\synthKeysBpm).free;
 		~wSynthKeysAvail = nil;
 		~synthKeysBuf.free;
 		~synthKeysDrumBuf0.do { |buffer| buffer.free; };
 		~synthKeysDrumBuf1.do { |buffer| buffer.free };
-		tMidiSeq.stop;
+		tMidiSeq.stop; if(cfg.midiWrite and: { midiRecording }, { midiFile.write; midiRecording = false; });
 	});
 
 	// initialize

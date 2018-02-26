@@ -14,8 +14,8 @@
 
 if((~aBus.isNil || ~projectList.isNil), {
 
-	~projectID = \lcm;
-	~projectList = (sh: "Shackle", ab: "ABATTOIR", sp: "Spoon3", kid: "Kids", cr: "Crack", dg: "DetuningGuitar", sp2: "SpoonDuo", dr: "Drone", mw: "MoneyForYourWhaleII", eu: "Eurapco", sn: "SacredNoise", gm: "SoundOfTheMachine", pot: "ParishOfTama", lcm: "LCM"
+	~projectID = \sh;
+	~projectList = (sh: "Shackle", ab: "ABATTOIR", sp: "Spoon3b", kid: "Kids", cr: "Crack", dg: "DetuningGuitar", sp2: "SpoonDuo", dr: "Drone", mw: "MoneyForYourWhaleII", eu: "Eurapco", sn: "SacredNoise", gm: "SoundOfTheMachine", pot: "ParishOfTama", lcm: "LCM", th: "TackHead", sh2: "Shackle2"
 	);
 	~projectNotes = (cr: "/Crack/Crack Notes.rtf");
 
@@ -24,8 +24,9 @@ if((~aBus.isNil || ~projectList.isNil), {
 	~lapisStatusDestination = "local"; 	// where to send OSC status updates from LS and SK, set to "local" or "touchOSC" or "both" or "none"
 	~showBufferView = 0;						// set to 1 to show bufferview window
 	~noArduino = 0;								// set to 1 if Arduino not available
-	~distortionMax = nil;						// set the maximum value for distortion controllers, nil if should be disregarded
+	~distortionMax = 50;						// set the maximum value for distortion controllers, nil if should be disregarded
 	~postControllerData = 0; 				// whether to postln controller data
+	~font = "Courier";
 
 	~project = ~projectList.at(~projectID); 	// set current project from list above
 	~aBus = ( // audio busses
@@ -39,11 +40,11 @@ if((~aBus.isNil || ~projectList.isNil), {
 		outMonitor: 0, // 0=off 1=on
 		outMonitorChan: 2, // monitor output channel, stereo or mono
 		outMonitorStereo: 0, // 0=mono 1=stereo
-		outMonitorAtt: 0.dbamp, // monitor attenuation factor: 1=no change
+		outMonitorAtt: -6.dbamp, // monitor attenuation factor: 1=no change
 		outMonitorCompressed: 0, // add compression to monitor output
 		outAnalogEfx: 0, // output to analog effects, 0=off 1=on
 		outAnalogEfxChan: 6, // analog efx output channel, mono
-		outAnalogEfxAtt: 0.1, // analog efx attenuation factor: 1=no change
+		outAnalogEfxAtt: -6.dbamp, // analog efx attenuation factor: 1=no change
 		outResampling: 1, // output for resampling, 0=off 1=on
 		outResamplingChan: 8, // output chan for resampling, stereo, this channel should be set in MOTU CueMix as return channel
 		outResamplingAtt: 3.dbamp, // resampling attenuation factor: 1=no change
@@ -51,17 +52,17 @@ if((~aBus.isNil || ~projectList.isNil), {
 
 		// ---- Input ---------
 		inChan1: 50, // input channel 1 -- plus 10 for direct (skipping 10 output busses), or use gained chans as specified below
-		inChan2: 50, // input channel 2
-		inChan1alt: 51, // alternative input channel for input 1
-		inChan2alt: 51, // alternative input channel for input 2
+		inChan2: 52, // input channel 2
+		inChan1alt: 50, // alternative input channel for input 1
+		inChan2alt: 52, // alternative input channel for input 2
 		gainedChans: [0,1,2,3], // channels to be gained, always 4, mapped to 50, 51, 52, 53
 		// gainedChans: [0,1,14,15], // setting when using aggregate device of MOTU+Edirol
-		inBusGain: [9.dbamp,9.dbamp,9.dbamp,9.dbamp], // gain for gained channels in amp
+		inBusGain: [6.dbamp,6.dbamp,6.dbamp,6.dbamp], // gain for gained channels in amp
 		inputThru: 0, // 1=send gained channels thru (for example for recording), 0=don't send thru
 		inputThruChan: 2, // first channel to send mic inputs thru
 		recChannels: 2, // number of channels to record (set to 6 when input mics should also be recorded in combi with inputThru=1)
 		inputPeakChans: 0, // number of input channels to monitor in LapisStatus
-		inputPeakStartChan: 1, // start channel to monitor
+		inputPeakStartChan: 0, // start channel to monitor
 
 		// ---- General vars, no need to change ---------
 		inAlt: 0, // flag whether input is switched to alternative

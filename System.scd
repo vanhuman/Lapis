@@ -14,7 +14,7 @@ s.waitForBoot({
 	);
 
 	dispOblique = (StaticText(~wSystem, Rect(20,20,360,260))
-		.align_(\center).canFocus_(false).font_(Font("Helvetica",20)).stringColor_(Color.white)
+		.align_(\center).canFocus_(false).font_(Font(~font,20)).stringColor_(Color.white)
 		.string = oblique[oblique.size.rand]
 	);
 
