@@ -157,7 +157,8 @@ MIDIClient.sources.size.do({|i|
 	case
 	// MOTU Ultralite, Ploytec MIDI Cable -> MUL
 	{
-		((MIDIClient.sources[i].device == "UltraLite mk3 Hybrid") || (MIDIClient.sources[i].device == "UltraLite mk3 Hybrid #2"))
+		((MIDIClient.sources[i].device == "UltraLite mk3 Hybrid") || (MIDIClient.sources[i].device == "UltraLite mk3 Hybrid #2")
+			|| (MIDIClient.sources[i].device == "828mk2") || (MIDIClient.sources[i].device == "UltraLite"))
 		&& (MIDIClient.sources[i].name == "MIDI Port")
 	}
 	{
