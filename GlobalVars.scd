@@ -52,9 +52,9 @@ if((~aBus.isNil || ~projectList.isNil), {
 
 		// ---- Input ---------
 		inChan1: 50, // input channel 1 -- plus 10 for direct (skipping 10 output busses), or use gained chans as specified below
-		inChan2: 52, // input channel 2
+		inChan2: 50, // input channel 2
 		inChan1alt: 50, // alternative input channel for input 1
-		inChan2alt: 52, // alternative input channel for input 2
+		inChan2alt: 50, // alternative input channel for input 2
 		gainedChans: [0,1,2,3], // channels to be gained, always 4, mapped to 50, 51, 52, 53
 		// gainedChans: [0,1,14,15], // setting when using aggregate device of MOTU+Edirol
 		inBusGain: [6.dbamp,6.dbamp,6.dbamp,6.dbamp], // gain for gained channels in amp

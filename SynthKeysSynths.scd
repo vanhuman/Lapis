@@ -634,14 +634,15 @@ SynthDef(\drumSetSynth, {
 	Out.ar(~aBus.outB, sig * velocityVal * distVal * env);
 }).add;
 
-2.do { |count|
+~synthKeysDrumBuf.size.do { |count|
 	SynthDef("drumSetSample"++count, {
 		arg freq1, gate, cutoffBus, efxBus, velocity, pitchBus, distBus, synthGainBus, drumFilterBus, drumVolBus;
 		var sig, distVal, velocityVal, cutoffVal, resVal, env;
 		var sigKick = Array.newClear(2), sigHihat = Array.newClear(2), sigSnare = Array.newClear(2), sigClap = Array.newClear(2);
 		var drumBuf = Array.newClear(8);
 
-		if(count==0, {drumBuf = ~synthKeysDrumBuf0}, {drumBuf = ~synthKeysDrumBuf1});
+		// if(count==0, {drumBuf = ~synthKeysDrumBuf0}, {drumBuf = ~synthKeysDrumBuf1});
+		drumBuf = ~synthKeysDrumBuf[count];
 		distVal = IEnvGen.kr(~synthKeysSpec.drumVol, In.kr(drumVolBus,1));
 		velocityVal = IEnvGen.kr(~synthKeysSpec.velocity, velocity);
 		cutoffVal = IEnvGen.kr(~synthKeysSpec.drumFilter, In.kr(drumFilterBus,1));
