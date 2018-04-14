@@ -118,9 +118,6 @@ c = (
 d = ( // LX green keyset 2 -- settings for justPlay synth
 	sampleList:
 		[
-		// "Eurapco loops/tmp/strings1.wav",
-		// "Eurapco loops/tmp/strings2.wav",
-
 		"Tackhead/Mind2.wav",
 		"Tackhead/Mind3.wav",
 		"Tackhead/Mind1.wav",

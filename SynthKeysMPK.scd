@@ -34,14 +34,10 @@ s.waitForBoot({
 
 	var cfg = (
 		synthList: [
-			"SampleKeys","pitchShifter","","--reserved for sustain--",
-			"","","","",
-			"", "", "", "",
-			"", "","",""
-			// "bocAmpMod4","bocAmpMod3","adcirc","--reserved for sustain--",
-			// "SinAmpMod3","darkHorns1","darkHorns0","Prime",
-			// "SinAmpMod2", "drumSetSample3", "drumSetSample2", "drumSetSynth",
-			// "SampleKeys", "pitchShifter","drumSetSample1","drumSetSample0"
+			"bocAmpMod4","bocAmpMod3","adcirc","--reserved for sustain--",
+			"SinAmpMod3","darkHorns1","darkHorns0","Prime",
+			"SinAmpMod2", "drumSetSample3", "drumSetSample2", "drumSetSynth",
+			"SampleKeys", "pitchShifter","drumSetSample1","drumSetSample0"
 			// other: moogSynth, FilterNoise
 			// other: harmsWay, FilterBank, bocReverb, bocAmpModSub, SinAmpMod, bocAmpMod, bocAmpMod2
 		],

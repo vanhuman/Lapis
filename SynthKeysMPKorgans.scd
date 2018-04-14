@@ -34,39 +34,48 @@ s.waitForBoot({
 
 	var cfg = (
 		synthList: [
-			"bocAmpMod4","bocAmpMod3","adcirc","--reserved for sustain--",
-			"SinAmpMod3","darkHorns1","darkHorns0","Prime",
-			"SinAmpMod2", "moogSynth", "FilterNoise", "drumSetSynth",
-			"SampleKeys", "pitchShifter","drumSetSample1","drumSetSample0"
-			// other: harmsWay, FilterBank, FilterNoise, bocReverb, bocAmpModSub, SinAmpMod, bocAmpMod, bocAmpMod2
+			"SampleKeys","pitchShifter","","--reserved for sustain--",
+			"","","","",
+			"", "", "", "",
+			"", "","",""
+			// "bocAmpMod4","bocAmpMod3","adcirc","--reserved for sustain--",
+			// "SinAmpMod3","darkHorns1","darkHorns0","Prime",
+			// "SinAmpMod2", "drumSetSample3", "drumSetSample2", "drumSetSynth",
+			// "SampleKeys", "pitchShifter","drumSetSample1","drumSetSample0"
+			// other: moogSynth, FilterNoise
+			// other: harmsWay, FilterBank, bocReverb, bocAmpModSub, SinAmpMod, bocAmpMod, bocAmpMod2
 		],
-		synthMidiSeq: [0,0,0,0, 0,0,0,0, 0,1,0,2, 1,0,2,2], // 0=don't respond to chan 16, 1=respond to all, 2=don't respond to chan 1-15
+		synthMidiSeq: [0,0,0,0, 0,0,0,0, 0,2,2,2, 1,0,2,2], // 0=don't respond to chan 16, 1=respond to all, 2=don't respond to chan 1-15
 		// synthMidiSeq: [0,0,0,0, 0,0,0,0, 0,1,0,1, 1,0,1,1], // 0=don't respond to chan 16, 1=respond to all, 2=don't respond to chan 1-15
-		drumList0: [
-			"2/FK_Kick2.aif B0.aif", "2/FK_KickFK.aif",
-			"2/FK_closedHHV F#1.aif", "2/FK_HiHatDry3 F#0.aif",
-			"1/TH-SD01.aif", "1/TH-SD02.aif",
-			"1/TH-HHO-01a.aif", "1/TH-HHO-02a.aif"
+		drumList: [
+			[
+				// "1/TH-BD01.aif", "1/TH-BD02-b.aif",
+				"2/FK_Kick2.aif B0.aif", "2/FK_KickFK.aif",
+				"2/FK_closedHHV F#1.aif", "2/FK_HiHatDry3 F#0.aif",
+				"1/TH-SD01.aif", "1/TH-SD02.aif",
+				"1/TH-HHO-01a.aif", "1/TH-HHO-02a.aif"
+			],
+			[
+				"5/BassDist1.wav", "5/BassDist2.wav",
+				"5/ClapDist1.wav", "5/ClapDist2.wav",
+				"5/HihatDist1.wav", "5/HihatDist2.wav",
+				"5/SnareDist1.wav", "5/SnareDist2.wav"
+			],
+			[
+				"3/FK_FloorTV D5 -15.wav","3/FK_FloorTV D5 -15.wav",
+				"3/FK_Ride1.aif D#2.aif","3/FK_Ride1.aif D#2.aif",
+				"3/FK_Snare6.aif C#0.aif","3/FK_Snare6.aif C#0.aif",
+				"3/FK_Crash1.aif C4.aif", "3/FK_Crash1.aif C4.aif"
+			],
+			[
+				"7/nin-ten-bass1.wav", "7/nin-ten-bass2.wav",
+				"7/nin-ten-snare1.wav", "7/nin-ten-snare2.wav",
+				"7/nin-ten-snare3.wav", "7/nin-ten-bekken1.wav",
+				"7/nin-ten-bekken1.wav", "7/nin-ten-bekken1.wav"
+			]
 		],
-		// drumList0: [
-		// 	"3/FK_FloorTV D5 -15.wav","3/FK_FloorTV D5 -15.wav",
-		// 	"3/FK_Ride1.aif D#2.aif","3/FK_Ride1.aif D#2.aif",
-		// 	"3/FK_Snare6.aif C#0.aif","3/FK_Snare6.aif C#0.aif",
-		// 	"3/FK_Crash1.aif C4.aif", "3/FK_Crash1.aif C4.aif"
-		// ],
-		// drumList1: [
-		// 	"1/TH-BD01.aif", "1/TH-BD02-b.aif",
-		// 	"2/FK_closedHHV F#1.aif", "2/FK_HiHatDry3 F#0.aif",
-		// 	"1/TH-SD01.aif", "1/TH-SD02.aif",
-		// 	"1/TH-HHO-01a.aif", "1/TH-HHO-02a.aif"
-		// ],
-		drumList1: [
-			"5/BassDist1.wav", "5/BassDist2.wav",
-			"5/ClapDist1.wav", "5/ClapDist2.wav",
-			"5/HihatDist1.wav", "5/HihatDist2.wav",
-			"5/SnareDist1.wav", "5/SnareDist2.wav"
-		],
-		midiFilterPitch: [\LPK,(0..15), \IAC1, [0,1,2,3,15]], // MIDI filter for note msgs; format [source, [midichannels]]
+		midiFilterPitch: [\LPK,(0..15)], // MIDI filter for note msgs; format [source, [midichannels]]
+		// midiFilterPitch: [\LPK,(0..15), \IAC1, [0,1,2,3,15]], // MIDI filter for note msgs; format [source, [midichannels]]
 		midiFilterPitchExtMidi: [\EXT,[0,1,2,3,12]], // MIDI filter for note msgs in case external MIDI is enabled
 		midiFilterConfig: [\MUL, [0,2]], // MIDI filter for configuration msgs (currently RED1,RED4,BLACK5)
 		recLen: 6, // recording length for SampleKeys
@@ -107,18 +116,20 @@ s.waitForBoot({
 	var notesArray = Array.newClear(16), zoneRec, notesPrev, activeSynths = 0.dup(16);
 	var prevVal, hsBackCount = -1, hsRightCount = -1, hsLeftCount = -1, hsStart, hsGap = 0.15;
 	var synthGainBus = {Bus.control(s,1).set(0)}.dup(16);
-	var fMidiSeq, tMidiSeq, midiSeqAct = 0, midiSeqChange = 0, midiSeqSpeedInit = 0.9, midiSeqSpeed = 1, midiSeqLenFact = 0.5, midiSeqMode = 1, midiFile, midiStart, midiBPM, midiPath, midiRecording = false;
+	var fMidiSeq, tMidiSeq, midiSeqAct = 0, midiSeqChange = 0, midiSeqSpeedInit = 0.9, midiSeqSpeed = 1, midiSeqLenFact = 0.5;
+	var midiSeqMode, midiFile, midiStart, midiBPM, midiPath, midiRecording = false, midiSeqSwing = 0.15, maxBpm = 240;
 
 	// load global variables
 	"GlobalVars.scd".loadRelative();
 
 	~tuningA = 440; // BoC: 430
 	~synthKeysBuf = Buffer.alloc(s, (cfg.recLen)*~sRate, 2);
-	~synthKeysDrumBuf0 = Array.newClear(8);
-	~synthKeysDrumBuf1 = Array.newClear(8);
-	8.do { |i|
-		~synthKeysDrumBuf0[i] = Buffer.read(s, cfg.dataDir ++ "SynthKeys/Drum/" ++ cfg.drumList0[i]);
-		~synthKeysDrumBuf1[i] = Buffer.read(s, cfg.dataDir ++ "SynthKeys/Drum/" ++ cfg.drumList1[i]);
+	~synthKeysDrumBuf = Array.newClear(cfg.drumList.size);
+	cfg.drumList.size.do { |count|
+		~synthKeysDrumBuf[count] = Array.newClear(8);
+		8.do { |i|
+			~synthKeysDrumBuf[count][i] = Buffer.read(s, cfg.dataDir ++ "SynthKeys/Drum/" ++ cfg.drumList[count][i]);
+		};
 	};
 
 	// SynthKeys Specs
@@ -278,6 +289,10 @@ s.waitForBoot({
 		try {
 			bpm = bpm.asInteger;
 			if(bpm > 0, {
+				bpm = min(maxBpm, bpm);
+				bpm = max(10, bpm);
+				// while { bpm > maxBpm } { bpm = bpm / 2 };
+				// while { bpm < 10 } { bpm = bpm * 2 };
 				midiSeqSpeed = bpm.reciprocal*120;
 				("OSC: MIDI sequence speed set to" + bpm).postln;
 				fSendLapisStatus.value("midiBPM", bpm);
@@ -298,14 +313,29 @@ s.waitForBoot({
 		var count = if(~theBusyDrone==1, { rrand(5,10) }, { rrand(3,8) });
 		var seqNotes, seqLen = {[0.25,0.5].wchoose([0.8,0.2])}!count;
 		var note, len, factor = 1, factor2 = 1, vel = 127, changeCount = 0, totalTime = 0, midiChan = 15;
-		var midiDefer = 0, midiDur = 1;
+		var midiDefer = 0, midiDur = 1, bpm;
+
+		bpm = fRoundMidiSpeed.value(midiSeqSpeed)[0];
 		case
-		{midiSeqMode == 1} {
+		{midiSeqMode == \random} {
 			seqNotes = {rrand(40,80)}!count;
+			maxBpm = 240;
+			bpm = min(maxBpm, bpm);
 		}
-		{midiSeqMode == 2} {
+		{midiSeqMode == \downbeat} {
 			seqNotes = [rrand(40,53)] ++ ( [rrand(40,53)] ++ ({rrand(50,80)}!(count-2)) ).scramble;
+			maxBpm = 240;
+			bpm = min(maxBpm, bpm);
+			midiSeqSpeed = bpm.reciprocal*120;
+		}
+		{midiSeqMode == \downbeatSwing} {
+			seqNotes = [rrand(40,53)] ++ ( [rrand(40,53)] ++ ({rrand(50,80)}!(count-2)) ).scramble;
+			maxBpm = 350;
+			bpm = min(maxBpm, bpm);
+			midiSeqSpeed = bpm.reciprocal*120;
 		};
+		fSendLapisStatus.value("midiBPM", bpm);
+		midiSeqSpeed = bpm.reciprocal*120;
 		if(cfg.midiRestartSpeed, { midiSeqSpeed = midiSeqSpeedInit });
 
 		// seqNotes =  [ 50, 67, 63, 46, 54, 66 ]; // nummer 1
@@ -336,7 +366,7 @@ s.waitForBoot({
 		midiBPM = fRoundMidiSpeed.value(midiSeqSpeed)[0];
 		midiSeqSpeed = fRoundMidiSpeed.value(midiSeqSpeed)[1];
 
-		("MIDI sequence mode" + midiSeqMode + "of" + count + "notes with a speed of" + midiBPM + "BPM" ).postln;
+		("MIDI seq:" + midiSeqMode + "/" + count + "notes @" + midiBPM + "BPM" ).warn;
 		("Notes: " + seqNotes).postln;
 		("Lengths: " + seqLen).postln;
 
@@ -352,11 +382,23 @@ s.waitForBoot({
 		});
 
 		if(~midiOutInit == 1, {
+			var swing = 0;
 			inf.do { |i|
-				note = seqNotes[i%count];
+				var beat = i%count;
+				swing = 0;
+				note = seqNotes[beat];
 				// ("Triggering MIDI note" + note).postln;
-				if( ( (i%count == 0) || (i%count == 2)) && (factor*factor2 == 1),
-					{ vel = rrand(110,127) }, { vel = [rrand(50,100),0].wchoose([0.9,0.1]) });
+				// if( ( (beat == 0) || (beat == 2)) && (factor*factor2 == 1), {
+				if( (beat%2 == 0) && (factor*factor2 == 1), {
+					if(beat == 0 || beat == 2, {
+						vel = rrand(110,127);
+					});
+				}, {
+					if(midiSeqMode == \downbeatSwing, {
+						swing = midiSeqSwing;
+					});
+					vel = [rrand(50,100),0].wchoose([0.9,0.1]);
+				});
 
 				// below is code for bassline on odd beats
 				// if( totalTime%2 == 0, {
@@ -365,14 +407,21 @@ s.waitForBoot({
 				// });
 
 				(1/(factor*factor2)).do {
-					// trigger MIDI note ON
-					if(cfg.midiDefer > 0 and: { 0.1.coin }, { midiDefer = rrand(0, cfg.midiDefer) }, { midiDefer = 0 });
-					{ ~midiOut.noteOn(midiChan,note,vel) }.defer(midiDefer);
-					// schedule MIDI note OFF
-					midiDur = factor*factor2*midiSeqSpeed*seqLen[i%count];
+					// set note duration
+					midiDur = factor*factor2*midiSeqSpeed*seqLen[beat];
+					// set note duration factor with joystick
 					if(cfg.midiJoySpeedControl, {
-						midiDur = midiDur * midiSeqLenFact; // factor set by joystick
+						midiDur = midiDur * midiSeqLenFact;
 					});
+					// possible random delay of note ON
+					if(cfg.midiDefer > 0 and: { 0.1.coin }, { midiDefer = rrand(0, cfg.midiDefer) }, { midiDefer = 0 });
+					// add swing
+					if(swing > 0, {
+						midiDefer = midiDefer + (swing * midiDur);
+					});
+					// trigger note ON
+					{ ~midiOut.noteOn(midiChan,note,vel) }.defer(midiDefer);
+					// schedule note OFF
 					{~midiOut.noteOff(midiChan,note,127); }.defer(midiDur * 0.9);
 					// save to MIDI file
 					if(cfg.midiWrite, { midiFile.addNote(note, 127, SystemClock.seconds - midiStart, midiDur) });
@@ -395,10 +444,13 @@ s.waitForBoot({
 					},{ // change all notes
 						"MIDIseq change all".postln;
 						case
-						{midiSeqMode == 1} {
+						{midiSeqMode == \random} {
 							seqNotes = {rrand(40,80)}!count;
 						}
-						{midiSeqMode == 2} {
+						{midiSeqMode == \downbeat} {
+							seqNotes = [rrand(40,53)] ++ ( [rrand(40,53)] ++ ({rrand(50,80)}!(count-2)) ).scramble;
+						}
+						{midiSeqMode == \downbeatSwing} {
 							seqNotes = [rrand(40,53)] ++ ( [rrand(40,53)] ++ ({rrand(50,80)}!(count-2)) ).scramble;
 						};
 						if(~theBusyDrone==1, {
@@ -411,11 +463,13 @@ s.waitForBoot({
 					});
 					midiSeqChange = 0;
 				});
-				if(i%15 == 3, { factor = 0.5 });
-				if(i%15 == 7, { factor = 1 });
-				if( (i%25 == 4) && (i>4), { factor2 = 0.5 });
-				if( (i%25 == 8) && (i>8), { factor2 = 1 });
-				totalTime = totalTime + seqLen[i%count];
+				if(midiSeqMode != \downbeatSwing, {
+					if(i%15 == 3, { factor = 0.5 });
+					if(i%15 == 7, { factor = 1 });
+					if( (i%25 == 4) && (i>4), { factor2 = 0.5 });
+					if( (i%25 == 8) && (i>8), { factor2 = 1 });
+				});
+				totalTime = totalTime + seqLen[beat];
 			};
 		});
 	};
@@ -477,7 +531,7 @@ s.waitForBoot({
 					if(midiSeqAct == 0, {
 						// start MIDI sequence
 						midiSeqAct = 1;
-						midiSeqMode = 1;
+						midiSeqMode = \downbeatSwing;
 						tMidiSeq = Task(fMidiSeq).start;
 					}, {
 						// stop MIDI sequence
@@ -490,7 +544,7 @@ s.waitForBoot({
 					if(midiSeqAct == 0, {
 						// start MIDI sequence
 						midiSeqAct = 1;
-						midiSeqMode = 2;
+						midiSeqMode = \downbeat;
 						tMidiSeq = Task(fMidiSeq).start;
 					}, {
 						// stop MIDI sequence
@@ -503,14 +557,12 @@ s.waitForBoot({
 					if(midiSeqAct == 1, { midiSeqChange = 1 })
 				});
 				if((chan == 2) && (note==20), { // MIDI sequence speed decrease
-					// if(midiSeqAct == 1, { midiSeqSpeed = midiSeqSpeed / 0.9; ("New speed is" + (midiSeqSpeed.reciprocal*60*2).round(1) + "BPM (" + midiSeqSpeed + ")").postln; })
 					midiSeqSpeed = midiSeqSpeed / 0.9;
 					("New speed is" + (midiSeqSpeed.reciprocal*60*2).round(1) + "BPM (" + midiSeqSpeed + ")").postln;
 					fSendMsg.value(oscMsgAddr, fRoundMidiSpeed.value(midiSeqSpeed)[0]);
 					fSendLapisStatus.value("midiBPM", fRoundMidiSpeed.value(midiSeqSpeed)[0]);
 				});
 				if((chan == 2) && (note==22), { // MIDI sequence speed increase
-					// if(midiSeqAct == 1, { midiSeqSpeed = midiSeqSpeed * 0.9; ("New speed is" + (midiSeqSpeed.reciprocal*60*2).round(1) + "BPM ("+ midiSeqSpeed + ")").postln; })
 					midiSeqSpeed = midiSeqSpeed * 0.9;
 					("New speed is" + (midiSeqSpeed.reciprocal*60*2).round(1) + "BPM ("+ midiSeqSpeed + ")").postln;
 					fSendMsg.value(oscMsgAddr, fRoundMidiSpeed.value(midiSeqSpeed)[0]);
@@ -627,6 +679,10 @@ s.waitForBoot({
 				});
 				if( num==4, { drumVolBus.set(val) }); // volume/distortion drumsets
 				if( num==5, { drumFilterBus.set(val) }); // filter drumsets
+				if( num==6, {
+					midiSeqSwing = val.linlin(0,1,0,0.8);
+					// ("Swing" + midiSeqSwing).postln;
+				}); // midi seq swing
 				// code below used to be to control gain from active synths
 				// if( (chan<=1) && (num>=0) && (num <=7), {
 				// 	if(num!=3, {
@@ -860,8 +916,9 @@ s.waitForBoot({
 		OSCdef(\synthKeysBpm).free;
 		~wSynthKeysAvail = nil;
 		~synthKeysBuf.free;
-		~synthKeysDrumBuf0.do { |buffer| buffer.free; };
-		~synthKeysDrumBuf1.do { |buffer| buffer.free };
+		3.do { |count|
+			~synthKeysDrumBuf[count].do { |buffer| buffer.free; };
+		};
 		tMidiSeq.stop; if(cfg.midiWrite and: { midiRecording }, { midiFile.write; midiRecording = false; });
 	});
 
