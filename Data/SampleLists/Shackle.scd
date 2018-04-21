@@ -29,8 +29,10 @@ b = (
 
 c = (
 	// LX blue
-	24: ["MOROS/15-proc3-proc3.aif"],
-	25: ["Parish/cementmixer1processed1.wav"],
+	24: ["SongsOfLove/Coma/Metal1.wav"],
+	25: ["SongsOfLove/Coma/Metal2.wav"],
+	// 24: ["MOROS/15-proc3-proc3.aif"],
+	// 25: ["Parish/cementmixer1processed1.wav"],
 	26: ["speeldooscol.aif", "distorted/d mortB01.wav", "speeldoosTSFFT.aif"], // ------------ THIMBLE
 	27: ["glas&lepel10VRSP2+.aiff"], // ------------ PIN
 	28: ["melodic/mel 310-melodie-low"], // ------------ RIG
@@ -54,6 +56,7 @@ c = (
 	43: ["voice/v videodr deb.aiff"],
 	// 44: ["SCrecDelay1.aif"],
 	44: ["Tackhead/Thatcher compete.wav", "Tackhead/Thatcher compete.wav"],
+	// 45: ["SongsOfLove/Coma/ComaVoiceMix.wav"],
 	45: ["voice/v alien4 where the meat is.aiff"],
 	46: ["musicismath/nfbc Another Side of the Forest1.wav","musicismath/nfbc Another Side of the Forest2.wav"],
 	47: ["voice/tcp_d1_09_ready_ready_15728_irdial.wav","voice/tcp_d3_11_nnn_old_incarnation_irdial.wav"],
@@ -141,16 +144,21 @@ d = ( // LX green keyset 2 -- settings for justPlay synth
 		"Concord/shimmery1.wav",
 		"Concord/shimmeryLong1.wav",
 
-		"Automatic/ringo-zang2.wav",
+		"SongsOfLove/Coma/Bass reMike.wav",
+		"SongsOfLove/Coma/Strings.wav",
+		"SongsOfLove/FirstLove/Synths.wav",
+		// "Automatic/ringo-zang2.wav",
 		// "Concord/theGoodLoop1.wav",
-		"box/Ni-Ten-Ichi-Ryu-33rpm-1-60.wav",
-		"box/Ni-Ten-Ichi-Ryu-33rpm-2-60.wav",
+		// "box/Ni-Ten-Ichi-Ryu-33rpm-1-60.wav",
+		// "box/Ni-Ten-Ichi-Ryu-33rpm-2-60.wav",
 		"box/Ni-Ten-Ichi-Ryu-33rpm-3-60.wav",
 		"box/The Hidden Camera-33rpm-1-90.wav",
 		"box/The Hidden Camera-33rpm-2-90.wav",
 
-		"prince/theme1.wav",
-		"prince/theme4.wav",
+		"SongsOfLove/Warp/Piano.wav",
+		"SongsOfLove/Warp/Mellow Brass.wav",
+		// "prince/theme1.wav",
+		// "prince/theme4.wav",
 		// "solo2/drone1-24-treble.aif",
 		"Bowie/Whisful.wav",
 		"solo2/drone2-12.aif",

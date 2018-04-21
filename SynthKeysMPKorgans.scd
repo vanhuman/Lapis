@@ -674,7 +674,11 @@ s.waitForBoot({
 							});
 						};
 					});
-					("Synth"+(synth)+cfg.synthList[synth]+if(val==0,{"de-activated"},{"activated"})).postln;
+					if(cfg.synthList[synth] != "", {
+						("Synth"+(synth)+cfg.synthList[synth]+if(val==0,{"de-activated"},{"activated"})).postln
+					}, {
+						"No synth on this pad".postln;
+					});
 					// activeSynths.postln;
 				});
 				if( num==4, { drumVolBus.set(val) }); // volume/distortion drumsets
