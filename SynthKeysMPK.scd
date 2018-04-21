@@ -305,10 +305,31 @@ s.waitForBoot({
 	};
 
 	fMidiSeq = {
-		var count = if(~theBusyDrone==1, { rrand(5,10) }, { rrand(3,8) });
-		var seqNotes, seqLen = {[0.25,0.5].wchoose([0.8,0.2])}!count;
+		var count, seqNotes, seqLen;
 		var note, len, factor = 1, factor2 = 1, vel = 127, changeCount = 0, totalTime = 0, midiChan = 15;
 		var midiDefer = 0, midiDur = 1, bpm;
+
+		// make selection random
+		// count = if(~theBusyDrone==1, { rrand(5,10) }, { rrand(3,7) });
+		// seqLen = {[0.25,0.5].wchoose([0.8,0.2])}!count;
+
+		// make selection from pre-selected
+		seqLen = [
+			[ 0.5, 0.25, 0.25, 0.5 ],
+			[ 0.25, 0.25, 0.25, 0.25, 0.25, 0.25 ],
+			[ 0.5, 0.25, 0.5, 0.25, 0.25, 0.25, 0.25 ],
+			[ 0.5, 0.25, 0.5, 0.25, 0.25, 0.25 ],
+			[ 0.25, 0.5, 0.25 ],
+			[ 0.25, 0.5, 0.25, 0.25, 0.5, 0.25, 0.25, 0.25 ],
+			[ 0.25, 0.25, 0.5 ],
+			[ 0.5, 0.5, 0.25, 0.5, 0.25 ],
+			[ 0.25, 0.5, 0.25, 0.25, 0.25, 0.25, 0.25 ],
+			[ 0.25, 0.25, 0.25 ],
+			[ 0.25, 0.25, 0.25, 0.5, 0.25, 0.25, 0.25 ],
+			[ 0.5, 0.5, 0.25, 0.25, 0.25 ],
+			[ 0.5, 0.5, 0.25, 0.25 ]
+		].choose;
+		count = seqLen.size;
 
 		bpm = fRoundMidiSpeed.value(midiSeqSpeed)[0];
 		case
@@ -669,7 +690,11 @@ s.waitForBoot({
 							});
 						};
 					});
-					("Synth"+(synth)+cfg.synthList[synth]+if(val==0,{"de-activated"},{"activated"})).postln;
+					if(cfg.synthList[synth] != "", {
+						("Synth"+(synth)+cfg.synthList[synth]+if(val==0,{"de-activated"},{"activated"})).postln
+					}, {
+						"No synth on this pad".postln;
+					});
 					// activeSynths.postln;
 				});
 				if( num==4, { drumVolBus.set(val) }); // volume/distortion drumsets
