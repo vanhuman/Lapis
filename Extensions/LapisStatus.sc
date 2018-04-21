@@ -5,26 +5,32 @@ LapisStatus {
 	*new
 	{
 		arg marginX = 10, marginY = 10, height = 25, win, posX = 20, posY = 50, inputPeakChans = 0, inputPeakStartChan = 0,
-		font = "Helvetica";
+		font = "Helvetica", vertical = false;
 
-		^super.new.initLapisStatus(marginX, marginY, height, win, posX, posY, inputPeakChans, inputPeakStartChan, font);
+		^super.new.initLapisStatus(marginX, marginY, height, win, posX, posY, inputPeakChans, inputPeakStartChan, font, vertical);
 	}
 
 	initLapisStatus
 	{
-		arg marginX, marginY, height, win, posX, posY, inputPeakChans, inputPeakStartChan, font;
+		arg marginX, marginY, height, win, posX, posY, inputPeakChans, inputPeakStartChan, font, vertical;
 
 		var localWin = 0, screenHeight = Window.screenBounds.height;
-		var dispBaseBtn, dispBaseBtn2, dispDisablePitch, dispDisableStartPos, dispPlay, dispRec, dispEfx, dispPlaySK, susStatus, bpmSK, zone8patt, bInputPeak = Array.newClear(16);
+		var dispBaseBtn, dispBaseBtn2, dispDisablePitch, dispDisableStartPos, dispPlay, dispRec, dispEfx, dispPlaySK;
+		var susStatus, bpmSK, zone8patt, bInputPeak = Array.newClear(16);
 		var colorStatus = [Color.white, Color.green(0.9), Color.yellow];
 		var fontButton = Font(font,height-6);
 		var fontLabel = Font(font, 8);
 		var textWidth = 42, nbrWidth = 35, space = 4, heightExtra = 0;
+		var width = 470, winHeight = height;
 
+		if(vertical, {
+			winHeight = height * 6.7;
+			width = 78;
+			nbrWidth = textWidth;
+		});
 		if(inputPeakChans > 0) { heightExtra = textWidth + (3*space) };
-
 		if(win.isNil, { // create window
-			~wLapis = win = Window("LapisStatus", Rect(posX,posY,470+(2*marginX),height+(2*marginY)+heightExtra),false)
+			~wLapis = win = Window("LapisStatus", Rect(posX,posY,width+(2*marginX),winHeight+(2*marginY)+heightExtra),false)
 			.background = Color.grey(0.9)
 			.alpha = 0.9;
 			localWin = 1;
@@ -33,6 +39,8 @@ LapisStatus {
 				this.stop;
 			});
 		});
+
+		if(vertical, { win.addFlowLayout });
 
 		dispBaseBtn = SmoothButton(win, Rect(marginX,marginY,textWidth,height))
 		.border_(1)
@@ -109,8 +117,10 @@ LapisStatus {
 		.background_(Color.white)
 		.states_([["Sus"]]);
 
-		StaticText(win, Rect(marginX+(5*(textWidth+space))+(4*(nbrWidth+space))+12,marginY-16,textWidth,height))
-		.string_("bpm").font_(fontLabel);
+		if(vertical.not, {
+			StaticText(win, Rect(marginX+(5*(textWidth+space))+(4*(nbrWidth+space))+12,marginY-16,textWidth,height))
+			.string_("bpm").font_(fontLabel);
+		});
 		bpmSK = SmoothButton(win, Rect(marginX+(5*(textWidth+space))+(4*(nbrWidth+space)),marginY,textWidth,height))
 		.border_(1)
 		.radius_(3)
@@ -119,8 +129,10 @@ LapisStatus {
 		.background_(Color.white)
 		.states_([["bpm"]]);
 
-		StaticText(win, Rect(marginX+(6*(textWidth+space))+(4*(nbrWidth+space))+8,marginY-16,nbrWidth,height))
-		.string_("patt").font_(fontLabel);
+		if(vertical.not, {
+			StaticText(win, Rect(marginX+(6*(textWidth+space))+(4*(nbrWidth+space))+8,marginY-16,nbrWidth,height))
+			.string_("patt").font_(fontLabel);
+		});
 		zone8patt = SmoothButton(win, Rect(marginX+(6*(textWidth+space))+(4*(nbrWidth+space)),marginY,nbrWidth,height))
 		.border_(1)
 		.radius_(3)
