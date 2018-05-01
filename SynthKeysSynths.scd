@@ -460,8 +460,8 @@ SynthDef.new(
 }).send(s);
 
 SynthDef(\zoneRecSK, {
-	arg chan1, chan2, buf, len;
-	RecordBuf.ar(In.ar([chan1,chan2]), buf, loop: 0) *
+	arg chan1, chan2, buf, len, attenuation = 1;
+	RecordBuf.ar(In.ar([chan1,chan2]), buf, loop: 0, recLevel: attenuation) *
 	EnvGen.kr(Env.linen(0,len,0), doneAction: 2)
 }).send(s);
 

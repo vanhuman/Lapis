@@ -103,7 +103,7 @@ s.waitForBoot({
 	var colorOff = Color.white;
 
 	// logic
-	var fInitOutput, fBufferRead, fSustain, fSendLapisStatus, fGetInChan, fRoundMidiSpeed, fSendMsg;
+	var fInitOutput, fBufferRead, fSustain, fSendLapisStatus, fGetInChan, fGetInAttenuation, fRoundMidiSpeed, fSendMsg;
 	var respNON, respNOF, respCTR, respHidEx3d, respPanic, respExtMidi;
 	var cutoffBus = Bus.control(s,1), efxBus = Bus.control(s,1), pitchBus = Bus.control(s,1), distBus = Bus.control(s,1);
 	var drumVolBus = Bus.control(s,1).set(0.5), drumFilterBus = Bus.control(s,1).set(1);
@@ -263,6 +263,15 @@ s.waitForBoot({
 			inChan2 = inChan1;
 		});
 		[inChan1,inChan2]
+	};
+
+	// returning input attenuation for sampling, depending on ~aBus.inInt settings
+	fGetInAttenuation = {
+		var attenuation;
+		if(~aBus.inInt == 1,
+			{ attenuation = ~aBus.inResamplingAtt },
+			{ attenuation = 1 });
+		attenuation
 	};
 
 	//////////////// MIDI sequence ////////////////////////////////
@@ -630,28 +639,6 @@ s.waitForBoot({
 		if(midiSrcIndex.notNil, { // check midi source
 			if(cfg.midiFilterConfig[midiSrcIndex+1].indexOf(chan).notNil, { // check if midi chan is allowed
 
-				// input channels switching
-				if((chan==0) && (~wLiveSamplerAvail.isNil), { // only do if LiveSampler not running,
-					case
-					{(note == 0) && (~aBus.inAlt == 1)} // switching input 1 & 2 back to original
-					{
-						("SynthKeys: Switch inputs 1 & 2 from" + ~aBus.inChan1 + "&" + ~aBus.inChan2 +
-							"to" + ~aBus.inChan1org + "&" + ~aBus.inChan2org).postln;
-						~aBus.inChan1 = ~aBus.inChan1org;
-						~aBus.inChan2 = ~aBus.inChan2org;
-						~aBus.inAlt = 0;
-					}
-					{(note == 3) && (~aBus.inInt == 1)} // switching inputs 1&2 to back to what they were
-					{
-						("SynthKeys: Switch inputs 1 & 2 from" + ~aBus.inChan1 + "&" + ~aBus.inChan2 + "to" +
-							if(~aBus.inAlt == 0, {~aBus.inChan1org}, {~aBus.inChan1alt})  + "&" +
-							if(~aBus.inAlt == 0, {~aBus.inChan2org}, {~aBus.inChan2alt})).postln;
-						~aBus.inChan1 = if(~aBus.inAlt == 0, {~aBus.inChan1org}, {~aBus.inChan1alt});
-						~aBus.inChan2 = if(~aBus.inAlt == 0, {~aBus.inChan2org}, {~aBus.inChan2alt});
-						~aBus.inInt = 0;
-					};
-				});
-
 			});
 		}); // filter to trigger config material
 	},
@@ -703,6 +690,7 @@ s.waitForBoot({
 					midiSeqSwing = val.linlin(0,1,0,0.8);
 					// ("Swing" + midiSeqSwing).postln;
 				}); // midi seq swing
+
 				// code below used to be to control gain from active synths
 				// if( (chan<=1) && (num>=0) && (num <=7), {
 				// 	if(num!=3, {
@@ -786,20 +774,9 @@ s.waitForBoot({
 				{prevVal == 7} // start recording
 				{
 					"Start recording into ~synthKeysBuf...".postln;
-
-					// // set input channels
-					// if(~aBus.inInt == 1, { // if input is internal, it's always stereo
-					// 	recChan1 = ~aBus.inChan1;
-					// 	recChan2 = ~aBus.inChan2;
-					// 	}, { // if input is external, it's always mono
-					// 		// if chan1&2 set to alternative, take 2x chan2, otherwise 2x chan1
-					// 		recChan1 = if(~aBus.inAlt == 0, {~aBus.inChan1},{~aBus.inChan2});
-					// 		recChan2 = recChan1;
-					// });
-
 					// start synth
 					zoneRec = Synth(\zoneRecSK, [\chan1, fGetInChan.value()[0], \chan2, fGetInChan.value()[1],
-						\buf, ~synthKeysBuf, \len, cfg.recLen
+						\buf, ~synthKeysBuf, \len, cfg.recLen, \attenuation, fGetInAttenuation.value()
 					], target: ~aBus.synthGroup);
 				}
 				{prevVal == 5}  // load default sample for hatswitch right

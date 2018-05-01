@@ -238,7 +238,7 @@ s.waitForBoot({
 	// general
 	var curZone = "0", curRecZone = "0", curZoneStart = 0, curZoneLen = 0, tCurZone;
 	var fAmpCurZone, fBufferRead, fQuantize, fInitOutput, fInitLapisStatus, fSendLapisStatus, fGetInChanEfx;
-	var fGetInChanSampling, fSetCurZone, fOctavesPitchshift;
+	var fGetInChanSampling, fSetCurZone, fOctavesPitchshift, fGetInAttenuation;
 	var onExternalInput = 0; // 0=effects on sample playback, 1=effects on input channels - switchable with red3 button on LX
 	var sampleFile, sampleListLV1, sampleListLV2, sampleListLX;
 
@@ -389,7 +389,7 @@ s.waitForBoot({
 	////////// Recording //////////////////////////////////////
 
 	SynthDef(\zoneRec, { // general recording zone for mono recording
-		arg gate, chan1, chan2, start, len, recZone; // start/stop env, input chan, start pos (frames), length (secs), unique ID for curRecZone
+		arg gate, chan1, chan2, start, len, recZone, attenuation; // start/stop env, input chan, start pos (frames), length (secs), unique ID for curRecZone
 		var playHead;
 		// update bufferView
 		if(~showBufferView == 1,{
@@ -397,12 +397,12 @@ s.waitForBoot({
 			SendReply.kr(Impulse.kr(cfg.bufferViewPlayHeadFreq), "/playHead", [playHead/sRate, start/sRate, len], recZone);
 			SendReply.kr(Impulse.kr(cfg.bufferViewRefreshFreq),"/bufferViewRefresh", start, recZone);
 		});
-		RecordBuf.ar(In.ar([chan1,chan2]), mainBuf, start, loop: 0) *
+		RecordBuf.ar(In.ar([chan1,chan2]), mainBuf, start, loop: 0, recLevel: attenuation) *
 		EnvGen.kr(Env.linen(0,len,0), gate, doneAction: 2);
 	}).send(s);
 
 	SynthDef(\zoneRecDyn, {  // dynamic length recording zone for mono recording
-		arg gate, chan1, chan2, start, len, recZone;  // start/stop env, input chan, start pos (frames), length (secs), unique ID for curRecZone
+		arg gate, chan1, chan2, start, len, recZone, attenuation;  // start/stop env, input chan, start pos (frames), length (secs), unique ID for curRecZone
 		var playHead;
 		// update bufferView
 		if(~showBufferView == 1, {
@@ -410,7 +410,7 @@ s.waitForBoot({
 			SendReply.kr(Impulse.kr(cfg.bufferViewPlayHeadFreq), "/playHead", [playHead/sRate, start/sRate, len], recZone);
 			SendReply.kr(Impulse.kr(cfg.bufferViewRefreshFreq),"/bufferViewRefresh", start, recZone);
 		});
-		RecordBuf.ar(In.ar([chan1,chan2]), mainBuf, start, loop: 0) *
+		RecordBuf.ar(In.ar([chan1,chan2]), mainBuf, start, loop: 0, recLevel: attenuation) *
 		EnvGen.kr(Env.linen(0,len,0), gate, doneAction: 2);
 	}).send(s);
 
@@ -2015,7 +2015,7 @@ s.waitForBoot({
 				{
 					zoneRec.ch1A = Synth(\zoneRec,
 						[\gate, 1, \chan1, fGetInChanSampling.value(~aBus.inChan1)[0], \chan2, fGetInChanSampling.value(~aBus.inChan1)[1],
-							\start, buffer.aStart, \len, buffer.aLen / sRate, \recZone, 1], target: ~aBus.synthGroup);
+							\start, buffer.aStart, \len, buffer.aLen / sRate, \recZone, 1, \attenuation, fGetInAttenuation.value()], target: ~aBus.synthGroup);
 					fSetCurZone.value("1", mode: "REC");
 					fCountZones.value("R+");
 					"LiveSampler: Record from inChan1 in A".postln;
@@ -2024,7 +2024,7 @@ s.waitForBoot({
 				{
 					zoneRec.ch1B = Synth(\zoneRec,
 						[\gate, 1, \chan1, fGetInChanSampling.value(~aBus.inChan1)[0], \chan2, fGetInChanSampling.value(~aBus.inChan1)[1],
-							\start, buffer.bStart, \len, buffer.bLen / sRate, \recZone, 2], target: ~aBus.synthGroup);
+							\start, buffer.bStart, \len, buffer.bLen / sRate, \recZone, 2, \attenuation, fGetInAttenuation.value()], target: ~aBus.synthGroup);
 					fSetCurZone.value("2", mode: "REC");
 					fCountZones.value("R+");
 					"LiveSampler: Record from inChan1 in B".postln;
@@ -2033,7 +2033,7 @@ s.waitForBoot({
 				{
 					zoneRec.ch2A = Synth(\zoneRec,
 						[\gate, 1, \chan1, fGetInChanSampling.value(~aBus.inChan2)[0], \chan2, fGetInChanSampling.value(~aBus.inChan2)[1],
-							\start, buffer.aStart, \len, buffer.aLen / sRate, \recZone, 3], target: ~aBus.synthGroup);
+							\start, buffer.aStart, \len, buffer.aLen / sRate, \recZone, 3, \attenuation, fGetInAttenuation.value()], target: ~aBus.synthGroup);
 					fSetCurZone.value("3", mode: "REC");
 					fCountZones.value("R+");
 					"LiveSampler: Record from inChan2 in A".postln;
@@ -2042,7 +2042,7 @@ s.waitForBoot({
 				{
 					zoneRec.ch2B = Synth(\zoneRec,
 						[\gate, 1,  \chan1, fGetInChanSampling.value(~aBus.inChan2)[0], \chan2, fGetInChanSampling.value(~aBus.inChan2)[1],
-							\start, buffer.bStart, \len, buffer.bLen / sRate, \recZone, 4], target: ~aBus.synthGroup);
+							\start, buffer.bStart, \len, buffer.bLen / sRate, \recZone, 4, \attenuation, fGetInAttenuation.value()], target: ~aBus.synthGroup);
 					fSetCurZone.value("4", mode: "REC");
 					fCountZones.value("R+");
 					"LiveSampler: Record from inChan2 in B".postln;
@@ -2051,7 +2051,7 @@ s.waitForBoot({
 				{
 					zoneRec.dyn1 = Synth(\zoneRecDyn,
 						[\gate, 1, \chan1, fGetInChanSampling.value(~aBus.inChan1)[0], \chan2, fGetInChanSampling.value(~aBus.inChan1)[1],
-							\start, buffer.dyn1Start, \len, zoneRec.dynLenMax, \recZone, 5],
+							\start, buffer.dyn1Start, \len, zoneRec.dynLenMax, \recZone, 5, \attenuation, fGetInAttenuation.value()],
 						target: ~aBus.synthGroup);
 					fSetCurZone.value("5", mode: "REC");
 					fCountZones.value("R+");
@@ -2062,7 +2062,7 @@ s.waitForBoot({
 				{
 					zoneRec.dyn2 = Synth(\zoneRecDyn,
 						[\gate, 1, \chan1, fGetInChanSampling.value(~aBus.inChan2)[0], \chan2, fGetInChanSampling.value(~aBus.inChan2)[1],
-							\start, buffer.dyn2Start, \len, zoneRec.dynLenMax, \recZone, 6],
+							\start, buffer.dyn2Start, \len, zoneRec.dynLenMax, \recZone, 6, \attenuation, fGetInAttenuation.value()],
 						target: ~aBus.synthGroup);
 					fSetCurZone.value("6", mode: "REC");
 					fCountZones.value("R+");
@@ -2073,7 +2073,7 @@ s.waitForBoot({
 				{
 					zoneRec.dyn3 = Synth(\zoneRecDyn,
 						[\gate, 1, \chan1, fGetInChanSampling.value(~aBus.inChan1)[0], \chan2, fGetInChanSampling.value(~aBus.inChan1)[1],
-							\start, buffer.dyn3Start, \len, zoneRec.dynLenMax, \recZone, 7],
+							\start, buffer.dyn3Start, \len, zoneRec.dynLenMax, \recZone, 7, \attenuation, fGetInAttenuation.value()],
 						target: ~aBus.synthGroup);
 					fSetCurZone.value("7", mode: "REC");
 					fCountZones.value("R+");
@@ -2084,7 +2084,7 @@ s.waitForBoot({
 				{
 					zoneRec.dyn4 = Synth(\zoneRecDyn,
 						[\gate, 1, \chan1, fGetInChanSampling.value(~aBus.inChan2)[0], \chan2, fGetInChanSampling.value(~aBus.inChan2)[1],
-							\start, buffer.dyn4Start, \len, zoneRec.dynLenMax, \recZone, 8],
+							\start, buffer.dyn4Start, \len, zoneRec.dynLenMax, \recZone, 8, \attenuation, fGetInAttenuation.value()],
 						target: ~aBus.synthGroup);
 					fSetCurZone.value("8", mode: "REC");
 					fCountZones.value("R+");
@@ -4020,6 +4020,15 @@ s.waitForBoot({
 				inChan2 = inChan1;
 		});
 		[inChan1,inChan2]
+	};
+
+	// returning input attenuation for sampling, depending on ~aBus.inInt settings
+	fGetInAttenuation = {
+		var attenuation;
+		if(~aBus.inInt == 1,
+			{ attenuation = ~aBus.inResamplingAtt },
+			{ attenuation = 1 });
+		attenuation
 	};
 
 	// set current zone and do other things that need to be done
