@@ -5,13 +5,15 @@ a = (
 	// LV1
 	2: ["CodeKlavier/piano-1.wav"],
 	10: ["KingMidas/Water.wav"],
-	18: ["Kirkegaard/Sabulation2.wav"],
-	26: ["Kirkegaard/Sabulation3.wav"],
+	18: ["Shackle/shackle-droneA.wav"],
+	26: ["sines/s amacher01 - low + low atmos.wav"],
+	// 18: ["Kirkegaard/Sabulation2.wav"],
+	// 26: ["Kirkegaard/Sabulation3.wav"],
 	// 18: ["GDRVH/BoC2 A97-1.aif", "melodic/mel tokyo01b.wav"],
 	// 26: ["amawaveseq2detune.aiff"],
 	34: ["MOROS/08-proc3-proc1-13-proc1-proc1.wav"],
 	42: ["mortrob1.wav"],
-	50: ["plankje4SN1-Thonk Hectic_a.aiff"],
+	50: ["310/Your Mother1.wav", "310/Your Mother1.wav"],
 	58: ["lh-snare1-16bit.aif", "lh-snare4-16bit.aif", "lh-snare3-16bit-pt2.aif"]
 );
 
@@ -35,7 +37,7 @@ c = (
 	27: ["glas&lepel10VRSP2+.aiff"],
 	28: ["melodic/mel 310-melodie-low"],
 	29: ["voice/tcp_d2_17_english_man_irdial.wav"],
-	30: ["aphextwin/avril altdelay.wav", "melodic/MDfreeze/theme_03_shortb.wav"],
+	30: ["jc/jc decay3 1m.aif"],
 	31: ["station1 rbeq2", "MOROS/10-proc1-proc2.wav" , "solitude/sol verwketel1EQ2part"],
 	32: ["GDRVH/004 ARP25 noise part1.aif"],
 	33: ["plankje2SN1m-Slack_a.aiff"],
@@ -126,7 +128,8 @@ d = ( // LX green keyset 2 -- settings for justPlay synth
 		"Concord/shimmery1.wav",
 		"Concord/shimmeryLong1.wav",
 
-		"Kirkegaard/Silence1.wav",
+		"western/intro1.aif",
+		// "Kirkegaard/Silence1.wav",
 		"box/Ni-Ten-Ichi-Ryu-33rpm-1-60.wav",
 		"box/Ni-Ten-Ichi-Ryu-33rpm-2-60.wav",
 		"box/Ni-Ten-Ichi-Ryu-33rpm-3-60.wav",
