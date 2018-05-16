@@ -103,7 +103,7 @@ s.waitForBoot({
 	var colorOff = Color.white;
 
 	// logic
-	var fInitOutput, fBufferRead, fSustain, fSendLapisStatus, fGetInChan, fGetInAttenuation, fRoundMidiSpeed, fSendMsg;
+	var fInitOutput, fBufferRead, fSustain, fSendLapisStatus, fGetInChan, fGetInAttenuation, fGetInGroup, fRoundMidiSpeed, fSendMsg;
 	var respNON, respNOF, respCTR, respHidEx3d, respPanic, respExtMidi;
 	var cutoffBus = Bus.control(s,1), efxBus = Bus.control(s,1), pitchBus = Bus.control(s,1), distBus = Bus.control(s,1);
 	var drumVolBus = Bus.control(s,1).set(0.5), drumFilterBus = Bus.control(s,1).set(1);
@@ -272,6 +272,15 @@ s.waitForBoot({
 			{ attenuation = ~aBus.inResamplingAtt },
 			{ attenuation = 1 });
 		attenuation
+	};
+
+	// returning Group for sampling, depending on ~aBus.inInt settings
+	fGetInGroup = {
+		var group;
+		if(~aBus.inInt == 1,
+			{ group = ~aBus.resampleGroup },
+			{ group = ~aBus.synthGroup });
+		group
 	};
 
 	//////////////// MIDI sequence ////////////////////////////////
@@ -777,7 +786,7 @@ s.waitForBoot({
 					// start synth
 					zoneRec = Synth(\zoneRecSK, [\chan1, fGetInChan.value()[0], \chan2, fGetInChan.value()[1],
 						\buf, ~synthKeysBuf, \len, cfg.recLen, \attenuation, fGetInAttenuation.value()
-					], target: ~aBus.synthGroup);
+					], target: fGetInGroup.value());
 				}
 				{prevVal == 5}  // load default sample for hatswitch right
 				{

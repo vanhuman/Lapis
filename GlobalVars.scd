@@ -27,12 +27,13 @@ if((~aBus.isNil || ~projectList.isNil), {
 	~distortionMax = 50;						// set the maximum value for distortion controllers, nil if should be disregarded
 	~postControllerData = 0; 				// whether to postln controller data
 	~font = "Courier";
+	~showResampleMeters = true;		// whether to show the two resample channels in the server meter
 
 	~project = ~projectList.at(~projectID); 	// set current project from list above
 	~aBus = ( // audio busses
 
 		// ---- Output ---------
-		outMainChan: 0, // main output channel, stereo or mono
+		outMainChan: 0, // main output channel
 		outMainStereo: 1, // 0=mono 1=stereo
 		outMainAtt: -6.dbamp, // main attenuation factor: 1=no change
 		outMainLimiter: 0, // 1=enable 0=disable
@@ -45,14 +46,14 @@ if((~aBus.isNil || ~projectList.isNil), {
 		outAnalogEfx: 0, // output to analog effects, 0=off 1=on
 		outAnalogEfxChan: 6, // analog efx output channel, mono
 		outAnalogEfxAtt: -6.dbamp, // analog efx attenuation factor: 1=no change
-		outResampling: 1, // output for resampling, 0=off 1=on
-		outResamplingChan: 8, // output chan for resampling, stereo, this channel should be set in MOTU CueMix as return channel
-		outResamplingAtt: 3.dbamp, // resampling attenuation factor: 1=no change
-		inResamplingAtt: 9.dbamp, // input attenuation factor
+		// outResamplingChan: 8, // output chan for resampling, stereo, this channel should be set in MOTU CueMix as return channel
+		outResamplingChan: 80, // output chan for resampling, stereo
+		outResamplingAtt: 0.dbamp, // resampling attenuation factor: 1=no change
+		inResamplingAtt: 0.dbamp, // input attenuation factor
 		outAltChan: 2, // alternative output channel for incidental usage
 
 		// ---- Input ---------
-		inChan1: 50, // input channel 1 -- plus 10 for direct (skipping 10 output busses), or use gained chans as specified below
+		inChan1: 50, // input channel 1 -- original channel plus 10 for direct (skipping 10 output busses), or use gained chans as specified below
 		inChan2: 50, // input channel 2
 		inChan1alt: 51, // alternative input channel for input 1
 		inChan2alt: 51, // alternative input channel for input 2
@@ -68,18 +69,22 @@ if((~aBus.isNil || ~projectList.isNil), {
 		// ---- General vars, no need to change ---------
 		inAlt: 0, // flag whether input is switched to alternative
 		inInt: 0, // flag whether input is switched to internal
-		inChan1int: 10+Server.local.options.numOutputBusChannels,  // (only MOTU) output from computer send back in, chan 11 (left)
-		inChan2int: 11+Server.local.options.numOutputBusChannels,  // (only MOTU) output from computer send back in, chan 12 (right)
+		inChanInternal: 80, // input channel for resampling, stereo
+		// inChan1int: 10+Server.local.options.numOutputBusChannels,  // (only MOTU) output from computer send back in, chan 11 (left)
+		// inChan2int: 11+Server.local.options.numOutputBusChannels,  // (only MOTU) output from computer send back in, chan 12 (right)
 				// plus Server.local.options.numOutputBusChannels to skip output busses (because using In and not SoundIn)
 		outAsynth: nil, outBsynth: nil, outBLsynth: nil, outMainSynth: nil, efx1Synth: nil, efx2Synth: nil, inBusSynth: nil,
-		// outA: 30, outB: 32, outMain: 34, outEfxPost: 36, outBL: 38, outEfxPre: 40,
 		outA: 100, outB: 102, outMain: 104, outEfxPost: 106, outBL: 108, outEfxPre: 110,
 		mainGroup: nil,
 		outputGroup: nil,
 		efxGroup: nil,
 		synthGroup: nil,
 		inGroup: nil,
+		resampleGroup: nil,
 	);
+
+	// the return input bus attenuation is always 15 db more than the output attenuation
+	// ~aBus.inResamplingAtt = (~aBus.outMainAtt.ampdb + 15).dbamp;
 
 	~aBus.put(\inChan1org, ~aBus.inChan1); // original input channel 1
 	~aBus.put(\inChan2org, ~aBus.inChan2); // original input channel 2

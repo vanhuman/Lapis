@@ -49,7 +49,7 @@ s.waitForBoot({
 		midiSrc: "MUL", // filtering allowed midi sources; comma-separated list f.e.: MUL = Motu Ultralite, IAC1, IAC2, IAC3, LPK
 		background: "image", // background images method (pen or image)
 	);
-	var ardAna1Bus, midiLV2KnobMasterVol, fInitOutput, fSetImage, fProjectInfo;
+	var ardAna1Bus, midiLV2KnobMasterVol, fInitOutput, fSetImage, fProjectInfo, fServerMeter;
 	var specOutAmp = Env.xyc([[0.0, 0.0, \lin], [0.001, 0.001,\exp],[0.2, 0.2, \lin],[1, 1.0]]);
 	var specOutAmpNoArd = Env.xyc([[0.0, 0.0, \lin], [0.001, 0.001,\exp],[0.2, 0.2, \lin],[0.5, 1.0], [1,1.0]]);
 	var screenHeight = Window.screenBounds.height, screenWidth = Window.screenBounds.width;
@@ -64,6 +64,7 @@ s.waitForBoot({
 	var imageFileDone = Array.new(imageFileList.size);
 	var fontLabel, fontButton, fontSmall;
 	var isRecording = 0;
+	var gainDefault = #[1,1,1,1];
 
 	cfg.docDir.postln;
 
@@ -75,8 +76,15 @@ s.waitForBoot({
 
 	///////////////////////////////////////////// Output Synths //////////////////////////////////////
 
+	// set number of gained channels depending on number of input channels
+	// this is done in the same way in ServerMeterRvH.sc
+	if( Server.local.options.numInputBusChannels == 2 ) {
+		~aBus.gainedChans = ~aBus.gainedChans[0..1];
+		gainDefault = #[1,1];
+	};
+
 	SynthDef(\inBus, {
-		arg gate, gain = #[1,1,1,1];
+		arg gate, gain = gainDefault;
 		// var in = SoundIn.ar([0,1,2,3]);
 		var in = SoundIn.ar(~aBus.gainedChans);
 		if(~aBus.inputThru == 1, { Out.ar(~aBus.inputThruChan, in) });
@@ -125,8 +133,11 @@ s.waitForBoot({
 		RecordBuf.ar(sig, ~processBuf, loop: 1);
 
 		// output for resampling (stereo) - has to be done in the main output stage to be able to resample efx too
-		if(~aBus.outResampling == 1, {
+		if(~aBus.outResamplingChan.notNil, {
 			Out.ar(~aBus.outResamplingChan, resampAtt * sig);
+			if (~showResampleMeters) {
+				SendPeakRMS.kr(resampAtt * sig, replyRate: 10, cmdName: "/ResampleBus"); // send to ServerMeter
+			};
 		});
 
 		// tidy up the signal, getting ready to send out
@@ -171,9 +182,10 @@ s.waitForBoot({
 			{ // stop sound
 				~aBus.inGroup.free;
 				~aBus.synthGroup.free;
-				~aBus.mainGroup.free;
-				~aBus.efxGroup.free;
 				~aBus.outputGroup.free;
+				~aBus.efxGroup.free;
+				~aBus.mainGroup.free;
+				~aBus.resampleGroup.free;
 				if(onClose==0, {
 					mainOutChan.background_(Color.white);
 					if(~aBus.outMonitor == 1, {monOutChan.background_(Color.white)});
@@ -187,6 +199,7 @@ s.waitForBoot({
 				~aBus.outputGroup = Group.new(~aBus.synthGroup, \addAfter);
 				~aBus.efxGroup = Group.new(~aBus.outputGroup, \addAfter);
 				~aBus.mainGroup = Group.new(~aBus.efxGroup, \addAfter);
+				~aBus.resampleGroup = Group.new(~aBus.mainGroup, \addAfter);
 				~aBus.inBusSynth = Synth(\inBus, [\gain, ~aBus.inBusGain, \gate,1], target: ~aBus.inGroup);
 				~aBus.outAsynth = Synth(\outBusA, [\volBus, midiLV2KnobMasterVol.index,
 					\gate,1], target: ~aBus.outputGroup);
@@ -284,7 +297,7 @@ s.waitForBoot({
 		"RED2: Switch efx bank from deciMate & deLay to multiTapFreeze & ampPitchFol".postln;
 		"RED3: Switch efx source from sample playback to input channels".postln;
 		("RED4: Switch input channels between"
-			+~aBus.inChan1++" & "++~aBus.inChan2+"and"+~aBus.inChan1int++" & "++~aBus.inChan2int).postln;
+			+~aBus.inChan1++" & "++~aBus.inChan2+"and"+~aBus.inChanInternal++" & "++(~aBus.inChanInternal+1)).postln;
 
 		"\nInOut keyboard shortcuts:".postln;
 		"	esc stops sound output".postln;
@@ -308,6 +321,10 @@ s.waitForBoot({
 
 		"\nControllers keyboard shortcuts:".postln;
 		"	d toggles controller data postln\n".postln;
+	};
+
+	fServerMeter = {
+		ServerMeter(s, xPos: 20, yPos: 150, numResampleChans: if(~showResampleMeters, { 2 }, { 0 }));
 	};
 
 	///////////////////////////////////////////// Arduino //////////////////////////////////////
@@ -401,9 +418,9 @@ s.waitForBoot({
 				{(note == 3) && (~aBus.inInt == 0)} // switching inputs 1 & 2 to internal
 				{
 					("InOut: Switch inputs 1 & 2 from" + ~aBus.inChan1 + "&" + ~aBus.inChan2 +
-						"to" + ~aBus.inChan1int + "&" + ~aBus.inChan2int).postln;
-					~aBus.inChan1 = ~aBus.inChan1int;
-					~aBus.inChan2 = ~aBus.inChan2int;
+						"to" + ~aBus.inChanInternal + "&" + (~aBus.inChanInternal+1)).postln;
+					~aBus.inChan1 = ~aBus.inChanInternal;
+					~aBus.inChan2 = ~aBus.inChanInternal + 1;
 					~aBus.inInt = 1;
 					inputChan.states_([[~aBus.inChan1.asString ++ "," ++ ~aBus.inChan2.asString]]);
 				};
@@ -617,7 +634,7 @@ s.waitForBoot({
 		// N posts Node info
 		if((keycode ==45), {s.queryAllNodes();});
 		// M starts s.meter
-		if((keycode ==46) && (~wMeterAvail.isNil), {ServerMeter(s, xPos: 20, yPos: 150, numGainedChans: 4)});
+		if((keycode ==46) && (~wMeterAvail.isNil), { fServerMeter.() });
 		// O starts OSC monitor
 		if(keycode ==31, {
 			if(oscOn == 0,
@@ -685,7 +702,7 @@ s.waitForBoot({
 	if(cfg.startCueMix == 1, {"osascript -e 'tell application \"CueMix FX\" to activate'".unixCmd;});
 	if(cfg.startActMon == 1, {"osascript -e 'tell application \"Activity Monitor\" to activate'".unixCmd;});
 	if(cfg.startMOTUSetup == 1, {"osascript -e 'tell application \"MOTU Audio Setup\" to activate'".unixCmd;});
-	if( (cfg.startMeter == 1) || (~aBus.inputPeakChans > 0), {ServerMeter(s, xPos: 20, yPos: 150, numGainedChans: 4)});
+	if( (cfg.startMeter == 1) || (~aBus.inputPeakChans > 0), { fServerMeter.() });
 	if(~projectNotes.at(~projectID).notNil, { "open".postln; (cfg.docDir++cfg.libDir++~projectNotes.at(~projectID)).openOS });
 
 }); // wait for boot

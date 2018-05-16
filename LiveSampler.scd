@@ -238,7 +238,7 @@ s.waitForBoot({
 	// general
 	var curZone = "0", curRecZone = "0", curZoneStart = 0, curZoneLen = 0, tCurZone;
 	var fAmpCurZone, fBufferRead, fQuantize, fInitOutput, fInitLapisStatus, fSendLapisStatus, fGetInChanEfx;
-	var fGetInChanSampling, fSetCurZone, fOctavesPitchshift, fGetInAttenuation;
+	var fGetInChanSampling, fSetCurZone, fOctavesPitchshift, fGetInAttenuation, fGetInGroup;
 	var onExternalInput = 0; // 0=effects on sample playback, 1=effects on input channels - switchable with red3 button on LX
 	var sampleFile, sampleListLV1, sampleListLV2, sampleListLX;
 
@@ -2015,7 +2015,7 @@ s.waitForBoot({
 				{
 					zoneRec.ch1A = Synth(\zoneRec,
 						[\gate, 1, \chan1, fGetInChanSampling.value(~aBus.inChan1)[0], \chan2, fGetInChanSampling.value(~aBus.inChan1)[1],
-							\start, buffer.aStart, \len, buffer.aLen / sRate, \recZone, 1, \attenuation, fGetInAttenuation.value()], target: ~aBus.synthGroup);
+							\start, buffer.aStart, \len, buffer.aLen / sRate, \recZone, 1, \attenuation, fGetInAttenuation.value()], target: fGetInGroup.value());
 					fSetCurZone.value("1", mode: "REC");
 					fCountZones.value("R+");
 					"LiveSampler: Record from inChan1 in A".postln;
@@ -2024,7 +2024,7 @@ s.waitForBoot({
 				{
 					zoneRec.ch1B = Synth(\zoneRec,
 						[\gate, 1, \chan1, fGetInChanSampling.value(~aBus.inChan1)[0], \chan2, fGetInChanSampling.value(~aBus.inChan1)[1],
-							\start, buffer.bStart, \len, buffer.bLen / sRate, \recZone, 2, \attenuation, fGetInAttenuation.value()], target: ~aBus.synthGroup);
+							\start, buffer.bStart, \len, buffer.bLen / sRate, \recZone, 2, \attenuation, fGetInAttenuation.value()], target: fGetInGroup.value());
 					fSetCurZone.value("2", mode: "REC");
 					fCountZones.value("R+");
 					"LiveSampler: Record from inChan1 in B".postln;
@@ -2033,7 +2033,7 @@ s.waitForBoot({
 				{
 					zoneRec.ch2A = Synth(\zoneRec,
 						[\gate, 1, \chan1, fGetInChanSampling.value(~aBus.inChan2)[0], \chan2, fGetInChanSampling.value(~aBus.inChan2)[1],
-							\start, buffer.aStart, \len, buffer.aLen / sRate, \recZone, 3, \attenuation, fGetInAttenuation.value()], target: ~aBus.synthGroup);
+							\start, buffer.aStart, \len, buffer.aLen / sRate, \recZone, 3, \attenuation, fGetInAttenuation.value()], target: fGetInGroup.value());
 					fSetCurZone.value("3", mode: "REC");
 					fCountZones.value("R+");
 					"LiveSampler: Record from inChan2 in A".postln;
@@ -2042,7 +2042,7 @@ s.waitForBoot({
 				{
 					zoneRec.ch2B = Synth(\zoneRec,
 						[\gate, 1,  \chan1, fGetInChanSampling.value(~aBus.inChan2)[0], \chan2, fGetInChanSampling.value(~aBus.inChan2)[1],
-							\start, buffer.bStart, \len, buffer.bLen / sRate, \recZone, 4, \attenuation, fGetInAttenuation.value()], target: ~aBus.synthGroup);
+							\start, buffer.bStart, \len, buffer.bLen / sRate, \recZone, 4, \attenuation, fGetInAttenuation.value()], target: fGetInGroup.value());
 					fSetCurZone.value("4", mode: "REC");
 					fCountZones.value("R+");
 					"LiveSampler: Record from inChan2 in B".postln;
@@ -2052,7 +2052,7 @@ s.waitForBoot({
 					zoneRec.dyn1 = Synth(\zoneRecDyn,
 						[\gate, 1, \chan1, fGetInChanSampling.value(~aBus.inChan1)[0], \chan2, fGetInChanSampling.value(~aBus.inChan1)[1],
 							\start, buffer.dyn1Start, \len, zoneRec.dynLenMax, \recZone, 5, \attenuation, fGetInAttenuation.value()],
-						target: ~aBus.synthGroup);
+						target: fGetInGroup.value());
 					fSetCurZone.value("5", mode: "REC");
 					fCountZones.value("R+");
 					zoneRec.dyn1St = SystemClock.seconds; // save start time to on NOF lenght can be determined
@@ -2063,7 +2063,7 @@ s.waitForBoot({
 					zoneRec.dyn2 = Synth(\zoneRecDyn,
 						[\gate, 1, \chan1, fGetInChanSampling.value(~aBus.inChan2)[0], \chan2, fGetInChanSampling.value(~aBus.inChan2)[1],
 							\start, buffer.dyn2Start, \len, zoneRec.dynLenMax, \recZone, 6, \attenuation, fGetInAttenuation.value()],
-						target: ~aBus.synthGroup);
+						target: fGetInGroup.value());
 					fSetCurZone.value("6", mode: "REC");
 					fCountZones.value("R+");
 					zoneRec.dyn2St = SystemClock.seconds; // save start time to on NOF lenght can be determined
@@ -2074,7 +2074,7 @@ s.waitForBoot({
 					zoneRec.dyn3 = Synth(\zoneRecDyn,
 						[\gate, 1, \chan1, fGetInChanSampling.value(~aBus.inChan1)[0], \chan2, fGetInChanSampling.value(~aBus.inChan1)[1],
 							\start, buffer.dyn3Start, \len, zoneRec.dynLenMax, \recZone, 7, \attenuation, fGetInAttenuation.value()],
-						target: ~aBus.synthGroup);
+						target: fGetInGroup.value());
 					fSetCurZone.value("7", mode: "REC");
 					fCountZones.value("R+");
 					zoneRec.dyn3St = SystemClock.seconds; // save start time to on NOF lenght can be determined
@@ -2085,7 +2085,7 @@ s.waitForBoot({
 					zoneRec.dyn4 = Synth(\zoneRecDyn,
 						[\gate, 1, \chan1, fGetInChanSampling.value(~aBus.inChan2)[0], \chan2, fGetInChanSampling.value(~aBus.inChan2)[1],
 							\start, buffer.dyn4Start, \len, zoneRec.dynLenMax, \recZone, 8, \attenuation, fGetInAttenuation.value()],
-						target: ~aBus.synthGroup);
+						target: fGetInGroup.value());
 					fSetCurZone.value("8", mode: "REC");
 					fCountZones.value("R+");
 					zoneRec.dyn4St = SystemClock.seconds; // save start time to on NOF lenght can be determined
@@ -4029,6 +4029,15 @@ s.waitForBoot({
 			{ attenuation = ~aBus.inResamplingAtt },
 			{ attenuation = 1 });
 		attenuation
+	};
+
+	// returning Group for sampling, depending on ~aBus.inInt settings
+	fGetInGroup = {
+		var group;
+		if(~aBus.inInt == 1,
+			{ group = ~aBus.resampleGroup },
+			{ group = ~aBus.synthGroup });
+		group
 	};
 
 	// set current zone and do other things that need to be done
