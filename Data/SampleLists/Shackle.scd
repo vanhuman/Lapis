@@ -13,7 +13,7 @@ a = (
 	// 26: ["amawaveseq2detune.aiff"],
 	34: ["MOROS/08-proc3-proc1-13-proc1-proc1.wav"],
 	42: ["mortrob1.wav"],
-	50: ["310/Your Mother1.wav", "310/Your Mother1.wav"],
+	50: ["310/Your Mother1.wav"],
 	58: ["lh-snare1-16bit.aif", "lh-snare4-16bit.aif", "lh-snare3-16bit-pt2.aif"]
 );
 
