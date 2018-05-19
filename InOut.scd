@@ -133,8 +133,8 @@ s.waitForBoot({
 		RecordBuf.ar(sig, ~processBuf, loop: 1);
 
 		// output for resampling (stereo) - has to be done in the main output stage to be able to resample efx too
-		if(~aBus.outResamplingChan.notNil, {
-			Out.ar(~aBus.outResamplingChan, resampAtt * sig);
+		if(~aBus.resamplingChan.notNil, {
+			Out.ar(~aBus.resamplingChan, resampAtt * sig);
 			if (~showResampleMeters) {
 				SendPeakRMS.kr(resampAtt * sig, replyRate: 10, cmdName: "/ResampleBus"); // send to ServerMeter
 			};
@@ -297,7 +297,7 @@ s.waitForBoot({
 		"RED2: Switch efx bank from deciMate & deLay to multiTapFreeze & ampPitchFol".postln;
 		"RED3: Switch efx source from sample playback to input channels".postln;
 		("RED4: Switch input channels between"
-			+~aBus.inChan1++" & "++~aBus.inChan2+"and"+~aBus.inChanInternal++" & "++(~aBus.inChanInternal+1)).postln;
+			+~aBus.inChan1++" & "++~aBus.inChan2+"and"+~aBus.resamplingChan++" & "++(~aBus.resamplingChan+1)).postln;
 
 		"\nInOut keyboard shortcuts:".postln;
 		"	esc stops sound output".postln;
@@ -418,9 +418,9 @@ s.waitForBoot({
 				{(note == 3) && (~aBus.inInt == 0)} // switching inputs 1 & 2 to internal
 				{
 					("InOut: Switch inputs 1 & 2 from" + ~aBus.inChan1 + "&" + ~aBus.inChan2 +
-						"to" + ~aBus.inChanInternal + "&" + (~aBus.inChanInternal+1)).postln;
-					~aBus.inChan1 = ~aBus.inChanInternal;
-					~aBus.inChan2 = ~aBus.inChanInternal + 1;
+						"to" + ~aBus.resamplingChan + "&" + (~aBus.resamplingChan+1)).postln;
+					~aBus.inChan1 = ~aBus.resamplingChan;
+					~aBus.inChan2 = ~aBus.resamplingChan + 1;
 					~aBus.inInt = 1;
 					inputChan.states_([[~aBus.inChan1.asString ++ "," ++ ~aBus.inChan2.asString]]);
 				};

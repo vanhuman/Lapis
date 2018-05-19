@@ -46,8 +46,6 @@ if((~aBus.isNil || ~projectList.isNil), {
 		outAnalogEfx: 0, // output to analog effects, 0=off 1=on
 		outAnalogEfxChan: 6, // analog efx output channel, mono
 		outAnalogEfxAtt: -6.dbamp, // analog efx attenuation factor: 1=no change
-		// outResamplingChan: 8, // output chan for resampling, stereo, this channel should be set in MOTU CueMix as return channel
-		outResamplingChan: 80, // output chan for resampling, stereo
 		outResamplingAtt: 0.dbamp, // resampling attenuation factor: 1=no change
 		inResamplingAtt: 0.dbamp, // input attenuation factor
 		outAltChan: 2, // alternative output channel for incidental usage
@@ -67,12 +65,9 @@ if((~aBus.isNil || ~projectList.isNil), {
 		inputPeakStartChan: 0, // start channel to monitor
 
 		// ---- General vars, no need to change ---------
+		resamplingChan: 80, // output / input channel for resampling, in stereo, so adding +1 for the second channel
 		inAlt: 0, // flag whether input is switched to alternative
 		inInt: 0, // flag whether input is switched to internal
-		inChanInternal: 80, // input channel for resampling, stereo
-		// inChan1int: 10+Server.local.options.numOutputBusChannels,  // (only MOTU) output from computer send back in, chan 11 (left)
-		// inChan2int: 11+Server.local.options.numOutputBusChannels,  // (only MOTU) output from computer send back in, chan 12 (right)
-				// plus Server.local.options.numOutputBusChannels to skip output busses (because using In and not SoundIn)
 		outAsynth: nil, outBsynth: nil, outBLsynth: nil, outMainSynth: nil, efx1Synth: nil, efx2Synth: nil, inBusSynth: nil,
 		outA: 100, outB: 102, outMain: 104, outEfxPost: 106, outBL: 108, outEfxPre: 110,
 		mainGroup: nil,
@@ -81,10 +76,13 @@ if((~aBus.isNil || ~projectList.isNil), {
 		synthGroup: nil,
 		inGroup: nil,
 		resampleGroup: nil,
-	);
 
-	// the return input bus attenuation is always 15 db more than the output attenuation
-	// ~aBus.inResamplingAtt = (~aBus.outMainAtt.ampdb + 15).dbamp;
+		// old way of doing resampling
+		// outResamplingChan: 8, // output chan for resampling, stereo, this channel should be set in MOTU CueMix as return channel
+		// inChan1int: 10+Server.local.options.numOutputBusChannels,  // (only MOTU) output from computer send back in, chan 11 (left)
+		// inChan2int: 11+Server.local.options.numOutputBusChannels,  // (only MOTU) output from computer send back in, chan 12 (right)
+				// plus Server.local.options.numOutputBusChannels to skip output busses (because using In and not SoundIn)
+	);
 
 	~aBus.put(\inChan1org, ~aBus.inChan1); // original input channel 1
 	~aBus.put(\inChan2org, ~aBus.inChan2); // original input channel 2
