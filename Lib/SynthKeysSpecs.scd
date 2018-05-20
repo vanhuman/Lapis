@@ -1,6 +1,6 @@
 ///////////////////////////////////////////// SynthKeys Specs //////////////////////////////////////
 
-~synthKeysSpec = (
+~specSK = (
 	ampmod1: Env.new([2,20],[1],[\lin]),
 	ampmod2: Env.new([5,25],[1],[\lin]),
 	velocity: Env.new([0.1,0.8,1.3],[0.8,0.2],[\exp,\lin]),

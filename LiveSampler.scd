@@ -40,21 +40,13 @@ s.waitForBoot({
 		bufferViewPlayHeadFreq: 20, // freqency of playhead refresh in bufferView
 		bufferViewRefreshFreq: 0.5, // frequency of bufferView refresh while recording
 		bufferViewBlocksize: 512, // block size for reading soundfile in bufferview
-		bufferViewDeferRead: 1, // defer of reading file in buffer after buffer.write
+		bufferViewDeferRead: 1, // defer of reading file in buffer after ~bufferLS.write
 		sampleDir: "/Users/Robert/---data---/audio/samples/", // location of samples
 		docDir: Document.dir++"/Lapis/", // current location
 		libDir: "Data/", // library files location
 		localAddr: NetAddr("127.0.0.1", 57120), // to send OSC to other SC programs
 		touchOSCAddr: NetAddr("169.254.0.3", 57120), // to send OSC to an iPod running TouchOSC
 		dragEmptyBeforeLoad: 1, // 1: when dragging, empty buffer before load
-	);
-
-	// buffers
-	var buffer = ( // when changing these values: test thoroughly as some values might be interdependent, also connected with zoneRec
-		mainLen: ~sRate * 400, processLen: ~sRate * 30,
-		aStart: ~sRate * 0, aLen: ~sRate * 65, aTail: ~sRate * 5, bStart: ~sRate * 65, bLen: ~sRate * 85, bTail: ~sRate * 20,
-		dyn1Start: ~sRate * 150, dyn1Len: ~sRate * 5, dyn2Start: ~sRate * 180, dyn2Len: ~sRate * 5,
-		dyn3Start: ~sRate * 210,  dyn3Len: ~sRate * 5, dyn4Start: ~sRate * 240,  dyn4Len: ~sRate * 5
 	);
 
 	// general
@@ -80,6 +72,7 @@ s.waitForBoot({
 	var bufferViewLab = Array.newClear(3);
 	var bufferViewColors = [Color.white, Color.grey, Color.green(0.3), Color.black, Color.blue(1,0.3), Color.red];
 	// background, grid, waveforms, playbackhead, selection, selection recording
+
 	// zones
 	var zone2 = (play1L: nil, play1R: nil, play1Act: 0, startPos1: 0, play1hf: nil, play1hfAct: 0, play1lf: nil, play1lfAct: 0);
 	var zone3 = (
@@ -110,8 +103,6 @@ s.waitForBoot({
 		play1: nil, play1Act: 0, patt1:nil, startPos1: 0, len1: 0.5, ampSine1: 0, ampPluck1: 0, dist1: 0, amp1: 0,
 		tempoClock1: TempoClock.new(8);
 	);
-
-	// zoneRec
 	var zoneRec = (
 		ch1A: nil, ch1B: nil, ch2A: nil, ch2B: nil, dynOverflow: 0.05, dynLenMax: 30, dynLenMaxFrames: 30*~sRate,
 		dyn1: nil, dyn1St: nil, dyn2: nil, dyn2St: nil, dyn3: nil, dyn3St:nil, dyn4: nil, dyn4St: nil, len1: 5,
@@ -124,20 +115,22 @@ s.waitForBoot({
 	// effects
 	var efx1Act = 0, efxBank = 1, efx2Act = 0;
 
-	// Vanoli Pulse
-	// var zonePulse = ( play1: nil, play1Act: 0 );
-
 	/////////////////////////////////////////////  initialize variables //////////////////////////////////////
 
-	~mainBufLS = Buffer.alloc(s, buffer.mainLen, 2);
-	// buffers for effect multiTapFreeze
+	// buffers
+	~bufferLS = ( // when changing these values: test thoroughly as some values might be interdependent, also connected with zoneRec
+		mainLen: ~sRate * 400, processLen: ~sRate * 30,
+		aStart: ~sRate * 0, aLen: ~sRate * 65, aTail: ~sRate * 5, bStart: ~sRate * 65, bLen: ~sRate * 85, bTail: ~sRate * 20,
+		dyn1Start: ~sRate * 150, dyn1Len: ~sRate * 5, dyn2Start: ~sRate * 180, dyn2Len: ~sRate * 5,
+		dyn3Start: ~sRate * 210,  dyn3Len: ~sRate * 5, dyn4Start: ~sRate * 240,  dyn4Len: ~sRate * 5
+	);
+	~mainBufLS = Buffer.alloc(s, ~bufferLS.mainLen, 2);
 	~mtfBufLLS = Buffer.alloc(s, ~sRate*3,1);
 	~mtfBufRLS = Buffer.alloc(s, ~sRate*3,1);
 
 	// load specs and bus definitions
-	~bufferLS = buffer;
 	~cfgLS = cfg;
-	"LiveSamplerDefinitions.scd".loadRelative();
+	"Lib/LiveSamplerDefinitions.scd".loadRelative();
 
 	// load global variables
 	"GlobalVars.scd".loadRelative();
@@ -215,7 +208,7 @@ s.waitForBoot({
 
 	// load synths
 	~zoneRecLS = zoneRec;
-	"LiveSamplerSynths.scd".loadRelative();
+	"Lib/LiveSamplerSynths.scd".loadRelative();
 	s.sync;
 
 	///////////////////////////////////////////// HID data acquisition //////////////////////////////////////
@@ -724,7 +717,7 @@ s.waitForBoot({
 				{
 					zoneRec.ch1A = Synth(\zoneRec,
 						[\gate, 1, \chan1, fGetInChanSampling.value(~aBus.inChan1)[0], \chan2, fGetInChanSampling.value(~aBus.inChan1)[1],
-							\start, buffer.aStart, \len, buffer.aLen / ~sRate, \recZone, 1, \attenuation, fGetInAttenuation.value()], target: fGetInGroup.value());
+							\start, ~bufferLS.aStart, \len, ~bufferLS.aLen / ~sRate, \recZone, 1, \attenuation, fGetInAttenuation.value()], target: fGetInGroup.value());
 					fSetCurZone.value("1", mode: "REC");
 					fCountZones.value("R+");
 					"LiveSampler: Record from inChan1 in A".postln;
@@ -733,7 +726,7 @@ s.waitForBoot({
 				{
 					zoneRec.ch1B = Synth(\zoneRec,
 						[\gate, 1, \chan1, fGetInChanSampling.value(~aBus.inChan1)[0], \chan2, fGetInChanSampling.value(~aBus.inChan1)[1],
-							\start, buffer.bStart, \len, buffer.bLen / ~sRate, \recZone, 2, \attenuation, fGetInAttenuation.value()], target: fGetInGroup.value());
+							\start, ~bufferLS.bStart, \len, ~bufferLS.bLen / ~sRate, \recZone, 2, \attenuation, fGetInAttenuation.value()], target: fGetInGroup.value());
 					fSetCurZone.value("2", mode: "REC");
 					fCountZones.value("R+");
 					"LiveSampler: Record from inChan1 in B".postln;
@@ -742,7 +735,7 @@ s.waitForBoot({
 				{
 					zoneRec.ch2A = Synth(\zoneRec,
 						[\gate, 1, \chan1, fGetInChanSampling.value(~aBus.inChan2)[0], \chan2, fGetInChanSampling.value(~aBus.inChan2)[1],
-							\start, buffer.aStart, \len, buffer.aLen / ~sRate, \recZone, 3, \attenuation, fGetInAttenuation.value()], target: fGetInGroup.value());
+							\start, ~bufferLS.aStart, \len, ~bufferLS.aLen / ~sRate, \recZone, 3, \attenuation, fGetInAttenuation.value()], target: fGetInGroup.value());
 					fSetCurZone.value("3", mode: "REC");
 					fCountZones.value("R+");
 					"LiveSampler: Record from inChan2 in A".postln;
@@ -751,7 +744,7 @@ s.waitForBoot({
 				{
 					zoneRec.ch2B = Synth(\zoneRec,
 						[\gate, 1,  \chan1, fGetInChanSampling.value(~aBus.inChan2)[0], \chan2, fGetInChanSampling.value(~aBus.inChan2)[1],
-							\start, buffer.bStart, \len, buffer.bLen / ~sRate, \recZone, 4, \attenuation, fGetInAttenuation.value()], target: fGetInGroup.value());
+							\start, ~bufferLS.bStart, \len, ~bufferLS.bLen / ~sRate, \recZone, 4, \attenuation, fGetInAttenuation.value()], target: fGetInGroup.value());
 					fSetCurZone.value("4", mode: "REC");
 					fCountZones.value("R+");
 					"LiveSampler: Record from inChan2 in B".postln;
@@ -760,7 +753,7 @@ s.waitForBoot({
 				{
 					zoneRec.dyn1 = Synth(\zoneRecDyn,
 						[\gate, 1, \chan1, fGetInChanSampling.value(~aBus.inChan1)[0], \chan2, fGetInChanSampling.value(~aBus.inChan1)[1],
-							\start, buffer.dyn1Start, \len, zoneRec.dynLenMax, \recZone, 5, \attenuation, fGetInAttenuation.value()],
+							\start, ~bufferLS.dyn1Start, \len, zoneRec.dynLenMax, \recZone, 5, \attenuation, fGetInAttenuation.value()],
 						target: fGetInGroup.value());
 					fSetCurZone.value("5", mode: "REC");
 					fCountZones.value("R+");
@@ -771,7 +764,7 @@ s.waitForBoot({
 				{
 					zoneRec.dyn2 = Synth(\zoneRecDyn,
 						[\gate, 1, \chan1, fGetInChanSampling.value(~aBus.inChan2)[0], \chan2, fGetInChanSampling.value(~aBus.inChan2)[1],
-							\start, buffer.dyn2Start, \len, zoneRec.dynLenMax, \recZone, 6, \attenuation, fGetInAttenuation.value()],
+							\start, ~bufferLS.dyn2Start, \len, zoneRec.dynLenMax, \recZone, 6, \attenuation, fGetInAttenuation.value()],
 						target: fGetInGroup.value());
 					fSetCurZone.value("6", mode: "REC");
 					fCountZones.value("R+");
@@ -782,7 +775,7 @@ s.waitForBoot({
 				{
 					zoneRec.dyn3 = Synth(\zoneRecDyn,
 						[\gate, 1, \chan1, fGetInChanSampling.value(~aBus.inChan1)[0], \chan2, fGetInChanSampling.value(~aBus.inChan1)[1],
-							\start, buffer.dyn3Start, \len, zoneRec.dynLenMax, \recZone, 7, \attenuation, fGetInAttenuation.value()],
+							\start, ~bufferLS.dyn3Start, \len, zoneRec.dynLenMax, \recZone, 7, \attenuation, fGetInAttenuation.value()],
 						target: fGetInGroup.value());
 					fSetCurZone.value("7", mode: "REC");
 					fCountZones.value("R+");
@@ -793,7 +786,7 @@ s.waitForBoot({
 				{
 					zoneRec.dyn4 = Synth(\zoneRecDyn,
 						[\gate, 1, \chan1, fGetInChanSampling.value(~aBus.inChan2)[0], \chan2, fGetInChanSampling.value(~aBus.inChan2)[1],
-							\start, buffer.dyn4Start, \len, zoneRec.dynLenMax, \recZone, 8, \attenuation, fGetInAttenuation.value()],
+							\start, ~bufferLS.dyn4Start, \len, zoneRec.dynLenMax, \recZone, 8, \attenuation, fGetInAttenuation.value()],
 						target: fGetInGroup.value());
 					fSetCurZone.value("8", mode: "REC");
 					fCountZones.value("R+");
@@ -827,18 +820,18 @@ s.waitForBoot({
 			if((chan==0 && (note >= 24) && (note <= 59) && sampleListLX.at(note).notNil), {
 				if(sampleListLX.at((note.asString++'out').asSymbol).notNil, {
 					if(sampleListLX.at((note.asString++'out').asSymbol) == "A", {
-						fBufferRead.value(sampleListLX.at(note), buffer.aLen, buffer.aStart)
+						fBufferRead.value(sampleListLX.at(note), ~bufferLS.aLen, ~bufferLS.aStart)
 					}, {
-						fBufferRead.value(sampleListLX.at(note), buffer.bLen, buffer.bStart)
+						fBufferRead.value(sampleListLX.at(note), ~bufferLS.bLen, ~bufferLS.bStart)
 					});
 				}, {
-					fBufferRead.value(sampleListLX.at(note), buffer.aLen, buffer.aStart);
+					fBufferRead.value(sampleListLX.at(note), ~bufferLS.aLen, ~bufferLS.aStart);
 				});
 			});
 
 			// MIDI Channel 1: LX green buttons Load
 			if((chan==0 && (note >= 60) && (note <= 71) && sampleListLX.at(note).notNil), {
-				fBufferRead.value(sampleListLX.at(note), buffer.bLen, buffer.bStart);
+				fBufferRead.value(sampleListLX.at(note), ~bufferLS.bLen, ~bufferLS.bStart);
 			});
 
 			// MIDI Channel 1: LX green keyset 2 & 3 diskPlay synth to play sample loops
@@ -884,29 +877,29 @@ s.waitForBoot({
 				{note==12}
 				{
 					("LiveSampler: Copy processbuffer into samplebuffer: "
-						++(buffer.aStart/~sRate)++"-"++((buffer.aStart + buffer.processLen)/~sRate)++"s").postln;
-					~processBuf.copyData(~mainBufLS, buffer.aStart);
+						++(~bufferLS.aStart/~sRate)++"-"++((~bufferLS.aStart + ~bufferLS.processLen)/~sRate)++"s").postln;
+					~processBuf.copyData(~mainBufLS, ~bufferLS.aStart);
 					if(~showBufferView == 1, {fDisplayBufferView.value("A")});
 				}
 				{note==14}
 				{
-					("LiveSampler: Copy processbuffer into samplebuffer: "++((buffer.aStart + buffer.processLen)/~sRate)++"-"
-						++((buffer.aStart + (2*buffer.processLen))/~sRate)++"s").postln;
-					~processBuf.copyData(~mainBufLS, buffer.aStart + buffer.processLen);
+					("LiveSampler: Copy processbuffer into samplebuffer: "++((~bufferLS.aStart + ~bufferLS.processLen)/~sRate)++"-"
+						++((~bufferLS.aStart + (2*~bufferLS.processLen))/~sRate)++"s").postln;
+					~processBuf.copyData(~mainBufLS, ~bufferLS.aStart + ~bufferLS.processLen);
 					if(~showBufferView == 1, {fDisplayBufferView.value("A")});
 				}
 				{note==16}
 				{
 					("LiveSampler: Copy processbuffer into samplebuffer: "
-						++(buffer.bStart/~sRate)++"-"++((buffer.bStart + buffer.processLen)/~sRate)++"s").postln;
-					~processBuf.copyData(~mainBufLS, buffer.bStart);
+						++(~bufferLS.bStart/~sRate)++"-"++((~bufferLS.bStart + ~bufferLS.processLen)/~sRate)++"s").postln;
+					~processBuf.copyData(~mainBufLS, ~bufferLS.bStart);
 					if(~showBufferView == 1, {fDisplayBufferView.value("B")});
 				}
 				{note==17}
 				{
-					("LiveSampler: Copy processbuffer into samplebuffer: "++((buffer.bStart + buffer.processLen)/~sRate)++"-"
-						++((buffer.bStart + (2*buffer.processLen))/~sRate)++"s").postln;
-					~processBuf.copyData(~mainBufLS, buffer.bStart + buffer.processLen);
+					("LiveSampler: Copy processbuffer into samplebuffer: "++((~bufferLS.bStart + ~bufferLS.processLen)/~sRate)++"-"
+						++((~bufferLS.bStart + (2*~bufferLS.processLen))/~sRate)++"s").postln;
+					~processBuf.copyData(~mainBufLS, ~bufferLS.bStart + ~bufferLS.processLen);
 					if(~showBufferView == 1, {fDisplayBufferView.value("B")});
 				}
 				{note==19} // save dynrec1&3 buffer
@@ -951,12 +944,12 @@ s.waitForBoot({
 
 			// MIDI Channel 10: LV2 Load
 			if((chan==9 && sampleListLV2.at(note).notNil), {
-				fBufferRead.value(sampleListLV2.at(note), buffer.bLen, buffer.bStart);
+				fBufferRead.value(sampleListLV2.at(note), ~bufferLS.bLen, ~bufferLS.bStart);
 			});
 
 			// MIDI Channel 13: LV1 Load
 			if((chan==12 && sampleListLV1.at(note).notNil), {
-				fBufferRead.value(sampleListLV1.at(note), buffer.aLen, buffer.aStart);
+				fBufferRead.value(sampleListLV1.at(note), ~bufferLS.aLen, ~bufferLS.aStart);
 			});
 		}); // only process midi if coming from the right source
 	},
@@ -1018,14 +1011,14 @@ s.waitForBoot({
 
 					zoneRec.len1 = (SystemClock.seconds - zoneRec.dyn1St) * ~sRate;
 					case
-					{ zoneRec.len1 < ( (buffer.dyn2Start - buffer.dyn1Start) / 4 ) }
+					{ zoneRec.len1 < ( (~bufferLS.dyn2Start - ~bufferLS.dyn1Start) / 4 ) }
 					{
-						~mainBufLS.copyData(~mainBufLS, buffer.dyn1Start + zoneRec.len1, buffer.dyn1Start, zoneRec.len1);
-						~mainBufLS.copyData(~mainBufLS, buffer.dyn1Start + (2*zoneRec.len1), buffer.dyn1Start, zoneRec.len1);
-						~mainBufLS.copyData(~mainBufLS, buffer.dyn1Start + (3*zoneRec.len1), buffer.dyn1Start, zoneRec.len1);
+						~mainBufLS.copyData(~mainBufLS, ~bufferLS.dyn1Start + zoneRec.len1, ~bufferLS.dyn1Start, zoneRec.len1);
+						~mainBufLS.copyData(~mainBufLS, ~bufferLS.dyn1Start + (2*zoneRec.len1), ~bufferLS.dyn1Start, zoneRec.len1);
+						~mainBufLS.copyData(~mainBufLS, ~bufferLS.dyn1Start + (3*zoneRec.len1), ~bufferLS.dyn1Start, zoneRec.len1);
 					}
-					{ zoneRec.len1 < ( (buffer.dyn2Start - buffer.dyn1Start) / 2 ) }
-					{ ~mainBufLS.copyData(~mainBufLS, buffer.dyn1Start + zoneRec.len1 - 5, buffer.dyn1Start, zoneRec.len1) }
+					{ zoneRec.len1 < ( (~bufferLS.dyn2Start - ~bufferLS.dyn1Start) / 2 ) }
+					{ ~mainBufLS.copyData(~mainBufLS, ~bufferLS.dyn1Start + zoneRec.len1 - 5, ~bufferLS.dyn1Start, zoneRec.len1) }
 					;
 
 					zoneRec.dyn1.free;
@@ -1908,7 +1901,7 @@ s.waitForBoot({
 						~cBusLS.lenBus161.get({arg val;
 							fSetCurZone.value(
 								"161",				// id current zone
-								buffer.dyn1Start,		// start current zone
+								~bufferLS.dyn1Start,		// start current zone
 								val * ~sRate);			// length current zone
 						});
 					});
@@ -1943,7 +1936,7 @@ s.waitForBoot({
 						~cBusLS.lenBus162.get({arg val;
 							fSetCurZone.value(
 								"162",				// id current zone
-								buffer.dyn2Start,		// start current zone
+								~bufferLS.dyn2Start,		// start current zone
 								val * ~sRate);			// length current zone
 						});
 					});
@@ -1977,7 +1970,7 @@ s.waitForBoot({
 						~cBusLS.lenBus163.get({arg val;
 							fSetCurZone.value(
 								"163",				// id current zone
-								buffer.dyn3Start,		// start current zone
+								~bufferLS.dyn3Start,		// start current zone
 								val * ~sRate);			// length current zone
 						});
 					});
@@ -2014,7 +2007,7 @@ s.waitForBoot({
 						~cBusLS.lenBus164.get({arg val;
 							fSetCurZone.value(
 								"164",				// id current zone
-								buffer.dyn4Start,		// start current zone
+								~bufferLS.dyn4Start,		// start current zone
 								val * ~sRate);			// length current zone
 						});
 					});
@@ -2139,35 +2132,6 @@ s.waitForBoot({
 			if((chan==14 && num==11), {
 				zone17.ampPluck1 = value;
 			});
-
-			// ZonePulse controls //////////////////////////////////////////////////////////////////////////
-			// if((chan==14 && num==12), {
-			// 	// set volume bus
-			// 	~cBusLS.pulseVolBus.set(value);
-			// 	if(value >= 0.01, { // start zone
-			// 		if(zonePulse.play1Act == 0, {
-			// 			zonePulse.play1Act = 1;
-			// 			zonePulse.play1 =
-			// 			Synth(\pulse, [
-			// 				\volBus, ~cBusLS.pulseVolBus.index,
-			// 				\speedBus, ~cBusLS.pulseSpeedBus.index,
-			// 				\widthBus, ~cBusLS.pulseWidthBus.index
-			// 			], target: ~aBus.synthGroup);
-			// 		});
-			// 		},{ // stop zone
-			// 			if(zonePulse.play1Act == 1, {
-			// 				zonePulse.play1.release;
-			// 				zonePulse.play1Act = 0;
-			// 			});
-			// 	});
-			// });
-			// if((chan==14 && num==13), {
-			// 	~cBusLS.pulseSpeedBus.set(value);
-			// });
-			// if((chan==14 && num==14), {
-			// 	~cBusLS.pulseWidthBus.set(value);
-			// });
-
 		}); // only process midi if coming from the right source
 	},
 	"/midi/control"
@@ -2212,20 +2176,20 @@ s.waitForBoot({
 				bufferView[0].timeCursorPosition = curPlayHead*~sRate;
 				bufferView[0].setSelectionStart(0, msg[4].asFloat*~sRate);
 				bufferView[0].setSelectionSize(0, msg[5].asFloat*~sRate);
-				bufferView[1].timeCursorPosition = curPlayHead*~sRate - buffer.bStart;
-				bufferView[1].setSelectionStart(0, msg[4].asFloat*~sRate - buffer.bStart);
+				bufferView[1].timeCursorPosition = curPlayHead*~sRate - ~bufferLS.bStart;
+				bufferView[1].setSelectionStart(0, msg[4].asFloat*~sRate - ~bufferLS.bStart);
 				bufferView[1].setSelectionSize(0, msg[5].asFloat*~sRate);
-				bufferView[2].timeCursorPosition = curPlayHead*~sRate - buffer.dyn1Start;
-				bufferView[2].setSelectionStart(0, msg[4].asFloat*~sRate - buffer.dyn1Start);
+				bufferView[2].timeCursorPosition = curPlayHead*~sRate - ~bufferLS.dyn1Start;
+				bufferView[2].setSelectionStart(0, msg[4].asFloat*~sRate - ~bufferLS.dyn1Start);
 				bufferView[2].setSelectionSize(0, msg[5].asFloat*~sRate);
-				bufferView[3].timeCursorPosition = curPlayHead*~sRate - buffer.dyn2Start;
-				bufferView[3].setSelectionStart(0, msg[4].asFloat*~sRate - buffer.dyn2Start);
+				bufferView[3].timeCursorPosition = curPlayHead*~sRate - ~bufferLS.dyn2Start;
+				bufferView[3].setSelectionStart(0, msg[4].asFloat*~sRate - ~bufferLS.dyn2Start);
 				bufferView[3].setSelectionSize(0, msg[5].asFloat*~sRate);
-				bufferView[4].timeCursorPosition = curPlayHead*~sRate - buffer.dyn3Start;
-				bufferView[4].setSelectionStart(0, msg[4].asFloat*~sRate - buffer.dyn3Start);
+				bufferView[4].timeCursorPosition = curPlayHead*~sRate - ~bufferLS.dyn3Start;
+				bufferView[4].setSelectionStart(0, msg[4].asFloat*~sRate - ~bufferLS.dyn3Start);
 				bufferView[4].setSelectionSize(0, msg[5].asFloat*~sRate);
-				bufferView[5].timeCursorPosition = curPlayHead*~sRate - buffer.dyn4Start;
-				bufferView[5].setSelectionStart(0, msg[4].asFloat*~sRate - buffer.dyn4Start);
+				bufferView[5].timeCursorPosition = curPlayHead*~sRate - ~bufferLS.dyn4Start;
+				bufferView[5].setSelectionStart(0, msg[4].asFloat*~sRate - ~bufferLS.dyn4Start);
 				bufferView[5].setSelectionSize(0, msg[5].asFloat*~sRate);
 			}.defer();
 		});
@@ -2234,15 +2198,15 @@ s.waitForBoot({
 			{ // update bufferViews
 				bufferView[0].setSelectionStart(1, curRecHead*~sRate);
 				bufferView[0].setSelectionSize(1, 0.5*~sRate);
-				bufferView[1].setSelectionStart(1, curRecHead*~sRate - buffer.bStart);
+				bufferView[1].setSelectionStart(1, curRecHead*~sRate - ~bufferLS.bStart);
 				bufferView[1].setSelectionSize(1, 0.5*~sRate);
-				bufferView[2].setSelectionStart(1, curRecHead*~sRate - buffer.dyn1Start);
+				bufferView[2].setSelectionStart(1, curRecHead*~sRate - ~bufferLS.dyn1Start);
 				bufferView[2].setSelectionSize(1, 0.5*~sRate);
-				bufferView[3].setSelectionStart(1, curRecHead*~sRate - buffer.dyn2Start);
+				bufferView[3].setSelectionStart(1, curRecHead*~sRate - ~bufferLS.dyn2Start);
 				bufferView[3].setSelectionSize(1, 0.5*~sRate);
-				bufferView[4].setSelectionStart(1, curRecHead*~sRate - buffer.dyn3Start);
+				bufferView[4].setSelectionStart(1, curRecHead*~sRate - ~bufferLS.dyn3Start);
 				bufferView[4].setSelectionSize(1, 0.5*~sRate);
-				bufferView[5].setSelectionStart(1, curRecHead*~sRate - buffer.dyn4Start);
+				bufferView[5].setSelectionStart(1, curRecHead*~sRate - ~bufferLS.dyn4Start);
 				bufferView[5].setSelectionSize(1, 0.5*~sRate);
 			}.defer();
 		});
@@ -2256,15 +2220,15 @@ s.waitForBoot({
 			case
 			{msg[3] == 0}
 			{fDisplayBufferView.value("A")}
-			{msg[3] == buffer.bStart}
+			{msg[3] == ~bufferLS.bStart}
 			{fDisplayBufferView.value("B")}
-			{msg[3] == buffer.dyn1Start}
+			{msg[3] == ~bufferLS.dyn1Start}
 			{fDisplayBufferView.value("C1")}
-			{msg[3] == buffer.dyn2Start}
+			{msg[3] == ~bufferLS.dyn2Start}
 			{fDisplayBufferView.value("C2")}
-			{msg[3] == buffer.dyn3Start}
+			{msg[3] == ~bufferLS.dyn3Start}
 			{fDisplayBufferView.value("C3")}
-			{msg[3] == buffer.dyn4Start}
+			{msg[3] == ~bufferLS.dyn4Start}
 			{fDisplayBufferView.value("C4")}
 		});
 	},
@@ -2314,8 +2278,8 @@ s.waitForBoot({
 		if(sampleColl=="",
 			{{~mainBufLS.zero; "Buffer cleared.".postln;}.defer()},{
 				if(bufPart == "A",
-					{fBufferRead.value(sampleArray, buffer.aLen, buffer.aStart, relativePath: relPath);},
-					{fBufferRead.value(sampleArray, buffer.bLen, buffer.bStart, relativePath: relPath);}
+					{fBufferRead.value(sampleArray, ~bufferLS.aLen, ~bufferLS.aStart, relativePath: relPath);},
+					{fBufferRead.value(sampleArray, ~bufferLS.bLen, ~bufferLS.bStart, relativePath: relPath);}
 				);
 				if(norm != 0, {~mainBufLS.normalize(norm); ("Buffer normalized to" + norm).postln;});
 		});
@@ -2512,17 +2476,17 @@ s.waitForBoot({
 		// display buffer in bufferView
 		if(~showBufferView == 1, {
 			case
-			{bufferStart < buffer.bStart}
+			{bufferStart < ~bufferLS.bStart}
 			{fDisplayBufferView.value("A")}
-			{(bufferStart >= buffer.bStart) && (bufferStart < buffer.dyn1Start)}
+			{(bufferStart >= ~bufferLS.bStart) && (bufferStart < ~bufferLS.dyn1Start)}
 			{fDisplayBufferView.value("B")}
-			{(bufferStart >= buffer.dyn1Start) && (bufferStart < buffer.dyn2Start)}
+			{(bufferStart >= ~bufferLS.dyn1Start) && (bufferStart < ~bufferLS.dyn2Start)}
 			{fDisplayBufferView.value("C1")}
-			{(bufferStart >= buffer.dyn2Start) && (bufferStart < buffer.dyn3Start)}
+			{(bufferStart >= ~bufferLS.dyn2Start) && (bufferStart < ~bufferLS.dyn3Start)}
 			{fDisplayBufferView.value("C2")}
-			{(bufferStart >= buffer.dyn3Start) && (bufferStart < buffer.dyn4Start)}
+			{(bufferStart >= ~bufferLS.dyn3Start) && (bufferStart < ~bufferLS.dyn4Start)}
 			{fDisplayBufferView.value("C3")}
-			{bufferStart >= buffer.dyn4Start}
+			{bufferStart >= ~bufferLS.dyn4Start}
 			{fDisplayBufferView.value("C4")}
 			;
 		});
@@ -2533,25 +2497,25 @@ s.waitForBoot({
 		case
 		{section == "A"}
 		{
-			~mainBufLS.write(bufferViewFolder++"A.wav","WAV","int16", buffer.aLen, buffer.aStart);
+			~mainBufLS.write(bufferViewFolder++"A.wav","WAV","int16", ~bufferLS.aLen, ~bufferLS.aStart);
 			{
 				fileBufferView[0].openRead(bufferViewFolder++"A.wav");
 				bufferView[0].soundfile = fileBufferView[0];
-				bufferView[0].read(0, buffer.aLen, cfg.bufferViewBlocksize).refresh;
+				bufferView[0].read(0, ~bufferLS.aLen, cfg.bufferViewBlocksize).refresh;
 			}.defer(cfg.bufferViewDeferRead);
 		}
 		{section == "B"}
 		{
-			~mainBufLS.write(bufferViewFolder++"B.wav","WAV","int16", buffer.bLen, buffer.bStart);
+			~mainBufLS.write(bufferViewFolder++"B.wav","WAV","int16", ~bufferLS.bLen, ~bufferLS.bStart);
 			{
 				fileBufferView[1].openRead(bufferViewFolder++"B.wav");
 				bufferView[1].soundfile = fileBufferView[1];
-				bufferView[1].read(0, buffer.bLen, cfg.bufferViewBlocksize).refresh;
+				bufferView[1].read(0, ~bufferLS.bLen, cfg.bufferViewBlocksize).refresh;
 			}.defer(cfg.bufferViewDeferRead);
 		}
 		{section == "C1"}
 		{
-			~mainBufLS.write(bufferViewFolder++"C1.wav","WAV","int16",  zoneRec.dynLenMaxFrames, buffer.dyn1Start);
+			~mainBufLS.write(bufferViewFolder++"C1.wav","WAV","int16",  zoneRec.dynLenMaxFrames, ~bufferLS.dyn1Start);
 			{
 				fileBufferView[2].openRead(bufferViewFolder++"C1.wav");
 				bufferView[2].soundfile = fileBufferView[2];
@@ -2560,7 +2524,7 @@ s.waitForBoot({
 		}
 		{section == "C2"}
 		{
-			~mainBufLS.write(bufferViewFolder++"C2.wav","WAV","int16", zoneRec.dynLenMaxFrames, buffer.dyn2Start);
+			~mainBufLS.write(bufferViewFolder++"C2.wav","WAV","int16", zoneRec.dynLenMaxFrames, ~bufferLS.dyn2Start);
 			{
 				fileBufferView[3].openRead(bufferViewFolder++"C2.wav");
 				bufferView[3].soundfile = fileBufferView[3];
@@ -2569,7 +2533,7 @@ s.waitForBoot({
 		}
 		{section == "C3"}
 		{
-			~mainBufLS.write(bufferViewFolder++"C3.wav","WAV","int16", zoneRec.dynLenMaxFrames, buffer.dyn3Start);
+			~mainBufLS.write(bufferViewFolder++"C3.wav","WAV","int16", zoneRec.dynLenMaxFrames, ~bufferLS.dyn3Start);
 			{
 				fileBufferView[4].openRead(bufferViewFolder++"C3.wav");
 				bufferView[4].soundfile = fileBufferView[4];
@@ -2578,7 +2542,7 @@ s.waitForBoot({
 		}
 		{section == "C4"}
 		{
-			~mainBufLS.write(bufferViewFolder++"C4.wav","WAV","int16", 2*zoneRec.dynLenMaxFrames, buffer.dyn4Start);
+			~mainBufLS.write(bufferViewFolder++"C4.wav","WAV","int16", 2*zoneRec.dynLenMaxFrames, ~bufferLS.dyn4Start);
 			{
 				fileBufferView[5].openRead(bufferViewFolder++"C4.wav");
 				bufferView[5].soundfile = fileBufferView[5];
@@ -2619,7 +2583,7 @@ s.waitForBoot({
 
 	fAmpCurZone = {
 		arg buffer, start = 0, num = 100, mul = 1;
-		buffer.loadToFloatArray(start, num, {
+		~bufferLS.loadToFloatArray(start, num, {
 			arg arr, buf;
 			"LoadToFloat executed.".postln;
 			buf.loadCollection(arr.collect{|x| x*mul}, start, {arg arr, buf;  "Amplify current zone finished.".postln});
@@ -2829,7 +2793,7 @@ s.waitForBoot({
 		if(dragTemp.isString, {dragTemp = dragTemp.split(nl)}); // if only one file is dragged, make it into an array with this trick
 		// dragTemp.postln;
 		if(cfg.dragEmptyBeforeLoad == 1, {~mainBufLS.zero; "Buffer cleared.".postln;});
-		fBufferRead.value(dragTemp, ~mainBufLS.numFrames, buffer.aStart, 0);
+		fBufferRead.value(dragTemp, ~mainBufLS.numFrames, ~bufferLS.aStart, 0);
 		if(~showBufferView == 1, {fDisplayBufferView.value("A")});
 	});
 
@@ -2841,7 +2805,7 @@ s.waitForBoot({
 		if(dragTemp.isString, {dragTemp = dragTemp.split(nl)}); // if only one file is dragged, make it into an array with this trick
 		// dragTemp.postln;
 		if(cfg.dragEmptyBeforeLoad == 1, {~mainBufLS.zero; "Buffer cleared.".postln;});
-		fBufferRead.value(dragTemp, buffer.bLen, buffer.bStart, 0);
+		fBufferRead.value(dragTemp, ~bufferLS.bLen, ~bufferLS.bStart, 0);
 		if(~showBufferView == 1, {fDisplayBufferView.value("B")});
 	});
 
@@ -2883,12 +2847,12 @@ s.waitForBoot({
 		});
 		// T loads testSampleList
 		if((keycode == 17), {
-			fBufferRead.value(~testSampleList, buffer.aLen, buffer.aStart);
-			fBufferRead.value(~testSampleList, buffer.bLen, buffer.bStart);
-			fBufferRead.value(~testSampleList, buffer.dyn1Len, buffer.dyn1Start);
-			fBufferRead.value(~testSampleList, buffer.dyn2Len, buffer.dyn2Start);
-			fBufferRead.value(~testSampleList, buffer.dyn3Len, buffer.dyn3Start);
-			fBufferRead.value(~testSampleList, buffer.dyn4Len, buffer.dyn4Start);
+			fBufferRead.value(~testSampleList, ~bufferLS.aLen, ~bufferLS.aStart);
+			fBufferRead.value(~testSampleList, ~bufferLS.bLen, ~bufferLS.bStart);
+			fBufferRead.value(~testSampleList, ~bufferLS.dyn1Len, ~bufferLS.dyn1Start);
+			fBufferRead.value(~testSampleList, ~bufferLS.dyn2Len, ~bufferLS.dyn2Start);
+			fBufferRead.value(~testSampleList, ~bufferLS.dyn3Len, ~bufferLS.dyn3Start);
+			fBufferRead.value(~testSampleList, ~bufferLS.dyn4Len, ~bufferLS.dyn4Start);
 		});
 		// R refreshes bufferView
 		if((keycode == 15), {

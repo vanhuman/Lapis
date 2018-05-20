@@ -1097,28 +1097,4 @@ SynthDef(\ampPitchFollow, {// efx bank 2 fader 2
 	sig = sig * EnvGen.kr(Env.adsr(0,0,1,0), gate, doneAction: 2);
 	Out.ar(~aBus.outMain, volVal * sig);
 }).send(s);
-
-// sending Pulse to Raphael Vanoli
-// SynthDef(\pulse, {
-// 	arg volBus, speedBus, widthBus, gate = 1;
-// 	var sig, volVal, speedVal, widthVal, widthVal2, env;
-// 	volVal = In.kr(volBus,1);
-// 	speedVal = IEnvGen.kr(Env.new([0.4,5],[1]), In.kr(speedBus,1));
-// 	env = EnvGen.kr(Env.adsr, gate, doneAction:2);
-// 	widthVal = IEnvGen.kr(Env.new([0.1,0.9],[1]), In.kr(widthBus,1));
-// 	widthVal2 = IEnvGen.kr(Env.new([0.9,0.1],[1]), In.kr(widthBus,1));
-//
-// 	// code when 1=no compression 0=max compression
-// 	// sig = LFPulse.ar(speedVal, width: widthVal2).range(1 - volVal, 1);
-// 	// sig = SinOsc.ar(speedVal).range(1 - volVal,1);
-// 	// sig = DC.ar(1) * (1 - (volVal * EnvGen.kr( Env.new([0,1,0,0],[widthVal,widthVal,0.1/widthVal]*(1/speedVal),[\sin,\sin,\lin]).circle )));
-//
-// 	// code when 0=no compression 1=max compression
-// 	sig = LFPulse.ar(speedVal, width: widthVal).range(0,volVal);
-// 	// sig = SinOsc.ar(speedVal).range(0,volVal);
-// 	// sig = DC.ar(1) * volVal * EnvGen.kr( Env.new([0,1,0,0],[widthVal,widthVal,0.1/widthVal]*(1/speedVal),[\sin,\sin,\lin]).circle );
-//
-// 	// sig.round(0.01).poll(10);
-// 	Out.ar(~aBus.outAltChan, sig * env);
-// }).add;
 )

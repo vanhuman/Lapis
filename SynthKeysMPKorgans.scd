@@ -123,18 +123,18 @@ s.waitForBoot({
 	"GlobalVars.scd".loadRelative();
 
 	~tuningA = 440; // BoC: 430
-	~synthKeysBuf = Buffer.alloc(s, (cfg.recLen)*~sRate, 2);
-	~synthKeysDrumBuf = Array.newClear(cfg.drumList.size);
+	~bufferSK = Buffer.alloc(s, (cfg.recLen)*~sRate, 2);
+	~bufferDrumSK = Array.newClear(cfg.drumList.size);
 	cfg.drumList.size.do { |count|
-		~synthKeysDrumBuf[count] = Array.newClear(8);
+		~bufferDrumSK[count] = Array.newClear(8);
 		8.do { |i|
-			~synthKeysDrumBuf[count][i] = Buffer.read(s, cfg.dataDir ++ "SynthKeys/Drum/" ++ cfg.drumList[count][i]);
+			~bufferDrumSK[count][i] = Buffer.read(s, cfg.dataDir ++ "SynthKeys/Drum/" ++ cfg.drumList[count][i]);
 		};
 	};
 
 	// SynthKeys Specs
 	~recLen = cfg.recLen;
-	"SynthKeysSpecs.scd".loadRelative();
+	"Lib/SynthKeysSpecs.scd".loadRelative();
 
 	// initialize notes array
 	16.do({ arg i;
@@ -152,19 +152,19 @@ s.waitForBoot({
 	// accomodate in case Arduino is not available
 	if(~noArduino == 1, {
 		"\nSynthKeys: Remapping dist specs because no Arduino availabe".postln;
-		~synthKeysSpec.dist1 = Env.new([20,4,4],[0.5,0.5],[\exp,\lin]);
-		~synthKeysSpec.dist2 = Env.new([7.5,1.5,1.5],[0.5,0.5],[\exp,\lin]);
-		~synthKeysSpec.dist3 = Env.new([15,8,8],[0.5,0.5],[\exp,\lin]);
-		~synthKeysSpec.dist4 = Env.new([4,0.8,0.8],[0.5,0.5],[\exp,\lin]);
-		~synthKeysSpec.dist5 = Env.new([5,0.8,0.8],[0.5,0.5],[\exp,\lin]);
-		~synthKeysSpec.dist6 = Env.new([5,0.3,0.3],[0.5,0.5],[\exp,\lin]);
-		~synthKeysSpec.dist7 = Env.new([300,100,100],[0.5,0.5],[\exp,\lin]);
-		~synthKeysSpec.dist8 = Env.new([50,1,1],[0.5,0.5],[\exp,\lin]);
-		~synthKeysSpec.distHW = Env.new([20,1,1],[0.5,0.5],[\exp,\lin]);
+		~specSK.dist1 = Env.new([20,4,4],[0.5,0.5],[\exp,\lin]);
+		~specSK.dist2 = Env.new([7.5,1.5,1.5],[0.5,0.5],[\exp,\lin]);
+		~specSK.dist3 = Env.new([15,8,8],[0.5,0.5],[\exp,\lin]);
+		~specSK.dist4 = Env.new([4,0.8,0.8],[0.5,0.5],[\exp,\lin]);
+		~specSK.dist5 = Env.new([5,0.8,0.8],[0.5,0.5],[\exp,\lin]);
+		~specSK.dist6 = Env.new([5,0.3,0.3],[0.5,0.5],[\exp,\lin]);
+		~specSK.dist7 = Env.new([300,100,100],[0.5,0.5],[\exp,\lin]);
+		~specSK.dist8 = Env.new([50,1,1],[0.5,0.5],[\exp,\lin]);
+		~specSK.distHW = Env.new([20,1,1],[0.5,0.5],[\exp,\lin]);
 	});
 
 	// load synths
-	"SynthKeysSynths.scd".loadRelative();
+	"Lib/SynthKeysSynths.scd".loadRelative();
 
 	//////////////// functions ////////////////////////////////
 
@@ -178,7 +178,7 @@ s.waitForBoot({
 			if( soundFile.numChannels == 1, {m = 0;}, {m = 1;});
 
 			// the actual read of the buffer
-			~synthKeysBuf.readChannel(samplePath, channels: [0,m]);
+			~bufferSK.readChannel(samplePath, channels: [0,m]);
 
 			// done
 			("\nSample read:" + counter + position + "--" + samplePath).postln;
@@ -504,7 +504,7 @@ s.waitForBoot({
 							\pitchBus, pitchBus.index, \distBus, distBus.index, \velocity, vel,
 							\inChan1, fGetInChan.value()[0], \inChan2, fGetInChan.value()[1],
 							\prevFreq, notesPrev.midicps(~tuningA), \synthGainBus, synthGainBus[synth].index,
-							\drumFilterBus, drumFilterBus.index, \drumVolBus, drumVolBus.index, \buffer, ~synthKeysBuf
+							\drumFilterBus, drumFilterBus.index, \drumVolBus, drumVolBus.index, \buffer, ~bufferSK
 						], target: ~aBus.synthGroup);
 						// count notes
 						{ 	countPlay = countPlay + 1;
@@ -525,7 +525,7 @@ s.waitForBoot({
 
 				if((chan == 2) && (note==19), { // save sample buffer
 					// "SynthKeys: save samplebuffer".postln;
-					// ~synthKeysBuf.write(thisProcess.platform.recordingsDir++"/SynthKeys"++Date.getDate.format("_%y%m%d_%H%M%S")++".aif");
+					// ~bufferSK.write(thisProcess.platform.recordingsDir++"/SynthKeys"++Date.getDate.format("_%y%m%d_%H%M%S")++".aif");
 				});
 				if((chan == 2) && (note==13), { // MIDI sequence 1
 					if(midiSeqAct == 0, {
@@ -693,9 +693,9 @@ s.waitForBoot({
 				// 		synthGainBus[num+(chan*8)].set(val);
 				// 		// ("synthGainBus"+(num+(chan*8))+"set to"+val).postln;
 				// 		}, {
-				// 			~aBus.outMainsynth.set(\resampAtt, ~synthKeysSpec.resampleAtt.at(val));
+				// 			~aBus.outMainsynth.set(\resampAtt, ~specSK.resampleAtt.at(val));
 				// 			// ("initial resampleAtt value is" + ~aBus.outResamplingAtt).postln;
-				// 			("resampleAtt set to"+ ~synthKeysSpec.resampleAtt.at(val)).postln;
+				// 			("resampleAtt set to"+ ~specSK.resampleAtt.at(val)).postln;
 				// 	});
 				// });
 			});
@@ -727,7 +727,7 @@ s.waitForBoot({
 				{cookie == 16}		// X-axis
 				{
 					if(~oscSrc == "jx", {val = (1-val) * 1024}); // junXion repair
-					midiSeqSpeedInit = ~synthKeysSpec.midiSeqSpeed.at(val/1024);
+					midiSeqSpeedInit = ~specSK.midiSeqSpeed.at(val/1024);
 					cutoffBus.set(val/1024)
 				};
 		});
@@ -769,7 +769,7 @@ s.waitForBoot({
 				case
 				{prevVal == 7} // start recording
 				{
-					"Start recording into ~synthKeysBuf...".postln;
+					"Start recording into ~bufferSK...".postln;
 
 					// // set input channels
 					// if(~aBus.inInt == 1, { // if input is internal, it's always stereo
@@ -783,7 +783,7 @@ s.waitForBoot({
 
 					// start synth
 					zoneRec = Synth(\zoneRecSK, [\chan1, fGetInChan.value()[0], \chan2, fGetInChan.value()[1],
-						\buf, ~synthKeysBuf, \len, cfg.recLen
+						\buf, ~bufferSK, \len, cfg.recLen
 					], target: ~aBus.synthGroup);
 				}
 				{prevVal == 5}  // load default sample for hatswitch right
@@ -901,10 +901,10 @@ s.waitForBoot({
 		});
 		// L clears buffer
 		if((keycode == 37),
-			{~synthKeysBuf.zero; "SynthKeys Buffer cleared.".postln;});
+			{~bufferSK.zero; "SynthKeys Buffer cleared.".postln;});
 		// S saves buffer to disk
 		if((keycode ==1),{
-			~synthKeysBuf.write(thisProcess.platform.recordingsDir++"/SynthKeys"++Date.getDate.format("_%y%m%d_%H%M%S")++".aif");
+			~bufferSK.write(thisProcess.platform.recordingsDir++"/SynthKeys"++Date.getDate.format("_%y%m%d_%H%M%S")++".aif");
 			"SynthKeys: save samplebuffer".postln;
 		});
 	});
@@ -919,9 +919,9 @@ s.waitForBoot({
 		OSCdef(\skEx3d).free; OSCdef(\skPanic).free; OSCdef(\skExtMidi).free;
 		OSCdef(\synthKeysBpm).free;
 		~wSynthKeysAvail = nil;
-		~synthKeysBuf.free;
+		~bufferSK.free;
 		3.do { |count|
-			~synthKeysDrumBuf[count].do { |buffer| buffer.free; };
+			~bufferDrumSK[count].do { |buffer| buffer.free; };
 		};
 		tMidiSeq.stop; if(cfg.midiWrite and: { midiRecording }, { midiFile.write; midiRecording = false; });
 	});

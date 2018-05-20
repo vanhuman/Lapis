@@ -87,12 +87,40 @@ s.waitForBoot({
 		synthList: project.synthList[pID],
 		semiShiftList: project.semiShiftList[pID],
 		sampleList: project.sampleList[pID],
-		drumList0: [
-			"6/plankje1.wav", "6/plankje2.wav",
-			"6/plankje3.wav", "6/plankje4.wav",
-			"6/plankje5.wav", "6/plankje6.wav",
-			"6/plankje7.wav", "6/plankje8.wav"
+		synthMidiSeq: [0,0,0,0, 0,0,0,0, 0,2,2,2, 1,0,2,2], // 0=don't respond to chan 16, 1=respond to all, 2=don't respond to chan 1-15
+		drumList: [
+			[
+				// "1/TH-BD01.aif", "1/TH-BD02-b.aif",
+				"2/FK_Kick2.aif B0.aif", "2/FK_KickFK.aif",
+				"2/FK_closedHHV F#1.aif", "2/FK_HiHatDry3 F#0.aif",
+				"1/TH-SD01.aif", "1/TH-SD02.aif",
+				"1/TH-HHO-01a.aif", "1/TH-HHO-02a.aif"
+			],
+			[
+				"5/BassDist1.wav", "5/BassDist2.wav",
+				"5/ClapDist1.wav", "5/ClapDist2.wav",
+				"5/HihatDist1.wav", "5/HihatDist2.wav",
+				"5/SnareDist1.wav", "5/SnareDist2.wav"
+			],
+			[
+				"3/FK_FloorTV D5 -15.wav","3/FK_FloorTV D5 -15.wav",
+				"3/FK_Ride1.aif D#2.aif","3/FK_Ride1.aif D#2.aif",
+				"3/FK_Snare6.aif C#0.aif","3/FK_Snare6.aif C#0.aif",
+				"3/FK_Crash1.aif C4.aif", "3/FK_Crash1.aif C4.aif"
+			],
+			[
+				"7/nin-ten-bass1.wav", "7/nin-ten-bass2.wav",
+				"7/nin-ten-snare1.wav", "7/nin-ten-snare2.wav",
+				"7/nin-ten-snare3.wav", "7/nin-ten-bekken1.wav",
+				"7/nin-ten-bekken1.wav", "7/nin-ten-bekken1.wav"
+			]
 		],
+		// drumList0: [
+		// 	"6/plankje1.wav", "6/plankje2.wav",
+		// 	"6/plankje3.wav", "6/plankje4.wav",
+		// 	"6/plankje5.wav", "6/plankje6.wav",
+		// 	"6/plankje7.wav", "6/plankje8.wav"
+		// ],
 		// drumList0: [
 		// 	"2/FK_Kick2.aif B0.aif", "2/FK_KickFK.aif",
 		// 	"2/FK_closedHHV F#1.aif", "2/FK_HiHatDry3 F#0.aif",
@@ -111,15 +139,15 @@ s.waitForBoot({
 		// 	"1/TH-SD01.aif", "1/TH-SD02.aif",
 		// 	"1/TH-HHO-01a.aif", "1/TH-HHO-02a.aif"
 		// ],
-		drumList1: [
-			"5/BassDist1.wav", "5/BassDist2.wav",
-			"5/ClapDist1.wav", "5/ClapDist2.wav",
-			"5/HihatDist1.wav", "5/HihatDist2.wav",
-			"5/SnareDist1.wav", "5/SnareDist2.wav"
-		],
+		// drumList1: [
+		// 	"5/BassDist1.wav", "5/BassDist2.wav",
+		// 	"5/ClapDist1.wav", "5/ClapDist2.wav",
+		// 	"5/HihatDist1.wav", "5/HihatDist2.wav",
+		// 	"5/SnareDist1.wav", "5/SnareDist2.wav"
+		// ],
 		midiFilterPitch: [\IAC2, (0..15),\LPK, (0..15)], // MIDI filter for note msgs; format [source, [midichannels]]
 		recLen: 6, // recording length for SampleKeys
-		libDir: Document.dir++"Lapis/Data/"
+		dataDir: Document.dir++"/Lapis/Data/",
 	);
 
 	var localAddr = NetAddr("127.0.0.1", 57120);
@@ -143,17 +171,18 @@ s.waitForBoot({
 	"GlobalVars.scd".loadRelative();
 
 	~tuningA = 440; // BoC: 430
-	~synthKeysBuf = { Buffer.alloc(s, (cfg.recLen)*~sRate, 2) } ! 16;
-	~synthKeysDrumBuf0 = Array.newClear(8);
-	~synthKeysDrumBuf1 = Array.newClear(8);
-	8.do { |i|
-		~synthKeysDrumBuf0[i] = Buffer.read(s, cfg.libDir ++ "SynthKeys/Drum/" ++ cfg.drumList0[i]);
-		~synthKeysDrumBuf1[i] = Buffer.read(s, cfg.libDir ++ "SynthKeys/Drum/" ++ cfg.drumList1[i]);
+	~bufferSK = { Buffer.alloc(s, (cfg.recLen)*~sRate, 2) } ! 16;
+	~bufferDrumSK = Array.newClear(cfg.drumList.size);
+	cfg.drumList.size.do { |count|
+		~bufferDrumSK[count] = Array.newClear(8);
+		8.do { |i|
+			~bufferDrumSK[count][i] = Buffer.read(s, cfg.dataDir ++ "SynthKeys/Drum/" ++ cfg.drumList[count][i]);
+		};
 	};
 
 	// SynthKeys Specs
 	~recLen = cfg.recLen;
-	"SynthKeysSpecs.scd".loadRelative();
+	"Lib/SynthKeysSpecs.scd".loadRelative();
 
 	// initialize notes array
 	16.do({ arg i;
@@ -161,7 +190,7 @@ s.waitForBoot({
 	});
 
 	// load synths
-	"SynthKeysSynths.scd".loadRelative();
+	"Lib/SynthKeysSynths.scd".loadRelative();
 
 	//////////////// functions ////////////////////////////////
 
@@ -169,13 +198,13 @@ s.waitForBoot({
 	fBufferRead = {
 		arg sampleFile, absolutePath = false, channel = 0;
 		f = SoundFile.new;
-		sampleFile = if(absolutePath.not, {cfg.libDir ++ sampleFile}, {sampleFile});
+		sampleFile = if(absolutePath.not, {cfg.dataDir ++ sampleFile}, {sampleFile});
 		if(f.openRead(sampleFile), {
 			// prepare for loading mono samples
 			if( f.numChannels == 1, {m = 0;}, {m = 1;});
 
 			// the actual read of the buffer
-			~synthKeysBuf[channel].readChannel(sampleFile, channels: [0,m]);
+			~bufferSK[channel].readChannel(sampleFile, channels: [0,m]);
 
 			// done
 			("\nSample read on channel" + channel ++ ":" + sampleFile).postln;
@@ -245,7 +274,7 @@ s.waitForBoot({
 							\efxBus, efxBus[chan].index, \pitchBus, pitchBus[chan].index, \distBus, distBus[chan].index, \velocity, vel,
 							\inChan1, fGetInChan.value()[0], \inChan2, fGetInChan.value()[1],
 							\prevFreq, notesPrev[chan].midicps(~tuningA), \synthGainBus, synthGainBus[chan].index,
-							\drumFilterBus, drumFilterBus[chan].index, \drumVolBus, drumVolBus[chan].index, \buffer, ~synthKeysBuf[chan]
+							\drumFilterBus, drumFilterBus[chan].index, \drumVolBus, drumVolBus[chan].index, \buffer, ~bufferSK[chan]
 						], target: ~aBus.synthGroup);
 						// count notes
 						{ 	countPlay[chan] = countPlay[chan] + 1;
@@ -425,7 +454,7 @@ s.waitForBoot({
 						\pitchBus, pitchBus[chan].index, \distBus, distBus[chan].index, \velocity, 127,
 						\inChan1, fGetInChan.value()[0], \inChan2, fGetInChan.value()[1],
 						\synthGainBus, synthGainBus[chan].index,
-						\buffer, ~synthKeysBuf[chan]
+						\buffer, ~bufferSK[chan]
 					], target: ~aBus.synthGroup);
 				},{
 					notesArray[chan][60].set(\gate,0);
@@ -469,9 +498,9 @@ s.waitForBoot({
 		OSCdef(\skNON).free; OSCdef(\skNOF).free; OSCdef(\skCC).free;
 		OSCdef(\skEx3d).free; OSCdef(\skPanic).free; OSCdef(\skExtMidi).free;
 		~wSynthKeysArrayAvail = nil;
-		~synthKeysBuf.do { |buffer| buffer.free} ;
-		~synthKeysDrumBuf0.do { |buffer| buffer.free; };
-		~synthKeysDrumBuf1.do { |buffer| buffer.free };
+		~bufferSK.do { |buffer| buffer.free} ;
+		~bufferDrumSK0.do { |buffer| buffer.free; };
+		~bufferDrumSK1.do { |buffer| buffer.free };
 	});
 
 	// initialize
