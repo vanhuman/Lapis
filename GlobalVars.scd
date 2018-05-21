@@ -20,7 +20,6 @@ if((~aBus.isNil || ~projectList.isNil), {
 	~projectNotes = (cr: "/Crack/Crack Notes.rtf");
 
 	~lapisStatus = 0; 								// whether to start LapisStatus with LiveSampler
-	~lapisStatusDestination = "local"; 	// where to send OSC status updates from LS and SK, set to "local" or "touchOSC" or "both" or "none"
 	~showBufferView = 0;						// set to 1 to show bufferview window
 	~noArduino = 0;								// set to 1 if Arduino not available
 	~distortionMax = 50;						// set the maximum value for distortion controllers, nil if should be disregarded

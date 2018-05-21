@@ -44,7 +44,6 @@ s.waitForBoot({
 		docDir: Document.dir++"/Lapis/", // current location
 		libDir: "Data/", // library files location
 		localAddr: NetAddr("127.0.0.1", 57120), // to send OSC to other SC programs
-		touchOSCAddr: NetAddr("169.254.0.3", 57120), // to send OSC to an iPod running TouchOSC
 		dragEmptyBeforeLoad: 1, // 1: when dragging, empty buffer before load
 	);
 
@@ -2627,13 +2626,10 @@ s.waitForBoot({
 		});
 	};
 
-	// sending LapisStatus OSC to local or touchOSC
+	// sending LapisStatus OSC to local
 	fSendLapisStatus = {
 		arg type, value;
-		if((~lapisStatusDestination == "touchOSC") || (~lapisStatusDestination == "both"),
-			{cfg.touchOSCAddr.sendMsg("/lapistatus/"++type,value)});
-		if((~lapisStatusDestination == "local") || (~lapisStatusDestination == "both"),
-			{cfg.localAddr.sendMsg("/lapistatus",type,value)});
+		cfg.localAddr.sendMsg("/lapistatus",type,value);
 	};
 
 	// returning input channels for effects, depending on ~aBus.inInt and ~aBus.inAlt settings

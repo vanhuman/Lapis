@@ -83,7 +83,8 @@ s.waitForBoot({
 		midiRestartSpeed: false, // when true, resets the speed on every new midi sequence
 		sampleLoadBack: nil, // array of paths to sample files to load on hatswitch-back
 		sampleLoadLeft: nil, // array of paths to sample files to load on hatswitch-left
-		sampleLoadRight: nil // array of paths to sample files to load on hatswitch-right
+		sampleLoadRight: nil, // array of paths to sample files to load on hatswitch-right
+		localAddr: NetAddr("127.0.0.1", 57120)
 	);
 
 	var midiFilterPitchLocal = cfg.midiFilterPitch; // set filter for MIDI notes
@@ -91,9 +92,6 @@ s.waitForBoot({
 	// uncomment below to enable external MIDI control without the ShackleSystem / this will be done automatically by SauerControl.scd
 	// var midiFilterPitchLocal = cfg.midiFilterPitchExtMidi;
 	// var ex3dEnabled = 0;
-
-	var localAddr = NetAddr("127.0.0.1", 57120);
-	var touchOSCAddr = NetAddr("10.0.0.4", 57120);
 
 	// GUI
 	var dispPlay, countPlay = 0, susStatus, sustain = 0;
@@ -110,7 +108,6 @@ s.waitForBoot({
 	var recChan1, recChan2, midiSrcIndex, numPressed = 1, sampleFile;
 	var notesArray = Array.newClear(16), zoneRec, notesPrev, activeSynths = 0.dup(16);
 	var prevVal, hsBackCount = -1, hsRightCount = -1, hsLeftCount = -1, hsStart, hsGap = 0.15;
-	var synthGainBus = {Bus.control(s,1).set(0)}.dup(16);
 	var fMidiSeq, tMidiSeq, midiSeqAct = 0, midiSeqChange = 0, midiSeqSpeedInit = 0.9, midiSeqSpeed = 1, midiSeqLenFact = 0.5;
 	var midiSeqMode, midiFile, midiStart, midiBPM, midiPath, midiRecording = false, midiSeqSwing = 0.15, maxBpm = 240;
 
@@ -245,10 +242,7 @@ s.waitForBoot({
 
 	// sending LapisStatus OSC to local or touchOSC
 	fSendLapisStatus = { arg type, value;
-		if((~lapisStatusDestination == "touchOSC") || (~lapisStatusDestination == "both"),
-			{touchOSCAddr.sendMsg("/lapistatus/"++type,value)});
-		if((~lapisStatusDestination == "local") || (~lapisStatusDestination == "both"),
-			{localAddr.sendMsg("/lapistatus",type,value)});
+		cfg.localAddr.sendMsg("/lapistatus",type,value);
 	};
 
 	// returning input channels for effects, depending on ~aBus.inInt and ~aBus.inAlt settings
@@ -537,14 +531,13 @@ s.waitForBoot({
 							\freq1, note.midicps(~tuningA), \gate, 1, \cutoffBus, cutoffBus.index, \efxBus, efxBus.index,
 							\pitchBus, pitchBus.index, \distBus, distBus.index, \velocity, vel,
 							\inChan1, fGetInChan.value()[0], \inChan2, fGetInChan.value()[1],
-							\prevFreq, notesPrev.midicps(~tuningA), \synthGainBus, synthGainBus[synth].index,
+							\prevFreq, notesPrev.midicps(~tuningA),
 							\drumFilterBus, drumFilterBus.index, \drumVolBus, drumVolBus.index, \buffer, ~bufferSK
 						], target: ~aBus.synthGroup);
 						// count notes
 						{ 	countPlay = countPlay + 1;
 							dispPlay.states_([[countPlay.asString]]);
 							fSendLapisStatus.value("countPlaySK",countPlay);
-								// fSendLapisStatus.value("prgSK",synth);
 						}.defer();
 					});
 				};
@@ -699,18 +692,6 @@ s.waitForBoot({
 					midiSeqSwing = val.linlin(0,1,0,0.8);
 					// ("Swing" + midiSeqSwing).postln;
 				}); // midi seq swing
-
-				// code below used to be to control gain from active synths
-				// if( (chan<=1) && (num>=0) && (num <=7), {
-				// 	if(num!=3, {
-				// 		synthGainBus[num+(chan*8)].set(val);
-				// 		// ("synthGainBus"+(num+(chan*8))+"set to"+val).postln;
-				// 		}, {
-				// 			~aBus.outMainsynth.set(\resampAtt, ~specSK.resampleAtt.at(val));
-				// 			// ("initial resampleAtt value is" + ~aBus.outResamplingAtt).postln;
-				// 			("resampleAtt set to"+ ~specSK.resampleAtt.at(val)).postln;
-				// 	});
-				// });
 			});
 
 		}); // filter to control pitch material
@@ -873,7 +854,7 @@ s.waitForBoot({
 		arg view, char, modifiers, unicode, keycode;
 		// [modifiers,keycode].postln;
 		if(keycode == 53, { // esc
-			localAddr.sendMsg("/panic");
+			cfg.localAddr.sendMsg("/panic");
 		});
 		// L clears buffer
 		if((keycode == 37),
@@ -888,7 +869,7 @@ s.waitForBoot({
 	//~wSynthKeys.alwaysOnTop_(true);
 	w = Window("dummy").front; w.close;
 	~wSynthKeys.front;
-	if(~wInOutAvail == 1, {localAddr.sendMsg("/imageRefresh")});
+	if(~wInOutAvail == 1, {cfg.localAddr.sendMsg("/imageRefresh")});
 
 	~wSynthKeys.onClose_({
 		OSCdef(\skNON).free; OSCdef(\skNOF).free; OSCdef(\skCC).free;

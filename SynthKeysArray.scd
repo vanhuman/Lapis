@@ -148,9 +148,8 @@ s.waitForBoot({
 		midiFilterPitch: [\IAC2, (0..15),\LPK, (0..15)], // MIDI filter for note msgs; format [source, [midichannels]]
 		recLen: 6, // recording length for SampleKeys
 		dataDir: Document.dir++"/Lapis/Data/",
+		localAddr: NetAddr("127.0.0.1", 57120),
 	);
-
-	var localAddr = NetAddr("127.0.0.1", 57120);
 
 	// GUI
 	var screenHeight = Window.screenBounds.height, screenWidth = Window.screenBounds.width, tHeader;
@@ -165,7 +164,7 @@ s.waitForBoot({
 	var pitchBus = {Bus.control(s,1).set(0.5)}.dup(16), distBus = {Bus.control(s,1).set(1)}.dup(16);
 	var drumVolBus = {Bus.control(s,1).set(0.5)}.dup(16), drumFilterBus = {Bus.control(s,1).set(1)}.dup(16);
 	var notesArray = Array.newClear(16), notesPrev = Array.newClear(16), sampleKeysFile = Array.newClear(16);
-	var synthGainBus = {Bus.control(s,1).set(0)}.dup(16), selectedSynthList = cfg.synthList;
+	var selectedSynthList = cfg.synthList;
 
 	// load global variables
 	"GlobalVars.scd".loadRelative();
@@ -273,7 +272,7 @@ s.waitForBoot({
 							\freq1, (note+cfg.semiShiftList[chan]).midicps(~tuningA), \gate, 1, \cutoffBus, cutoffBus[chan].index,
 							\efxBus, efxBus[chan].index, \pitchBus, pitchBus[chan].index, \distBus, distBus[chan].index, \velocity, vel,
 							\inChan1, fGetInChan.value()[0], \inChan2, fGetInChan.value()[1],
-							\prevFreq, notesPrev[chan].midicps(~tuningA), \synthGainBus, synthGainBus[chan].index,
+							\prevFreq, notesPrev[chan].midicps(~tuningA),
 							\drumFilterBus, drumFilterBus[chan].index, \drumVolBus, drumVolBus[chan].index, \buffer, ~bufferSK[chan]
 						], target: ~aBus.synthGroup);
 						// count notes
@@ -453,7 +452,6 @@ s.waitForBoot({
 						\freq1, 60.midicps(~tuningA), \gate, 1, \cutoffBus, cutoffBus[chan].index, \efxBus, efxBus[chan].index,
 						\pitchBus, pitchBus[chan].index, \distBus, distBus[chan].index, \velocity, 127,
 						\inChan1, fGetInChan.value()[0], \inChan2, fGetInChan.value()[1],
-						\synthGainBus, synthGainBus[chan].index,
 						\buffer, ~bufferSK[chan]
 					], target: ~aBus.synthGroup);
 				},{
@@ -480,7 +478,7 @@ s.waitForBoot({
 	~wSynthKeysArray.view.keyDownAction_({
 		arg view, char, modifiers, unicode, keycode;
 		if(keycode == 53, { // esc
-			localAddr.sendMsg("/panic");
+			cfg.localAddr.sendMsg("/panic");
 		});
 	});
 

@@ -53,7 +53,6 @@
 	efxDH1: Env.new([1,1,11],[0.7,0.3],[\lin]),
 	speedAC: Env.new([10,1,0.2],[0.5,0.5]),
 	phaseMul: Env.new([3,1],[1]),
-	synthGain: Env.new([1,12.dbamp],[1],[\lin]),
 	glide: Env.new([0.1,0.4,0.8], [0.5,0.5]),
 	resampleAtt: Env.new([0.dbamp,12.dbamp], [1]),
 	midiSeqSpeed: Env.new([3,1,0.5],[0.5,0.5]),
