@@ -36,7 +36,6 @@ s.waitForBoot({
 		quantize:  0, // if value = 1 then loops of zone4 and zone3 will be quantized to cfg.bmp
 		bpm: 120, // BPM in quantize case
 		copySamples: 0, // set to 1 to activate sample copy on load - make sure the folder /Data/Samples/~project exists
-		crashMode: 1, // set to 0 to disable patterns on zone8play1
 		bufferViewPlayHeadFreq: 20, // freqency of playhead refresh in bufferView
 		bufferViewRefreshFreq: 0.5, // frequency of bufferView refresh while recording
 		bufferViewBlocksize: 512, // block size for reading soundfile in bufferview
@@ -84,7 +83,7 @@ s.waitForBoot({
 	var zone4 = (play1: nil, play1Act: 0, startPos1: 0, play1hf: nil, play1hfAct: 0, play1lf: nil, play1lfAct: 0);
 	var zone6 = (
 		play1: Array.new(50), play1Act: 0, startPos1: 0, play1St: 0, play1Nbr: 0, play1Add: 0.2,
-		disablePitch: 0, disableStartPos: 0, disableXhid: 0, octavesPitchshift: 0,
+		disablePitch: 0, disableStartPos: 0, octavesPitchshift: 0,
 		play2: nil, play2Act: 0, startPos2: 0, play3: nil, play3Act: 0, startPos3: 0,
 		play4: nil, play4Act: 0, startPos4: 0, play5: nil, play5Act: 0, startPos5: 0, len5: 1,
 		play6: nil, play6Act: 0, play6Pitch: 0, play7: nil, play7Act: 0, play8: nil, play8Act: 0
@@ -216,16 +215,9 @@ s.waitForBoot({
 	OSCdef(\lisaEx3d, {|msg|
 		var cookie = msg[1];
 		var val = msg[2];
-		if(~oscSrc == "jx", {
-			cookie = cookie * 127; 			// back to the MIDI range; this might be f.e. 2 or 2.0001 or 1.9999
-			cookie = (cookie + 0.1).floor; 	// make up for rounding errors then make into integer
-			// ("Cookie:" + cookie + "Value:" + val).postln;
-		});
 
 		// X-axis: control start position, panning, filter freq and restart zones
 		if(cookie==16, {
-			// junXion repair
-			if(~oscSrc == "jx", {val = (1-val) * 1024});
 			// update busses
 			~cBusLS.ex3dProBusX62.set(~specLS.pan62.at(val)); // panning
 			~cBusLS.ex3dProBusX63.set(~specLS.pan63.at(val));
@@ -235,7 +227,7 @@ s.waitForBoot({
 			~cBusLS.ex3dProBusX67.set(val/1024); // freq TBall synth6play7
 
 			// re-trigger zones
-			if((zone6.disableStartPos == 0) && (zone6.disableXhid == 0), {
+			if(zone6.disableStartPos == 0, {
 				// trigger button 1, main action
 				if(zone6.play1Act == 1,  {
 					// set start position
@@ -346,8 +338,6 @@ s.waitForBoot({
 
 		// Y-axis: control pitch, filter freq and gravity for TBall
 		if(cookie==17, {
-			// junXion repair
-			if(~oscSrc == "jx", {val = (1-val) * 1024});
 
 			// Y axis for extreme pitch
 			if(((zone6.disablePitch == 0) && (localControl == 1)), { // only if not disabled with joystick button 12 or via remote control
@@ -361,8 +351,6 @@ s.waitForBoot({
 
 		// Rotation: control length, filter resonance and freq
 		if(cookie==19, {
-			// junXion repair
-			if(~oscSrc == "jx", {val = (1-val) * 255});
 
 			~cBusLS.ex3dProR.set(val / 255);
 
@@ -378,14 +366,10 @@ s.waitForBoot({
 
 		// Slider: control distortion and TBall ring
 		if(cookie==20, {
-			// junXion repair
-			if(~oscSrc == "jx", {val = (1-val) * 255});
 
 			~cBusLS.ex3dProS.set(val / 255);
 			zone6.amp5 = 0.4*(1-(val/255));
 		});
-
-		if(~oscSrc == "jx", {val = 1-val}); // junXion repair
 
 		// trigger button 1
 		if(cookie==4, {
@@ -1803,10 +1787,8 @@ s.waitForBoot({
 							\pattSelBus, ~cBusLS.midiLV2KnobB1.index
 						], target: ~aBus.synthGroup);
 						fCountZones.value("P+");
-						if(cfg.crashMode == 1, {
-							// start pattern modulation task
-							zone8.tPatt1 = Task(f81).play;
-						});
+						// start pattern modulation task
+						zone8.tPatt1 = Task(f81).play;
 						// update curZoneStart & curZoneLen
 						~cBusLS.midiLV2KnobB2.get({arg val;
 							fSetCurZone.value(
@@ -1819,9 +1801,7 @@ s.waitForBoot({
 					if(zone8.play1Act == 1, {
 						zone8.play1.release;
 						fCountZones.value("P-");
-						if(cfg.crashMode == 1, {
-							zone8.tPatt1.stop;
-						});
+						zone8.tPatt1.stop;
 						zone8.play1Act = 0;
 					});
 				});
@@ -1847,10 +1827,8 @@ s.waitForBoot({
 						\dirBus, ~cBusLS.dirBus81.index,
 						\pattSelBus, ~cBusLS.midiLV2KnobB1.index
 					], target: ~aBus.synthGroup);
-					if(cfg.crashMode == 1, {
-						// restart pattern modulation task
-						zone8.tPatt1.stop; zone8.tPatt1 = Task(f81).play;
-					});
+					// restart pattern modulation task
+					zone8.tPatt1.stop; zone8.tPatt1 = Task(f81).play;
 					// update curZoneStart
 					if(curZone == "81", {fSetCurZone.value("81", ~specLS.startPos21L.map(zone8.startPos1), nil)});
 				});
@@ -2308,13 +2286,6 @@ s.waitForBoot({
 	"/panic"
 	).fix;
 
-	// responder to disable/enable x-axis joystick when HID captured is being played
-	OSCdef(\lisaDisableXhid, { |msg|
-		zone6.disableXhid == msg[1];
-	},
-	"/disablex"
-	).fix;
-
 	///////////////////////////////////////////// functions //////////////////////////////////////
 	// modulate sample pointer offset for zone3play1
 	fModSP31 = {
@@ -2753,8 +2724,6 @@ s.waitForBoot({
 	///////////////////////////////////////////// GUI //////////////////////////////////////
 
 	~wLiveSampler = Window("LiveSampler", Rect(20, (screenHeight - 160), 330, 100), false);
-	//~wLiveSampler.view.background_(Color.black);
-	//~wLiveSampler.alpha_(0.9);
 	~wLiveSamplerAvail = 1;
 
 	// display status of zone6.play4
@@ -2829,12 +2798,6 @@ s.waitForBoot({
 				{fDisplayBufferView.value("C4")}.defer(1.3);
 			});
 		});
-		// // P plots buffer
-		// if((keycode == 35), {
-		// 	~mainBufLS.plot("Sample Buffer");
-		// 	~processBuf.plot("Process Buffer");
-		// 	"Buffer being plotted.".postln;
-		// });
 		// A amplifies current zone
 		if((keycode == 0) && (modifiers == 0), {
 			fAmpCurZone.value(~mainBufLS, curZoneStart, curZoneLen, cfg.ampCurZoneFactor);
@@ -2963,7 +2926,7 @@ s.waitForBoot({
 		OSCdef(\lisaNON).free; OSCdef(\lisaNOF).free; OSCdef(\lisaCC).free; OSCdef(\lisaCCLPK).free;
 		OSCdef(\lisaSendTrig).free; OSCdef(\lisaPlayHead).free; OSCdef(\lisaBufferViewRefresh).free;
 		OSCdef(\lisaExtCtr).free; OSCdef(\lisaExtSw).free; OSCdef(\lisaBut1dis).free; OSCdef(\lisaBut2dis).free;
-		OSCdef(\lisaSampleLoad).free; OSCdef(\lisaQuant).free; OSCdef(\lisaPanic).free; OSCdef(\lisaDisableXhid).free;
+		OSCdef(\lisaSampleLoad).free; OSCdef(\lisaQuant).free; OSCdef(\lisaPanic).free;
 		~mainBufLS.free;
 		diskPlay.sampleList.size.do({ arg i;
 			if(diskPlay.buf[i].notNil, {diskPlay.buf[i].free});
@@ -2985,15 +2948,6 @@ s.waitForBoot({
 		if(~wBufferView.notNil, {~wBufferView.close});
 	});
 
-	//~testSampleList = ["sines/s 440.aif","sines/s 440.aif","sines/s 440.aif","sines/s 440.aif","sines/s 440.aif"];
-	//~testSampleList = ["dr_AmbIntrigue2+Light1b.aif"];
-	//~testSampleList = ["voice/ob promise.aiff"];
-	//~testSampleList = ["solo2/wd_glass1PSwobblypart.aif"];
-	//~testSampleList = ["soundcheck left right.aif"];
-	//~testSampleList = ["melodic/mel tokyo almu03"];
-	//~testSampleList = ["speeldoosmelodyTS-part1.aif"];
-	//~testSampleList = ["v monks.aiff"];
-	// ~testSampleList = ["melodic/mel violins1.aif"];
 	~testSampleList = ["noisepan.aiff"];
 
 }); // wait for boot

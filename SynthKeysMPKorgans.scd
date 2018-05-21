@@ -714,19 +714,12 @@ s.waitForBoot({
 		if(fromMidi.isNil, {fromMidi = 0});
 		// ("SynthKeys OSC RCV Ex3d: " ++ msg).postln;
 
-		if(~oscSrc == "jx", {
-			cookie = cookie * 127; 			// back to the MIDI range; this might be f.e. 2 or 2.0001 or 1.9999
-			cookie = (cookie + 0.1).floor; 	// make up for rounding errors then make into integer
-			// ("Cookie:" + cookie + "Value:" + val).postln;
-		});
-
 		if(	((ex3dEnabled == 1) && (fromMidi == 0)) || 	// joystick enabled
 			((ex3dEnabled == 0) && (fromMidi == 1)),  	// joystick disabled, take data from midi
 			{
 				case
 				{cookie == 16}		// X-axis
 				{
-					if(~oscSrc == "jx", {val = (1-val) * 1024}); // junXion repair
 					midiSeqSpeedInit = ~specSK.midiSeqSpeed.at(val/1024);
 					cutoffBus.set(val/1024)
 				};
@@ -736,18 +729,15 @@ s.waitForBoot({
 			case
 			{cookie == 17} 		// Y-axis
 			{
-				if(~oscSrc == "jx", {val = (1-val) * 1024}); // junXion repair
 				if(cfg.midiJoySpeedControl, { midiSeqLenFact = val.linlin(0,1024,0.1,0.9) });
 				pitchBus.set(val/1024)
 			}
 			{cookie == 19} 		// Rotation
 			{
-				if(~oscSrc == "jx", {val = (1-val) * 255}); // junXion repair
 				efxBus.set(val/255)
 			}
 			{cookie == 20} 		// Slider
 			{
-				if(~oscSrc == "jx", {val = (1-val) * 255}); // junXion repair
 				distBus.set(val/255)
 			}
 			;
@@ -756,11 +746,6 @@ s.waitForBoot({
 		case
 		{cookie == 18} 		// Hatswitch
 		{
-			if(~oscSrc == "jx", { // junXion repair
-				val = (1-val) * 7;
-				val = val.ceil;
-				if(val==0, {val = -1});
-			});
 			if(val != -1, { // anything but the middle position of the hatswitch
 				prevVal = val;
 				hsStart = SystemClock.seconds; // start measuring time

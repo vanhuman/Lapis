@@ -19,7 +19,6 @@ if((~aBus.isNil || ~projectList.isNil), {
 	);
 	~projectNotes = (cr: "/Crack/Crack Notes.rtf");
 
-	~oscSrc = "sc"; 								// set to "sc" if HID is fixed in 3.7 and to "jx" when using junXion
 	~lapisStatus = 0; 								// whether to start LapisStatus with LiveSampler
 	~lapisStatusDestination = "local"; 	// where to send OSC status updates from LS and SK, set to "local" or "touchOSC" or "both" or "none"
 	~showBufferView = 0;						// set to 1 to show bufferview window

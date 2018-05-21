@@ -37,11 +37,6 @@ var backImage = "/Users/Robert/---data---/Audio/SC/Data/Images/yellow.png";
 var version = "1.0";
 var screenHeight = Window.screenBounds.height, screenWidth = Window.screenBounds.width;
 
-// change OSC source from jx to sc temporarily
-var oscSrcOnStart = ~oscSrc;
-~oscSrc = "sc";
-"Set OSC source to 'sc'".postln;
-
 ///////////////////////////////////////////// GUI //////////////////////////////////////
 
 wFF = Window("Lapis Simulacrum", Rect(20, (screenHeight - 670), 1150, 640)).background_(Color.white);
@@ -754,8 +749,6 @@ wFF.front;
 wFF.onClose_({
 	localAddr.disconnect;
 	keyB.close;
-	~oscSrc = oscSrcOnStart;
-	("Set OSC source to '"++~oscSrc++"'").postln;
 });
 
 //wFFsimul.front;
