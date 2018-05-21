@@ -5,12 +5,12 @@ SynthDef.new(\bocAmpMod, {
 	arg freq1, gate, cutoffBus, efxBus, pitchBus, velocity, distBus, synthGainBus;
 	var sig, ampmodVal, velocityVal, cutoffVal, resVal, pitchVal, distVal;
 
-	velocityVal = IEnvGen.kr(~synthKeysSpec.velocity, velocity);
-	ampmodVal = IEnvGen.kr(~synthKeysSpec.ampmod1, velocity);
-	cutoffVal = IEnvGen.kr(~synthKeysSpec.cutoff1, In.kr(cutoffBus,1));
-	resVal = IEnvGen.kr(~synthKeysSpec.res, In.kr(efxBus,1));
-	pitchVal = IEnvGen.kr(~synthKeysSpec.pitch, In.kr(pitchBus,1));
-	distVal = IEnvGen.kr(~synthKeysSpec.dist1, In.kr(distBus,1));
+	velocityVal = IEnvGen.kr(~specSK.velocity, velocity);
+	ampmodVal = IEnvGen.kr(~specSK.ampmod1, velocity);
+	cutoffVal = IEnvGen.kr(~specSK.cutoff1, In.kr(cutoffBus,1));
+	resVal = IEnvGen.kr(~specSK.res, In.kr(efxBus,1));
+	pitchVal = IEnvGen.kr(~specSK.pitch, In.kr(pitchBus,1));
+	distVal = IEnvGen.kr(~specSK.dist1, In.kr(distBus,1));
 
 	freq1 = freq1 * pitchVal;
 	sig = RLPF.ar(
@@ -23,7 +23,7 @@ SynthDef.new(\bocAmpMod, {
 	sig = Pan2.ar(sig,LFNoise1.ar(1).range(-0.8,0.8));
 	sig = sig * LFNoise1.ar(ampmodVal).range(0.5,1); // amplitude modulation
 	sig = sig * distVal * velocityVal * EnvGen.kr(Env.adsr(0.1,0.1,0.5,1.0,2), gate, doneAction: 2);
-	sig = sig * IEnvGen.kr(~synthKeysSpec.synthGain, In.kr(synthGainBus,1));
+	sig = sig * IEnvGen.kr(~specSK.synthGain, In.kr(synthGainBus,1));
 
 	Out.ar(~aBus.outBL, sig);
 }).send(s);
@@ -32,11 +32,11 @@ SynthDef.new(\bocAmpMod2, { // similar to bocAmpMod but without the second RLPF 
 	arg freq1, gate, cutoffBus, efxBus, pitchBus, velocity, distBus, synthGainBus;
 	var sig, cutoffVal, resVal, pitchVal, distVal, velocityVal;
 
-	velocityVal = IEnvGen.kr(~synthKeysSpec.velocity, velocity);
-	cutoffVal = IEnvGen.kr(~synthKeysSpec.cutoff1, In.kr(cutoffBus,1));
-	resVal = IEnvGen.kr(~synthKeysSpec.res, In.kr(efxBus,1));
-	pitchVal = IEnvGen.kr(~synthKeysSpec.pitch, In.kr(pitchBus,1));
-	distVal = IEnvGen.kr(~synthKeysSpec.dist6, In.kr(distBus,1));
+	velocityVal = IEnvGen.kr(~specSK.velocity, velocity);
+	cutoffVal = IEnvGen.kr(~specSK.cutoff1, In.kr(cutoffBus,1));
+	resVal = IEnvGen.kr(~specSK.res, In.kr(efxBus,1));
+	pitchVal = IEnvGen.kr(~specSK.pitch, In.kr(pitchBus,1));
+	distVal = IEnvGen.kr(~specSK.dist6, In.kr(distBus,1));
 
 	freq1 = freq1 * pitchVal;
 	sig = RLPF.ar(
@@ -46,7 +46,7 @@ SynthDef.new(\bocAmpMod2, { // similar to bocAmpMod but without the second RLPF 
 		cutoffVal, resVal);
 	sig = Pan2.ar(sig,Rand(-0.5,0.5));
 	sig = sig * distVal * velocityVal * EnvGen.kr(Env.adsr(0.1,0,1,0.5), gate, doneAction: 2);
-	sig = sig * IEnvGen.kr(~synthKeysSpec.synthGain, In.kr(synthGainBus,1));
+	sig = sig * IEnvGen.kr(~specSK.synthGain, In.kr(synthGainBus,1));
 
 	Out.ar(~aBus.outBL, sig);
 }).send(s);
@@ -55,11 +55,11 @@ SynthDef.new(\bocAmpMod2b, { // similar to bocAmpMod but without the second RLPF
 	arg freq1, gate, cutoffBus, efxBus, pitchBus, velocity, distBus, synthGainBus;
 	var sig, cutoffVal, resVal, pitchVal, distVal, velocityVal;
 
-	velocityVal = IEnvGen.kr(~synthKeysSpec.velocity, velocity);
-	cutoffVal = IEnvGen.kr(~synthKeysSpec.cutoff1, In.kr(cutoffBus,1));
-	resVal = IEnvGen.kr(~synthKeysSpec.res, In.kr(efxBus,1));
-	pitchVal = IEnvGen.kr(~synthKeysSpec.pitch, In.kr(pitchBus,1));
-	distVal = IEnvGen.kr(~synthKeysSpec.dist6, In.kr(distBus,1));
+	velocityVal = IEnvGen.kr(~specSK.velocity, velocity);
+	cutoffVal = IEnvGen.kr(~specSK.cutoff1, In.kr(cutoffBus,1));
+	resVal = IEnvGen.kr(~specSK.res, In.kr(efxBus,1));
+	pitchVal = IEnvGen.kr(~specSK.pitch, In.kr(pitchBus,1));
+	distVal = IEnvGen.kr(~specSK.dist6, In.kr(distBus,1));
 
 	freq1 = freq1 * pitchVal;
 	sig = RLPF.ar(
@@ -70,7 +70,7 @@ SynthDef.new(\bocAmpMod2b, { // similar to bocAmpMod but without the second RLPF
 	sig = Pan2.ar(sig,Rand(-0.2,0.2));
 	sig = sig * distVal * velocityVal * EnvGen.kr(Env.adsr(0.01,0.1,0.3,0.5,2), gate, doneAction: 2);
 	sig = 2 * FreeVerb2.ar(sig[0],sig[1]);
-	sig = sig * IEnvGen.kr(~synthKeysSpec.synthGain, In.kr(synthGainBus,1));
+	sig = sig * IEnvGen.kr(~specSK.synthGain, In.kr(synthGainBus,1));
 
 	Out.ar(~aBus.outBL, sig);
 }).send(s);
@@ -79,12 +79,12 @@ SynthDef.new(\bocAmpMod3, { // similar to bocAmpMod but without amplitude modula
 	arg freq1, gate, cutoffBus, efxBus, pitchBus, velocity, distBus, synthGainBus;
 	var sig, ampmodVal, velocityVal, cutoffVal, resVal, pitchVal, distVal;
 
-	velocityVal = IEnvGen.kr(~synthKeysSpec.velocity, velocity);
-	ampmodVal = IEnvGen.kr(~synthKeysSpec.ampmod1, velocity);
-	cutoffVal = IEnvGen.kr(~synthKeysSpec.cutoff5, In.kr(cutoffBus,1));
-	resVal = IEnvGen.kr(~synthKeysSpec.res, In.kr(efxBus,1));
-	pitchVal = IEnvGen.kr(~synthKeysSpec.pitch, In.kr(pitchBus,1));
-	distVal = IEnvGen.kr(~synthKeysSpec.dist1, In.kr(distBus,1));
+	velocityVal = IEnvGen.kr(~specSK.velocity, velocity);
+	ampmodVal = IEnvGen.kr(~specSK.ampmod1, velocity);
+	cutoffVal = IEnvGen.kr(~specSK.cutoff5, In.kr(cutoffBus,1));
+	resVal = IEnvGen.kr(~specSK.res, In.kr(efxBus,1));
+	pitchVal = IEnvGen.kr(~specSK.pitch, In.kr(pitchBus,1));
+	distVal = IEnvGen.kr(~specSK.dist1, In.kr(distBus,1));
 
 	freq1 = freq1 * pitchVal;
 	sig = RLPF.ar(
@@ -97,7 +97,7 @@ SynthDef.new(\bocAmpMod3, { // similar to bocAmpMod but without amplitude modula
 	sig = Pan2.ar(sig,LFNoise1.ar(1).range(-0.8,0.8));
 	// sig = sig * LFNoise1.ar(ampmodVal).range(0.5,1); // amplitude modulation
 	sig = sig * distVal * velocityVal * EnvGen.kr(Env.adsr(0.1,0,1,1.0), gate, doneAction: 2);
-	sig = sig * IEnvGen.kr(~synthKeysSpec.synthGain, In.kr(synthGainBus,1));
+	sig = sig * IEnvGen.kr(~specSK.synthGain, In.kr(synthGainBus,1));
 
 	Out.ar(~aBus.outBL, sig);
 }).send(s);
@@ -106,13 +106,13 @@ SynthDef.new(\bocAmpMod4, {
 	arg freq1, gate, cutoffBus, efxBus, pitchBus, velocity, distBus, synthGainBus;
 	var sig, ampmodVal, velocityVal, cutoffVal, resVal, pitchVal, distVal, flutterVal, flutterSpeed = 60/100/4, flutterMax;
 
-	velocityVal = IEnvGen.kr(~synthKeysSpec.velocity, velocity);
-	ampmodVal = IEnvGen.kr(~synthKeysSpec.ampmod1, velocity);
-	cutoffVal = IEnvGen.kr(~synthKeysSpec.cutoff1, In.kr(cutoffBus,1));
-	resVal = IEnvGen.kr(~synthKeysSpec.res, In.kr(efxBus,1));
-	// pitchVal = IEnvGen.kr(~synthKeysSpec.pitch, In.kr(pitchBus,1));
-	flutterVal = IEnvGen.kr(~synthKeysSpec.flutterBOC, In.kr(pitchBus,1));
-	distVal = IEnvGen.kr(~synthKeysSpec.dist1, In.kr(distBus,1));
+	velocityVal = IEnvGen.kr(~specSK.velocity, velocity);
+	ampmodVal = IEnvGen.kr(~specSK.ampmod1, velocity);
+	cutoffVal = IEnvGen.kr(~specSK.cutoff1, In.kr(cutoffBus,1));
+	resVal = IEnvGen.kr(~specSK.res, In.kr(efxBus,1));
+	// pitchVal = IEnvGen.kr(~specSK.pitch, In.kr(pitchBus,1));
+	flutterVal = IEnvGen.kr(~specSK.flutterBOC, In.kr(pitchBus,1));
+	distVal = IEnvGen.kr(~specSK.dist1, In.kr(distBus,1));
 	flutterMax = Rand(0.2,2);
 	flutterSpeed = flutterSpeed * Rand(0.96,1.05);
 
@@ -130,7 +130,7 @@ SynthDef.new(\bocAmpMod4, {
 	( flutterVal * sig * LFPulse.kr(1/flutterSpeed).range(0,flutterMax) );
 
 	sig = sig * distVal * velocityVal * EnvGen.kr(Env.adsr(0.1,0.1,0.5,1.0,2), gate, doneAction: 2);
-	sig = sig * IEnvGen.kr(~synthKeysSpec.synthGain, In.kr(synthGainBus,1));
+	sig = sig * IEnvGen.kr(~specSK.synthGain, In.kr(synthGainBus,1));
 
 	Out.ar(~aBus.outBL, sig);
 }).send(s);
@@ -140,12 +140,12 @@ SynthDef.new(
 		arg freq1, gate, cutoffBus, efxBus, pitchBus, velocity, distBus, synthGainBus;
 		var sig, ampmodVal, velocityVal, cutoffVal, pitchVal, distVal, envRelVal;
 
-		velocityVal = IEnvGen.kr(~synthKeysSpec.velocity, velocity);
-		ampmodVal = IEnvGen.kr(~synthKeysSpec.ampmod2, In.kr(efxBus,1));
-		cutoffVal = IEnvGen.kr(~synthKeysSpec.cutoff3, In.kr(cutoffBus,1));
-		envRelVal = IEnvGen.kr(~synthKeysSpec.envRel, In.kr(cutoffBus,1));
-		pitchVal = IEnvGen.kr(~synthKeysSpec.pitch, In.kr(pitchBus,1));
-		distVal = IEnvGen.kr(~synthKeysSpec.dist5, In.kr(distBus,1));
+		velocityVal = IEnvGen.kr(~specSK.velocity, velocity);
+		ampmodVal = IEnvGen.kr(~specSK.ampmod2, In.kr(efxBus,1));
+		cutoffVal = IEnvGen.kr(~specSK.cutoff3, In.kr(cutoffBus,1));
+		envRelVal = IEnvGen.kr(~specSK.envRel, In.kr(cutoffBus,1));
+		pitchVal = IEnvGen.kr(~specSK.pitch, In.kr(pitchBus,1));
+		distVal = IEnvGen.kr(~specSK.dist5, In.kr(distBus,1));
 
 		freq1 = freq1 * pitchVal;
 		freq1 = freq1/2; // lower one octave
@@ -159,7 +159,7 @@ SynthDef.new(
 		sig = sig * LFNoise0.ar(ampmodVal).range(0,1); // amplitude modulation
 		sig = Pan2.ar(sig,LFNoise0.ar(ampmodVal*0.2).range(-1,1));
 		sig = sig * distVal * velocityVal * EnvGen.kr(Env.adsr(0.05,0,1,envRelVal), gate, doneAction: 2);
-		sig = sig * IEnvGen.kr(~synthKeysSpec.synthGain, In.kr(synthGainBus,1));
+		sig = sig * IEnvGen.kr(~specSK.synthGain, In.kr(synthGainBus,1));
 
 		Out.ar(~aBus.outBL, sig);
 }).send(s);
@@ -169,12 +169,12 @@ SynthDef.new(
 		arg freq1, gate, cutoffBus, efxBus, pitchBus, velocity, distBus, synthGainBus;
 		var sig, ampmodVal, velocityVal, cutoffVal, pitchVal, distVal, envRelVal;
 
-		velocityVal = IEnvGen.kr(~synthKeysSpec.velocity, velocity);
-		ampmodVal = IEnvGen.kr(~synthKeysSpec.ampmod2, In.kr(efxBus,1));
-		cutoffVal = IEnvGen.kr(~synthKeysSpec.cutoff3, In.kr(cutoffBus,1));
-		envRelVal = IEnvGen.kr(~synthKeysSpec.envRel2, In.kr(cutoffBus,1));
-		pitchVal = IEnvGen.kr(~synthKeysSpec.pitch, In.kr(pitchBus,1));
-		distVal = IEnvGen.kr(~synthKeysSpec.dist5, In.kr(distBus,1));
+		velocityVal = IEnvGen.kr(~specSK.velocity, velocity);
+		ampmodVal = IEnvGen.kr(~specSK.ampmod2, In.kr(efxBus,1));
+		cutoffVal = IEnvGen.kr(~specSK.cutoff3, In.kr(cutoffBus,1));
+		envRelVal = IEnvGen.kr(~specSK.envRel2, In.kr(cutoffBus,1));
+		pitchVal = IEnvGen.kr(~specSK.pitch, In.kr(pitchBus,1));
+		distVal = IEnvGen.kr(~specSK.dist5, In.kr(distBus,1));
 
 		freq1 = freq1 * pitchVal;
 		freq1 = freq1/2; // lower one octave
@@ -190,7 +190,7 @@ SynthDef.new(
 		sig = Mix.ar([sig[0],sig[1]]);
 		sig = Pan2.ar(sig,LFNoise1.ar(ampmodVal*0.2).range(-1,1));
 		sig = sig * distVal * velocityVal * EnvGen.kr(Env.adsr(0.05,0,1,envRelVal), gate, doneAction: 2);
-		sig = sig * IEnvGen.kr(~synthKeysSpec.synthGain, In.kr(synthGainBus,1));
+		sig = sig * IEnvGen.kr(~specSK.synthGain, In.kr(synthGainBus,1));
 
 		Out.ar(~aBus.outBL, sig);
 }).send(s);
@@ -200,16 +200,16 @@ SynthDef.new(
 		arg freq1, gate, cutoffBus, efxBus, pitchBus, velocity, distBus, synthGainBus;
 		var sig, ampmodVal, velocityVal, cutoffVal, pitchDevVal, distVal, envRelVal, resVal, dustMixVal, pitchSpeedVal, dust1, dust2, octMixVal;
 
-		velocityVal = IEnvGen.kr(~synthKeysSpec.velocity, velocity);
-		ampmodVal = IEnvGen.kr(~synthKeysSpec.ampmod2, In.kr(efxBus,1));
-		resVal = IEnvGen.kr(~synthKeysSpec.res2, In.kr(efxBus,1));
-		cutoffVal = IEnvGen.kr(~synthKeysSpec.cutoff3, In.kr(cutoffBus,1));
-		envRelVal = IEnvGen.kr(~synthKeysSpec.envRel2, In.kr(cutoffBus,1));
-		dustMixVal = IEnvGen.kr(~synthKeysSpec.dustMix, In.kr(cutoffBus,1));
-		// pitchVal = IEnvGen.kr(~synthKeysSpec.pitch, In.kr(pitchBus,1));
-		pitchDevVal = IEnvGen.kr(~synthKeysSpec.pitchDev, In.kr(pitchBus,1));
-		pitchSpeedVal = IEnvGen.kr(~synthKeysSpec.pitchSpeed, In.kr(pitchBus,1));
-		distVal = IEnvGen.kr(~synthKeysSpec.dist5, In.kr(distBus,1));
+		velocityVal = IEnvGen.kr(~specSK.velocity, velocity);
+		ampmodVal = IEnvGen.kr(~specSK.ampmod2, In.kr(efxBus,1));
+		resVal = IEnvGen.kr(~specSK.res2, In.kr(efxBus,1));
+		cutoffVal = IEnvGen.kr(~specSK.cutoff3, In.kr(cutoffBus,1));
+		envRelVal = IEnvGen.kr(~specSK.envRel2, In.kr(cutoffBus,1));
+		dustMixVal = IEnvGen.kr(~specSK.dustMix, In.kr(cutoffBus,1));
+		// pitchVal = IEnvGen.kr(~specSK.pitch, In.kr(pitchBus,1));
+		pitchDevVal = IEnvGen.kr(~specSK.pitchDev, In.kr(pitchBus,1));
+		pitchSpeedVal = IEnvGen.kr(~specSK.pitchSpeed, In.kr(pitchBus,1));
+		distVal = IEnvGen.kr(~specSK.dist5, In.kr(distBus,1));
 		octMixVal = 1 - In.kr(distBus,1);
 
 		// freq1 = freq1 * pitchVal;
@@ -231,7 +231,7 @@ SynthDef.new(
 		dust2 = FreeVerb.ar( RHPF.ar(Dust2.ar(40,dustMixVal), freq1*32, 0.01), 0.5, 1 );
 		sig = sig + [ XLine.kr(0.01,1,1) * dust1, XLine.kr(0.01,2,1.5) * dust2 ];
 		sig = sig * distVal * velocityVal * EnvGen.kr(Env.adsr(0.05,0,1,envRelVal), gate, doneAction: 2);
-		sig = sig * IEnvGen.kr(~synthKeysSpec.synthGain, In.kr(synthGainBus,1));
+		sig = sig * IEnvGen.kr(~specSK.synthGain, In.kr(synthGainBus,1));
 
 		Out.ar(~aBus.outBL, sig);
 }).send(s);
@@ -241,12 +241,12 @@ SynthDef.new(
 		arg freq1, gate, cutoffBus, efxBus, pitchBus, velocity, distBus, synthGainBus;
 		var sig, cutoffVal, resVal, pitchVal, distVal, velocityVal;
 
-		//	~synthKeysSpec.dist3 = Env.new([1.3,0.26],[1],[\exp]); // for GVerb
-		velocityVal = IEnvGen.kr(~synthKeysSpec.velocity, velocity);
-		cutoffVal = IEnvGen.kr(~synthKeysSpec.cutoff1, In.kr(cutoffBus,1));
-		resVal = IEnvGen.kr(~synthKeysSpec.res, In.kr(efxBus,1));
-		pitchVal = IEnvGen.kr(~synthKeysSpec.pitch, In.kr(pitchBus,1));
-		distVal = IEnvGen.kr(~synthKeysSpec.dist3, In.kr(distBus,1));
+		//	~specSK.dist3 = Env.new([1.3,0.26],[1],[\exp]); // for GVerb
+		velocityVal = IEnvGen.kr(~specSK.velocity, velocity);
+		cutoffVal = IEnvGen.kr(~specSK.cutoff1, In.kr(cutoffBus,1));
+		resVal = IEnvGen.kr(~specSK.res, In.kr(efxBus,1));
+		pitchVal = IEnvGen.kr(~specSK.pitch, In.kr(pitchBus,1));
+		distVal = IEnvGen.kr(~specSK.dist3, In.kr(distBus,1));
 
 		freq1 = freq1 * pitchVal;
 
@@ -260,7 +260,7 @@ SynthDef.new(
 		//	sig = GVerb.ar(sig, 80, 4.85, 0.41, 0.19, 12, -3, -3, -3);
 		sig = FreeVerb.ar(sig, 0.9, 1, 0.5);
 		sig = sig * distVal * velocityVal * EnvGen.kr(Env.adsr(0.1,0,1,3), gate, doneAction: 2);
-		sig = sig * IEnvGen.kr(~synthKeysSpec.synthGain, In.kr(synthGainBus,1));
+		sig = sig * IEnvGen.kr(~specSK.synthGain, In.kr(synthGainBus,1));
 
 		Out.ar(~aBus.outBL, sig);
 }).send(s);
@@ -271,11 +271,11 @@ SynthDef.new(
 		arg freq1, gate, cutoffBus, efxBus, pitchBus, velocity, distBus, synthGainBus;
 		var sig, cutoffVal, bandwidthVal, pitchVal, distVal, velocityVal, freq2;
 
-		velocityVal = IEnvGen.kr(~synthKeysSpec.velocity, velocity);
-		cutoffVal = IEnvGen.kr(~synthKeysSpec.cutoff4, In.kr(cutoffBus,1));
-		bandwidthVal = IEnvGen.kr(~synthKeysSpec.bandwidth, In.kr(efxBus,1));
-		pitchVal = IEnvGen.kr(~synthKeysSpec.pitch2, In.kr(pitchBus,1));
-		distVal = IEnvGen.kr(~synthKeysSpec.dist8, In.kr(distBus,1));
+		velocityVal = IEnvGen.kr(~specSK.velocity, velocity);
+		cutoffVal = IEnvGen.kr(~specSK.cutoff4, In.kr(cutoffBus,1));
+		bandwidthVal = IEnvGen.kr(~specSK.bandwidth, In.kr(efxBus,1));
+		pitchVal = IEnvGen.kr(~specSK.pitch2, In.kr(pitchBus,1));
+		distVal = IEnvGen.kr(~specSK.dist8, In.kr(distBus,1));
 
 		freq1 = freq1/2; // octave lower
 		freq2 = freq1;
@@ -289,7 +289,7 @@ SynthDef.new(
 		sig = Decimator.ar(sig,rate: 10000, bits: 8);
 		sig = RLPF.ar(sig, cutoffVal,0.5);
 		sig = sig * velocityVal * distVal * EnvGen.kr(Env.adsr(0.1,0.1,0.8,0.5), gate, doneAction: 2);
-		sig = sig * IEnvGen.kr(~synthKeysSpec.synthGain, In.kr(synthGainBus,1));
+		sig = sig * IEnvGen.kr(~specSK.synthGain, In.kr(synthGainBus,1));
 
 		Out.ar(~aBus.outB, sig);
 }).send(s);
@@ -298,10 +298,10 @@ SynthDef.new(\FilterBank, {
 	arg freq1, gate, cutoffBus, efxBus, pitchBus, velocity, distBus, synthGainBus;
 	var sig, filtfreqs, cutoffVal, wobbleVal, distVal, pitchVal;
 
-	cutoffVal = IEnvGen.kr(~synthKeysSpec.cutoff2, In.kr(efxBus,1));
-	wobbleVal = IEnvGen.kr(~synthKeysSpec.wobble, In.kr(cutoffBus,1));
-	distVal = IEnvGen.kr(~synthKeysSpec.dist7, In.kr(distBus,1));
-	pitchVal = IEnvGen.kr(~synthKeysSpec.pitch, In.kr(pitchBus,1));
+	cutoffVal = IEnvGen.kr(~specSK.cutoff2, In.kr(efxBus,1));
+	wobbleVal = IEnvGen.kr(~specSK.wobble, In.kr(cutoffBus,1));
+	distVal = IEnvGen.kr(~specSK.dist7, In.kr(distBus,1));
+	pitchVal = IEnvGen.kr(~specSK.pitch, In.kr(pitchBus,1));
 
 	freq1 = freq1 * pitchVal;
 	filtfreqs = freq1 * [0.3, 0.5, 1, 2.7565, 5.40392, 8.93295, 13.3443, 18.6379]
@@ -309,7 +309,7 @@ SynthDef.new(\FilterBank, {
 	sig = BPF.ar(Crackle.ar(1) * [3,3,1,1,1,1,1,1],filtfreqs, 1/80) ;
 	sig = LPF.ar(sig,LFNoise1.kr(1).range(50,cutoffVal));
 	sig = distVal * sig * EnvGen.kr(Env.adsr(0.1,0,1,0.2), gate, doneAction: 2);
-	sig = sig * IEnvGen.kr(~synthKeysSpec.synthGain, In.kr(synthGainBus,1));
+	sig = sig * IEnvGen.kr(~specSK.synthGain, In.kr(synthGainBus,1));
 
 	Out.ar(~aBus.outB, Mix.ar([[sig[0],sig[1]],[sig[3],sig[2]],[sig[4],sig[5]],[sig[7],sig[6]]]));
 }).send(s);
@@ -319,14 +319,14 @@ SynthDef.new(\FilterNoise, {
 	var sig, filtfreqs, cutoffVal, distVal, mixVal, envRelVal, envAttVal, envSusVal, envPkVal, velocityVal;
 	var rqVal, brfFreq = Array.newClear(2);
 
-	velocityVal = IEnvGen.kr(~synthKeysSpec.velocity, velocity);
-	cutoffVal = IEnvGen.kr(~synthKeysSpec.cutoffFN, In.kr(cutoffBus,1));
-	distVal = IEnvGen.kr(~synthKeysSpec.dist7, In.kr(distBus,1));
+	velocityVal = IEnvGen.kr(~specSK.velocity, velocity);
+	cutoffVal = IEnvGen.kr(~specSK.cutoffFN, In.kr(cutoffBus,1));
+	distVal = IEnvGen.kr(~specSK.dist7, In.kr(distBus,1));
 	mixVal = In.kr(pitchBus,1);
-	envRelVal = IEnvGen.kr(~synthKeysSpec.envRel3, In.kr(efxBus,1));
-	envAttVal = IEnvGen.kr(~synthKeysSpec.envAtt3, In.kr(efxBus,1));
-	envSusVal = IEnvGen.kr(~synthKeysSpec.envSus3, In.kr(efxBus,1));
-	envPkVal = IEnvGen.kr(~synthKeysSpec.envPk3, In.kr(efxBus,1));
+	envRelVal = IEnvGen.kr(~specSK.envRel3, In.kr(efxBus,1));
+	envAttVal = IEnvGen.kr(~specSK.envAtt3, In.kr(efxBus,1));
+	envSusVal = IEnvGen.kr(~specSK.envSus3, In.kr(efxBus,1));
+	envPkVal = IEnvGen.kr(~specSK.envPk3, In.kr(efxBus,1));
 	// freq1 = freq1/4;
 	freq1 = max(freq1,10);
 	rqVal = { LFNoise1.kr(0.3).range(0.1,0.5) }!2;  // rqVal = bandwidth / freq
@@ -344,7 +344,7 @@ SynthDef.new(\FilterNoise, {
 	sig = ( (1-mixVal) * sig ) + ( mixVal * PitchShift.ar(sig, windowSize: 0.1, pitchRatio: 0.5, mul:2) );
 
 	sig = velocityVal * distVal * sig * EnvGen.kr(Env.adsr(envAttVal,0.1,envSusVal,envRelVal,envPkVal), gate, doneAction: 2);
-	sig = sig * IEnvGen.kr(~synthKeysSpec.synthGain, In.kr(synthGainBus,1));
+	sig = sig * IEnvGen.kr(~specSK.synthGain, In.kr(synthGainBus,1));
 
 	Out.ar(~aBus.outB, sig);
 }).send(s);
@@ -353,9 +353,9 @@ SynthDef.new(\Prime, {
 	arg freq1, gate, cutoffBus, efxBus, pitchBus, velocity, distBus, prevFreq, synthGainBus;
 	var sig, sig2, detune, amps, freqs = List.new(), freqs2, glideVal = 0.4, distVal, velocityVal;
 
-	velocityVal = IEnvGen.kr(~synthKeysSpec.velocity, velocity);
-	glideVal = IEnvGen.kr(~synthKeysSpec.glide, In.kr(efxBus,1));
-	distVal = IEnvGen.kr(~synthKeysSpec.dist2, In.kr(distBus,1));
+	velocityVal = IEnvGen.kr(~specSK.velocity, velocity);
+	glideVal = IEnvGen.kr(~specSK.glide, In.kr(efxBus,1));
+	distVal = IEnvGen.kr(~specSK.dist2, In.kr(distBus,1));
 	freq1 = XLine.kr(prevFreq,freq1, glideVal); // glide - 0.8 for Portishead theremin effect, possibly control by joystick? range 0.1-0.4-0.8
 	freq1 = freq1 * 4;
 
@@ -371,7 +371,7 @@ SynthDef.new(\Prime, {
 	// sig = sig + sig2;
 	sig = SinOsc.kr(4.5) * sig;
 	sig = velocityVal * distVal * sig * EnvGen.kr(Env.asr(), gate, doneAction: 2);
-	sig = sig * IEnvGen.kr(~synthKeysSpec.synthGain, In.kr(synthGainBus,1));
+	sig = sig * IEnvGen.kr(~specSK.synthGain, In.kr(synthGainBus,1));
 
 	Out.ar(~aBus.outB, sig);
 }).send(s);
@@ -381,13 +381,13 @@ SynthDef.new(
 		arg freq1, gate, cutoffBus, efxBus, velocity, pitchBus, distBus, synthGainBus, buffer = ~bufferSK;
 		var sig, cutoffVal, lenVal, pitchVal, distVal, trig, freq1hz, flutterVal, velocityVal, flutSpdVal;
 
-		velocityVal = IEnvGen.kr(~synthKeysSpec.velocity, velocity);
-		cutoffVal = IEnvGen.kr(~synthKeysSpec.cutoff3, In.kr(cutoffBus,1));
-		flutterVal = IEnvGen.kr(~synthKeysSpec.flutter, In.kr(cutoffBus,1));
-		lenVal = IEnvGen.kr(~synthKeysSpec.len, In.kr(efxBus,1));
-		flutSpdVal = IEnvGen.kr(~synthKeysSpec.flutspd, In.kr(efxBus,1));
-		pitchVal = IEnvGen.kr(~synthKeysSpec.pitch, In.kr(pitchBus,1));
-		distVal = IEnvGen.kr(~synthKeysSpec.dist4, In.kr(distBus,1));
+		velocityVal = IEnvGen.kr(~specSK.velocity, velocity);
+		cutoffVal = IEnvGen.kr(~specSK.cutoff3, In.kr(cutoffBus,1));
+		flutterVal = IEnvGen.kr(~specSK.flutter, In.kr(cutoffBus,1));
+		lenVal = IEnvGen.kr(~specSK.len, In.kr(efxBus,1));
+		flutSpdVal = IEnvGen.kr(~specSK.flutspd, In.kr(efxBus,1));
+		pitchVal = IEnvGen.kr(~specSK.pitch, In.kr(pitchBus,1));
+		distVal = IEnvGen.kr(~specSK.dist4, In.kr(distBus,1));
 
 		freq1 = (freq1 / 60.midicps(~tuningA)) * pitchVal;
 		freq1hz = freq1 * 60.midicps(~tuningA);
@@ -404,7 +404,7 @@ SynthDef.new(
 		) * EnvGen.kr(Env.adsr(0.05,0,1,0.05), gate, doneAction: 2);
 		sig = sig * distVal * velocityVal;
 		sig = RLPF.ar(sig, cutoffVal, 0.5);
-		sig = sig * IEnvGen.kr(~synthKeysSpec.synthGain, In.kr(synthGainBus,1));
+		sig = sig * IEnvGen.kr(~specSK.synthGain, In.kr(synthGainBus,1));
 
 		Out.ar(~aBus.outBL, sig);
 }).send(s);
@@ -414,18 +414,18 @@ SynthDef.new(
 		arg freq1, gate, cutoffBus, efxBus, velocity, pitchBus, distBus, synthGainBus, buffer = ~bufferSK;
 		var sig, cutoffVal, lenVal, pitchVal, distVal, trig, freq1hz, flutterVal, velocityVal, flutSpdVal;
 
-		velocityVal = IEnvGen.kr(~synthKeysSpec.velocity, velocity);
-		cutoffVal = IEnvGen.kr(~synthKeysSpec.cutoff3, In.kr(cutoffBus,1));
-		flutterVal = IEnvGen.kr(~synthKeysSpec.flutter, In.kr(cutoffBus,1));
-		lenVal = IEnvGen.kr(~synthKeysSpec.len, In.kr(efxBus,1));
-		flutSpdVal = IEnvGen.kr(~synthKeysSpec.flutspd, In.kr(efxBus,1));
-		pitchVal = IEnvGen.kr(~synthKeysSpec.pitch, In.kr(pitchBus,1));
-		distVal = IEnvGen.kr(~synthKeysSpec.dist4, In.kr(distBus,1));
+		velocityVal = IEnvGen.kr(~specSK.velocity, velocity);
+		cutoffVal = IEnvGen.kr(~specSK.cutoff3, In.kr(cutoffBus,1));
+		flutterVal = IEnvGen.kr(~specSK.flutter, In.kr(cutoffBus,1));
+		lenVal = IEnvGen.kr(~specSK.len, In.kr(efxBus,1));
+		flutSpdVal = IEnvGen.kr(~specSK.flutspd, In.kr(efxBus,1));
+		pitchVal = IEnvGen.kr(~specSK.pitch, In.kr(pitchBus,1));
+		distVal = IEnvGen.kr(~specSK.dist4, In.kr(distBus,1));
 
 		sig = PlayBufCF.ar(2, buffer, BufRateScale.kr(buffer), 1, 0, 1) * EnvGen.kr(Env.adsr(0.05,0,1,0.05), gate, doneAction: 2);
 		sig = sig * distVal * velocityVal;
 		sig = RLPF.ar(sig, cutoffVal, 0.5);
-		sig = sig * IEnvGen.kr(~synthKeysSpec.synthGain, In.kr(synthGainBus,1));
+		sig = sig * IEnvGen.kr(~specSK.synthGain, In.kr(synthGainBus,1));
 
 		Out.ar(~aBus.outBL, sig);
 }).send(s);
@@ -435,12 +435,12 @@ SynthDef.new(
 		arg freq1, gate, cutoffBus, efxBus, velocity, pitchBus, distBus, synthGainBus;
 		var sig, ampmodVal, velocityVal, cutoffVal, resVal, pitchVal, distVal;
 
-		velocityVal = IEnvGen.kr(~synthKeysSpec.velocity, velocity);
-		ampmodVal = IEnvGen.kr(~synthKeysSpec.ampmod1, velocity);
-		cutoffVal = IEnvGen.kr(~synthKeysSpec.cutoff1, In.kr(cutoffBus,1));
-		resVal = IEnvGen.kr(~synthKeysSpec.res, In.kr(efxBus,1));
-		pitchVal = IEnvGen.kr(~synthKeysSpec.pitch, In.kr(pitchBus,1));
-		distVal = IEnvGen.kr(~synthKeysSpec.dist2, In.kr(distBus,1));
+		velocityVal = IEnvGen.kr(~specSK.velocity, velocity);
+		ampmodVal = IEnvGen.kr(~specSK.ampmod1, velocity);
+		cutoffVal = IEnvGen.kr(~specSK.cutoff1, In.kr(cutoffBus,1));
+		resVal = IEnvGen.kr(~specSK.res, In.kr(efxBus,1));
+		pitchVal = IEnvGen.kr(~specSK.pitch, In.kr(pitchBus,1));
+		distVal = IEnvGen.kr(~specSK.dist2, In.kr(distBus,1));
 
 		freq1 = freq1 * pitchVal;
 
@@ -454,7 +454,7 @@ SynthDef.new(
 		sig = Pan2.ar(sig,Rand(-0.5,0.5));
 		sig = sig * LFNoise1.ar(ampmodVal).range(0.5,1);
 		sig = sig * distVal * EnvGen.kr(Env.adsr(0.1,0,1,2.0), gate, doneAction: 2);
-		sig = sig * IEnvGen.kr(~synthKeysSpec.synthGain, In.kr(synthGainBus,1));
+		sig = sig * IEnvGen.kr(~specSK.synthGain, In.kr(synthGainBus,1));
 
 		Out.ar(~aBus.outBL, sig);
 }).send(s);
@@ -471,13 +471,13 @@ SynthDef.new(\pitchShifter, {
 
 	in = In.ar([inChan1,inChan2]);
 
-	velocityVal = IEnvGen.kr(~synthKeysSpec.velocity, velocity);
-	vibratoDepth = IEnvGen.kr(~synthKeysSpec.vibDepth, In.kr(efxBus,1));
-	timeDispVal = IEnvGen.kr(~synthKeysSpec.timeDisp, In.kr(efxBus,1));
-	pitchDispVal = IEnvGen.kr(~synthKeysSpec.pitchDisp, In.kr(cutoffBus,1));
-	pitchVal = IEnvGen.kr(~synthKeysSpec.pitch, In.kr(pitchBus,1));
-	distVal = IEnvGen.kr(~synthKeysSpec.dist4, In.kr(distBus,1));
-	cutoffVal = IEnvGen.kr(~synthKeysSpec.cutoff3, In.kr(cutoffBus,1));
+	velocityVal = IEnvGen.kr(~specSK.velocity, velocity);
+	vibratoDepth = IEnvGen.kr(~specSK.vibDepth, In.kr(efxBus,1));
+	timeDispVal = IEnvGen.kr(~specSK.timeDisp, In.kr(efxBus,1));
+	pitchDispVal = IEnvGen.kr(~specSK.pitchDisp, In.kr(cutoffBus,1));
+	pitchVal = IEnvGen.kr(~specSK.pitch, In.kr(pitchBus,1));
+	distVal = IEnvGen.kr(~specSK.dist4, In.kr(distBus,1));
+	cutoffVal = IEnvGen.kr(~specSK.cutoff3, In.kr(cutoffBus,1));
 
 	vibratoSpeed = ( (1-variableVibrato) * 10 ) + ( variableVibrato * LFNoise1.kr(2).range(5,25) ) * (Amplitude.kr(in).linexp(0,1,1,10));
 
@@ -495,11 +495,11 @@ SynthDef(\harmsWay, {
 	var velocityVal, pitchVal, distVal, harmaVal, bandwidthVal;
 	var num, spread, attack, harm, harma, detune, source, generator, sig, env;
 
-	velocityVal = IEnvGen.kr(~synthKeysSpec.velocity, velocity);
-	harmaVal = IEnvGen.kr(~synthKeysSpec.harmaHW, In.kr(cutoffBus,1));
-	bandwidthVal = IEnvGen.kr(~synthKeysSpec.bandHW, In.kr(efxBus,1));
-	pitchVal = IEnvGen.kr(~synthKeysSpec.pitchHW, In.kr(pitchBus,1));
-	distVal = IEnvGen.kr(~synthKeysSpec.distHW, In.kr(distBus,1));
+	velocityVal = IEnvGen.kr(~specSK.velocity, velocity);
+	harmaVal = IEnvGen.kr(~specSK.harmaHW, In.kr(cutoffBus,1));
+	bandwidthVal = IEnvGen.kr(~specSK.bandHW, In.kr(efxBus,1));
+	pitchVal = IEnvGen.kr(~specSK.pitchHW, In.kr(pitchBus,1));
+	distVal = IEnvGen.kr(~specSK.distHW, In.kr(distBus,1));
 	freq1 = ( (freq1.cpsmidi) - 12).midicps;
 	freq1 = (freq1.cpsmidi.linlin(0,65,0,65)).midicps; // upper limit midi note 65, above that it distorts
 
@@ -518,7 +518,7 @@ SynthDef(\harmsWay, {
 	// sig = (sig*0.2) + GVerb.ar(sig, 220, 12, mul:0.6);
 	// sig = (sig*0.2) + GVerb.ar(sig, 220, 12, mul:0.6);
 	// sig = Limiter.ar(LeakDC.ar(sig));
-	sig = sig * IEnvGen.kr(~synthKeysSpec.synthGain, In.kr(synthGainBus,1));
+	sig = sig * IEnvGen.kr(~specSK.synthGain, In.kr(synthGainBus,1));
 	Out.ar(~aBus.outBL,sig * env * velocityVal * distVal);
 }).add;
 
@@ -528,12 +528,12 @@ SynthDef(\harmsWay, {
 		var sig, local, env, feedback = 0.95;
 		var velocityVal, pitchVal, distVal = 1, cutoffVal, efxVal, phaseMulVal = 3;
 
-		velocityVal = IEnvGen.kr(~synthKeysSpec.velocity, velocity);
-		cutoffVal = IEnvGen.kr(~synthKeysSpec.cutoffDH, In.kr(cutoffBus,1));
-		efxVal = IEnvGen.kr( if(count==0, {~synthKeysSpec.efxDH0},{~synthKeysSpec.efxDH1}) , In.kr(efxBus,1)); // different mapping in darkHorns1 and 0
-		pitchVal = IEnvGen.kr(~synthKeysSpec.pitch, In.kr(pitchBus,1));
-		distVal = IEnvGen.kr(~synthKeysSpec.distHW, In.kr(distBus,1));
-		if(count==1, {phaseMulVal = IEnvGen.kr(~synthKeysSpec.phaseMul, In.kr(distBus,1)) }); // only include in darkHorns1
+		velocityVal = IEnvGen.kr(~specSK.velocity, velocity);
+		cutoffVal = IEnvGen.kr(~specSK.cutoffDH, In.kr(cutoffBus,1));
+		efxVal = IEnvGen.kr( if(count==0, {~specSK.efxDH0},{~specSK.efxDH1}) , In.kr(efxBus,1)); // different mapping in darkHorns1 and 0
+		pitchVal = IEnvGen.kr(~specSK.pitch, In.kr(pitchBus,1));
+		distVal = IEnvGen.kr(~specSK.distHW, In.kr(distBus,1));
+		if(count==1, {phaseMulVal = IEnvGen.kr(~specSK.phaseMul, In.kr(distBus,1)) }); // only include in darkHorns1
 		freq1 = freq1 * pitchVal;
 
 		local = feedback * LocalIn.ar(2);
@@ -554,7 +554,7 @@ SynthDef(\harmsWay, {
 		LocalOut.ar(sig);
 		sig = RLPF.ar(sig, cutoffVal, 0.5);
 		sig = sig * efxVal.linlin(1,11,0.4,1);
-		sig = sig * IEnvGen.kr(~synthKeysSpec.synthGain, In.kr(synthGainBus,1));
+		sig = sig * IEnvGen.kr(~specSK.synthGain, In.kr(synthGainBus,1));
 		Out.ar(~aBus.outBL, 0.6 * sig * env * velocityVal * distVal);
 	}).add;
 };
@@ -564,12 +564,12 @@ SynthDef(\adcirc, {
 	var sig1, sig2, sig, env, control1, control2, freq2;
 	var velocityVal, distVal, cutoffVal, pitchVal, flutterVal, speedVal;
 
-	velocityVal = IEnvGen.kr(~synthKeysSpec.velocity, velocity);
-	cutoffVal = IEnvGen.kr(~synthKeysSpec.cutoffDH, In.kr(cutoffBus,1));
-	flutterVal = IEnvGen.kr(~synthKeysSpec.flutterAC, In.kr(cutoffBus,1));
-	pitchVal = IEnvGen.kr(~synthKeysSpec.pitchAC, In.kr(pitchBus,1));
-	speedVal = IEnvGen.kr(~synthKeysSpec.speedAC, In.kr(efxBus,1));
-	distVal = IEnvGen.kr(~synthKeysSpec.distHW, In.kr(distBus,1));
+	velocityVal = IEnvGen.kr(~specSK.velocity, velocity);
+	cutoffVal = IEnvGen.kr(~specSK.cutoffDH, In.kr(cutoffBus,1));
+	flutterVal = IEnvGen.kr(~specSK.flutterAC, In.kr(cutoffBus,1));
+	pitchVal = IEnvGen.kr(~specSK.pitchAC, In.kr(pitchBus,1));
+	speedVal = IEnvGen.kr(~specSK.speedAC, In.kr(efxBus,1));
+	distVal = IEnvGen.kr(~specSK.distHW, In.kr(distBus,1));
 
 	freq2 = [freq1,freq1*1.002] * pitchVal;
 	env = EnvGen.kr(Env.asr(0.5,1,1), gate, doneAction:2);
@@ -591,7 +591,7 @@ SynthDef(\adcirc, {
 	sig = Splay.ar(sig1 + sig2);
 	sig = LPF.ar(sig, cutoffVal);
 	sig = ( flutterVal * sig * SinOsc.kr(LFNoise1.kr(2).range(6,8)) ) + ( (1-flutterVal) * sig );
-	sig = sig * IEnvGen.kr(~synthKeysSpec.synthGain, In.kr(synthGainBus,1));
+	sig = sig * IEnvGen.kr(~specSK.synthGain, In.kr(synthGainBus,1));
 	Out.ar(~aBus.outB, sig * env * velocityVal * distVal);
 }).add;
 
@@ -601,10 +601,10 @@ SynthDef(\drumSetSynth, {
 	var sigKick = Array.newClear(2), sigHihat, sigSnare, sigClap, kickFreqList, kickFreq, kickIndex;
 	// variation: no env but doneAction in kick, then more cpu but nice overlaps
 
-	distVal = IEnvGen.kr(~synthKeysSpec.drumVol, In.kr(drumVolBus,1));
-	velocityVal = IEnvGen.kr(~synthKeysSpec.velocity, velocity);
-	cutoffVal = IEnvGen.kr(~synthKeysSpec.drumFilter, In.kr(drumFilterBus,1));
-	resVal = IEnvGen.kr(~synthKeysSpec.res3, In.kr(efxBus,1));
+	distVal = IEnvGen.kr(~specSK.drumVol, In.kr(drumVolBus,1));
+	velocityVal = IEnvGen.kr(~specSK.velocity, velocity);
+	cutoffVal = IEnvGen.kr(~specSK.drumFilter, In.kr(drumFilterBus,1));
+	resVal = IEnvGen.kr(~specSK.res3, In.kr(efxBus,1));
 	env = EnvGen.kr(Env.adsr(0.01,0,1,0.2), gate, doneAction: 2);
 
 	sigKick[0] = SinOsc.ar( XLine.kr(800,50,0.02) * LFNoise1.kr(30).range(0.97,1.03) );
@@ -643,10 +643,10 @@ SynthDef(\drumSetSynth, {
 
 		// if(count==0, {drumBuf = ~bufferDrumSK0}, {drumBuf = ~bufferDrumSK1});
 		drumBuf = ~bufferDrumSK[count];
-		distVal = IEnvGen.kr(~synthKeysSpec.drumVol, In.kr(drumVolBus,1));
-		velocityVal = IEnvGen.kr(~synthKeysSpec.velocity, velocity);
-		cutoffVal = IEnvGen.kr(~synthKeysSpec.drumFilter, In.kr(drumFilterBus,1));
-		resVal = IEnvGen.kr(~synthKeysSpec.res3, In.kr(efxBus,1));
+		distVal = IEnvGen.kr(~specSK.drumVol, In.kr(drumVolBus,1));
+		velocityVal = IEnvGen.kr(~specSK.velocity, velocity);
+		cutoffVal = IEnvGen.kr(~specSK.drumFilter, In.kr(drumFilterBus,1));
+		resVal = IEnvGen.kr(~specSK.res3, In.kr(efxBus,1));
 
 		2.do { |i|
 			sigKick[i] = PlayBuf.ar(2, drumBuf[i], rate: XLine.kr(1,0.5,0.5) );
