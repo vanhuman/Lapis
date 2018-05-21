@@ -4,7 +4,7 @@
 (
 var localAddr = NetAddr("127.0.0.1", 57120);
 var wFF, wFFsimul, mFaders1, mFaders2, sCross1, sCross2, bm1, bm2, bmBlue, bmBlue2, bmBlue3, bmGreen, bmGreen2, bmGreen3, bmRed, bmRed2, bmBlack;
-var wE3Dsimul, joyE3Dxy, joyE3Dr, joyE3Ds, joyE3Db1, joyE3Db2, joyE3Db3, joyE3Db4, joyE3Db5, joyE3Db6, joyE3Db7, joyE3Db8, joyE3Db9, joyE3Db11, joyE3Db12;
+var wE3Dsimul, joyE3Dxy, joyE3Dr, joyE3Ds, joyE3Db1, joyE3Db2, joyE3Db3, joyE3Db4, joyE3Db5, joyE3Db6, joyE3Db7, joyE3Db8, joyE3Db9, joyE3Db10, joyE3Db11, joyE3Db12;
 var wKeysimul, bmKeysBankAgui, bmKeysBankBgui, keysBankALabel, keysBankBLabel;
 var joyE3DhsF, joyE3DhsB, joyE3DhsL, joyE3DhsR;
 var kn1A1, kn1A2, kn1A3, kn1B1, kn1B2, kn1B3, kn1C1, kn1C2, kn1C3, kn1D1, kn1D2, kn1D3, joy1, kn1main;
@@ -621,6 +621,14 @@ joyE3Db9.action_({
 	localAddr.sendMsg("/hid/ex3d", 12, 0);
 });
 
+joyE3Db10 = SmoothButton(wE3Dsimul, Rect(60, 220, 30, 30))
+.radius_(3).border_(1).font_(Font("Monaco",12));
+joyE3Db10.canFocus = false;
+joyE3Db10.states = [["B10", Color.white, Color(0.0, 0.0, 0.7, 0.5)],["B10", Color.black, Color.white]];
+joyE3Db10.action_({
+	localAddr.sendMsg("/hid/ex3d", 13, 0);
+});
+
 joyE3Db8 = SmoothButton(wE3Dsimul, Rect(60, 180, 30, 30))
 .radius_(3).border_(1).font_(Font("Monaco",12));
 joyE3Db8.canFocus = false;
@@ -644,7 +652,7 @@ joyE3Db11 = SmoothButton(wE3Dsimul, Rect(20, 260, 30, 30))
 joyE3Db11.canFocus = false;
 joyE3Db11.states = [["B11", Color.white, Color(0.0, 0.0, 0.7, 0.5)],["B11", Color.black, Color.white]];
 joyE3Db11.action_({
-	localAddr.sendMsg("/hid/ex3d", 14, 1);
+	localAddr.sendMsg("/hid/ex3d", 14, 0);
 });
 
 joyE3Db12 = SmoothButton(wE3Dsimul, Rect(60, 260, 30, 30))
@@ -652,7 +660,7 @@ joyE3Db12 = SmoothButton(wE3Dsimul, Rect(60, 260, 30, 30))
 joyE3Db12.canFocus = false;
 joyE3Db12.states = [["B12", Color.white, Color(0.0, 0.0, 0.7, 0.5)],["B12", Color.black, Color.white]];
 joyE3Db12.action_({
-	localAddr.sendMsg("/hid/ex3d", 15, 1);
+	localAddr.sendMsg("/hid/ex3d", 15, 0);
 });
 
 joyE3DhsF = SmoothButton(wE3Dsimul, Rect(40, 30, 30, 30)).border_(1).font_(Font("Monaco",12)); // hatswitch forward
