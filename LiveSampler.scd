@@ -2553,7 +2553,7 @@ s.waitForBoot({
 
 	fAmpCurZone = {
 		arg buffer, start = 0, num = 100, mul = 1;
-		~bufferLS.loadToFloatArray(start, num, {
+		~mainBufLS.loadToFloatArray(start, num, {
 			arg arr, buf;
 			"LoadToFloat executed.".postln;
 			buf.loadCollection(arr.collect{|x| x*mul}, start, {arg arr, buf;  "Amplify current zone finished.".postln});
@@ -2900,7 +2900,7 @@ s.waitForBoot({
 	}); // display bufferview
 
 	// postln curZone St & Len
-	//tCurZone.start;
+	// tCurZone.start;
 
 	// display LapisStatus window
 	if(~lapisStatus == 1, {

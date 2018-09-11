@@ -807,7 +807,7 @@ SynthDef(\whoosh, {
 
 SynthDef(\fftDrone, {
 	arg gate = 1, distBus, pulseBus, cutoffBus;
-	var gain = 15, mags, phases, chain, sig, pulseVal = 0.3, env, distVal = 1, cutoffVal = 1000, bufSize = 2048, bins = 150;
+	var gain = 15, mags, phases, chain, sig, pulseVal = 0.3, env, distVal = 1, cutoffVal = 3000, bufSize = 2048, bins = 350;
 
 	distVal = IEnvGen.kr(~specLS.distFftDrone, In.kr(distBus,1));
 	pulseVal = IEnvGen.kr(~specLS.pulseFftDrone, In.kr(pulseBus,1));
@@ -815,12 +815,12 @@ SynthDef(\fftDrone, {
 
 	env = EnvGen.kr( Env.asr, gate, doneAction: 2);
 	mags = {FSinOsc.kr(ExpRand(0.1, 1)).range(0, 1)}.dup(bins);
-	// mags = mags  * ((1, 0.99 .. 0.01).squared);
-	// mags = mags * (Array.series(bins, 1, -1/bins).squared);
-	// mags = mags.reverse;
+	mags = mags  * ((1, 0.99 .. 0.01).squared);
+	mags = mags * (Array.series(bins, 1, -1/bins).squared);
+	mags = mags.reverse;
 
 	mags = ( pulseVal * mags * {LFPulse.kr(2 ** IRand(-3, 5)).range(0, 1)}.dup(bins) ) + ( (1-pulseVal) * mags );
-	phases = 0.dup(100);
+	phases = 0.dup(bins);
 	// chain = FFTTrigger(LocalBuf(bufSize), 0.4);
 	chain = FFTTrigger(LocalBuf(bufSize), Rand(0.3,0.5));
 	chain = PackFFT(chain, bufSize, [mags, phases].flop.flatten, 0, bins-1, 1);

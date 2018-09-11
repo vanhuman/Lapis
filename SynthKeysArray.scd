@@ -18,7 +18,7 @@ s.waitForBoot({
 
 	//////////////// variables ////////////////////////////////
 
-	var pID = 2;
+	var pID = 1;
 	var synthListMain = [
 		"adcirc",
 		"bocAmpMod2",
@@ -42,7 +42,7 @@ s.waitForBoot({
 	var project = (
 		synthList: [
 			[7,2,2,3,4,5,6,7,8,9,10,11,12,13,14,15],
-			[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],
+			[15,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],
 			[15,15,15,15,4,5,6,7,8,9,10,11,12,0,15,15],
 			[17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17]
 		],
@@ -62,8 +62,8 @@ s.waitForBoot({
 				nil
 			],
 			[
-				"SynthKeys/kistorgel10.aif",
 				"SynthKeys/kistorgel13.aif",
+				"SynthKeys/kistorgel10.aif",
 				"SynthKeys/kistorgel9.aif",
 				"SynthKeys/kistorgel8.aif",
 				nil, nil, nil,nil,

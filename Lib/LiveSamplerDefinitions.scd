@@ -136,8 +136,8 @@
 	gravAmp67: Env.new([0.01,1],[1],[\lin]),
 	cutoff67: Env.new([10000,10],[1],[\lin]),
 	ring67: Env.new([100,-10],[1],[\lin]),
-	distFftDrone: Env.new([10,1],[1]),
-	cutoffFftDrone: Env.new([10000,1000,500],[0.5,0.5],[\lin]),
+	distFftDrone: Env.new([15,1],[1]),
+	cutoffFftDrone: Env.new([10000,3000,500],[0.5,0.5],[\lin]),
 	pulseFftDrone: Env.new([1,0.3,1],[0.5,0.5]),
 	amp21: Env.xyc([[0.0, 0.0, \lin], [0.001, 0.001,\exp],[0.2, 0.2, \lin],[1, 1.0]]),
 	amp81: Env.new([0,0.001,0.2,0.7],[0.001, 0.2, 0.8],[\lin,\exp,\lin]),
@@ -181,7 +181,7 @@
 ~cBusLS = (
 	// joystick
 	ex3dProBusX62: Bus.control(s,1).set(0), ex3dProBusX63: Bus.control(s,1).set(0), ex3dProBusX64: Bus.control(s,1).set(0),
-	ex3dProBusX65: Bus.control(s,1).set(0), ex3dProBusX66: Bus.control(s,1).set(0), ex3dProBusX67: Bus.control(s,1).set(0),
+	ex3dProBusX65: Bus.control(s,1).set(0), ex3dProBusX66: Bus.control(s,1).set(0), ex3dProBusX67: Bus.control(s,1).set(0.5),
 	ex3dProY: Bus.control(s,1).set(0.5), ex3dProYpitch: Bus.control(s,1).set(~specLS.pitch61.at(0.5)),
 	ex3dProR: Bus.control(s,1).set(0.5), ex3dProS: Bus.control(s,1).set(1),
 	// Faderfox LV1, LV2

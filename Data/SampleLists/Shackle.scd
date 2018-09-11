@@ -3,12 +3,11 @@
 
 a = (
 	// LV1
-	2: ["CodeKlavier/piano-1.wav"],
+	// 2: ["CodeKlavier/piano-1.wav"],
+	2: ["Kirkegaard/Sabulation3.wav"],
 	10: ["KingMidas/Water.wav"],
 	18: ["Shackle/shackle-droneA.wav"],
 	26: ["sines/s amacher01 - low + low atmos.wav"],
-	// 18: ["Kirkegaard/Sabulation2.wav"],
-	// 26: ["Kirkegaard/Sabulation3.wav"],
 	// 18: ["GDRVH/BoC2 A97-1.aif", "melodic/mel tokyo01b.wav"],
 	// 26: ["amawaveseq2detune.aiff"],
 	34: ["MOROS/08-proc3-proc1-13-proc1-proc1.wav"],
@@ -128,8 +127,8 @@ d = ( // LX green keyset 2 -- settings for justPlay synth
 		"Concord/shimmery1.wav",
 		"Concord/shimmeryLong1.wav",
 
-		"western/intro1.aif",
-		// "Kirkegaard/Silence1.wav",
+		// "western/intro1.aif",
+		"Kirkegaard/Silence1.wav",
 		"box/Ni-Ten-Ichi-Ryu-33rpm-1-60.wav",
 		"box/Ni-Ten-Ichi-Ryu-33rpm-2-60.wav",
 		"box/Ni-Ten-Ichi-Ryu-33rpm-3-60.wav",
