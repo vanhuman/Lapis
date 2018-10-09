@@ -38,7 +38,7 @@ if((~aBus.isNil || ~projectList.isNil), {
 		outMainSubFilter: 1, // 1=enable 0=disable
 		outMonitor: 0, // 0=off 1=on
 		outMonitorChan: 2, // monitor output channel, stereo or mono
-		outMonitorStereo: 0, // 0=mono 1=stereo
+		outMonitorStereo: 1, // 0=mono 1=stereo
 		outMonitorAtt: -6.dbamp, // monitor attenuation factor: 1=no change
 		outMonitorCompressed: 0, // add compression to monitor output
 		outAnalogEfx: 0, // output to analog effects, 0=off 1=on
@@ -50,9 +50,9 @@ if((~aBus.isNil || ~projectList.isNil), {
 
 		// ---- Input ---------
 		inChan1: 50, // input channel 1 -- original channel plus 10 for direct (skipping 10 output busses), or use gained chans as specified below
-		inChan2: 50, // input channel 2
-		inChan1alt: 51, // alternative input channel for input 1
-		inChan2alt: 51, // alternative input channel for input 2
+		inChan2: 51, // input channel 2
+		inChan1alt: 52, // alternative input channel for input 1
+		inChan2alt: 53, // alternative input channel for input 2
 		gainedChans: [0,1,2,3], // channels to be gained, always 4, mapped to 50, 51, 52, 53
 		// gainedChans: [0,1,14,15], // setting when using aggregate device of MOTU+Edirol
 		inBusGain: [6.dbamp,6.dbamp,6.dbamp,6.dbamp], // gain for gained channels in amp

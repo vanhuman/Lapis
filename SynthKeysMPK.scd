@@ -84,7 +84,9 @@ s.waitForBoot({
 		sampleLoadBack: nil, // array of paths to sample files to load on hatswitch-back
 		sampleLoadLeft: nil, // array of paths to sample files to load on hatswitch-left
 		sampleLoadRight: nil, // array of paths to sample files to load on hatswitch-right
-		localAddr: NetAddr("127.0.0.1", 57120)
+		localAddr: NetAddr("127.0.0.1", 57120),
+		switchGroup: [\pitchShifter, \zoneRecSK],
+		switchChan: [\pitchShifter],
 	);
 
 	var midiFilterPitchLocal = cfg.midiFilterPitch; // set filter for MIDI notes
@@ -101,7 +103,7 @@ s.waitForBoot({
 	var colorOff = Color.white;
 
 	// logic
-	var fInitOutput, fBufferRead, fSustain, fSendLapisStatus, fGetInChan, fGetInAttenuation, fGetInGroup, fRoundMidiSpeed, fSendMsg;
+	var fInitOutput, fBufferRead, fSustain, fSendLapisStatus, fGetInChan, fGetOutChan, fGetInAttenuation, fGetInGroup, fRoundMidiSpeed, fSendMsg;
 	var respNON, respNOF, respCTR, respHidEx3d, respPanic, respExtMidi;
 	var cutoffBus = Bus.control(s,1), efxBus = Bus.control(s,1), pitchBus = Bus.control(s,1), distBus = Bus.control(s,1);
 	var drumVolBus = Bus.control(s,1).set(0.5), drumFilterBus = Bus.control(s,1).set(1);
@@ -268,13 +270,29 @@ s.waitForBoot({
 		attenuation
 	};
 
-	// returning Group for sampling, depending on ~aBus.inInt settings
+	// returning group for effects and sampling, depending on ~aBus.inInt settings and synth
 	fGetInGroup = {
+		arg synth;
 		var group;
-		if(~aBus.inInt == 1,
+		// if(~aBus.inInt == 1 and: { (synth == "pitchShifter") || (synth == "zoneRecSK") },
+		if(~aBus.inInt == 1 and: { cfg.switchGroup.indexOf(synth.asSymbol).notNil },
 			{ group = ~aBus.resampleGroup },
 			{ group = ~aBus.synthGroup });
 		group
+	};
+
+	// output channel for effects, depending on ~aBus.inInt settings and synth
+	fGetOutChan = {
+		arg synth;
+		var outChan;
+		// if (synth == "pitchShifter", {
+		if (cfg.switchChan.indexOf(synth.asSymbol).notNil, {
+			if(~aBus.inInt == 1,
+				{ outChan = ~aBus.outMainChan },
+				{ outChan = ~aBus.outBL }
+			);
+		}, { outChan = nil });
+		outChan
 	};
 
 	//////////////// MIDI sequence ////////////////////////////////
@@ -330,7 +348,7 @@ s.waitForBoot({
 			[ 0.5, 0.25, 0.25, 0.5 ],
 			[ 0.25, 0.25, 0.25, 0.25, 0.25, 0.25 ],
 			[ 0.5, 0.25, 0.5, 0.25, 0.25, 0.25, 0.25 ],
-			[ 0.5, 0.25, 0.5, 0.25, 0.25, 0.25 ],
+			[ 0.5, 0.25, 0.5, 0.25, 0.25, 0.25 ], // ***
 			[ 0.25, 0.5, 0.25 ],
 			[ 0.25, 0.5, 0.25, 0.25, 0.5, 0.25, 0.25, 0.25 ],
 			[ 0.25, 0.25, 0.5 ],
@@ -416,7 +434,6 @@ s.waitForBoot({
 				swing = 0;
 				note = seqNotes[beat];
 				// ("Triggering MIDI note" + note).postln;
-				// if( ( (beat == 0) || (beat == 2)) && (factor*factor2 == 1), {
 				if( (beat%2 == 0) && (factor*factor2 == 1), {
 					if(beat == 0 || beat == 2, {
 						vel = rrand(110,127);
@@ -527,18 +544,19 @@ s.waitForBoot({
 					if( (activeSynths[synth] == 1) && notesArray[synth][note].isNil // only for active synths and note not started yet
 						&& ( (chan<15) || (cfg.synthMidiSeq[synth] > 0) )  // if MIDI chan is 16 then only if synthMidiSeq = 1 or 2
 						&& ( (chan==15) || (cfg.synthMidiSeq[synth] < 2) ), {  // if MIDI chan is 1-15 then only if synthMidiSeq = 0 or 1
-						notesArray[synth][note] = Synth(cfg.synthList[synth], [
-							\freq1, note.midicps(~tuningA), \gate, 1, \cutoffBus, cutoffBus.index, \efxBus, efxBus.index,
-							\pitchBus, pitchBus.index, \distBus, distBus.index, \velocity, vel,
-							\inChan1, fGetInChan.value()[0], \inChan2, fGetInChan.value()[1],
-							\prevFreq, notesPrev.midicps(~tuningA),
-							\drumFilterBus, drumFilterBus.index, \drumVolBus, drumVolBus.index, \buffer, ~bufferSK
-						], target: ~aBus.synthGroup);
-						// count notes
-						{ 	countPlay = countPlay + 1;
-							dispPlay.states_([[countPlay.asString]]);
-							fSendLapisStatus.value("countPlaySK",countPlay);
-						}.defer();
+							notesArray[synth][note] = Synth(cfg.synthList[synth], [
+								\freq1, note.midicps(~tuningA), \gate, 1, \cutoffBus, cutoffBus.index, \efxBus, efxBus.index,
+								\pitchBus, pitchBus.index, \distBus, distBus.index, \velocity, vel,
+								\inChan1, fGetInChan.value()[0], \inChan2, fGetInChan.value()[1],
+								\prevFreq, notesPrev.midicps(~tuningA),
+								\drumFilterBus, drumFilterBus.index, \drumVolBus, drumVolBus.index, \buffer, ~bufferSK,
+								\outChan, fGetOutChan.value(cfg.synthList[synth])
+							], target: fGetInGroup.value(cfg.synthList[synth]));
+							// count notes
+							{ 	countPlay = countPlay + 1;
+								dispPlay.states_([[countPlay.asString]]);
+								fSendLapisStatus.value("countPlaySK",countPlay);
+							}.defer();
 					});
 				};
 				notesPrev = note; // save this note for glide support
@@ -752,7 +770,7 @@ s.waitForBoot({
 					// start synth
 					zoneRec = Synth(\zoneRecSK, [\chan1, fGetInChan.value()[0], \chan2, fGetInChan.value()[1],
 						\buf, ~bufferSK, \len, cfg.recLen, \attenuation, fGetInAttenuation.value()
-					], target: fGetInGroup.value());
+					], target: fGetInGroup.value("zoneRecSK"));
 				}
 				{prevVal == 5}  // load default sample for hatswitch right
 				{

@@ -450,7 +450,7 @@ SynthDef(\zoneRecSK, {
 }).send(s);
 
 SynthDef.new(\pitchShifter, {
-	arg freq1, gate, cutoffBus, efxBus, velocity, pitchBus, distBus, inChan1 = 0, inChan2 = 0;
+	arg freq1, gate, cutoffBus, efxBus, velocity, pitchBus, distBus, inChan1 = 0, inChan2 = 0, outChan = 0;
 	var in, sig, env, ampmodVal, velocityVal, timeDispVal, pitchDispVal, pitchVal, distVal, cutoffVal, amp, variableVibrato = 1, vibratoSpeed, vibratoDepth;
 
 	in = In.ar([inChan1,inChan2]);
@@ -471,7 +471,7 @@ SynthDef.new(\pitchShifter, {
 	sig = Vibrato.ar(sig, vibratoSpeed, vibratoDepth);
 	sig = RLPF.ar(sig, cutoffVal, 0.5);
 
-	Out.ar(~aBus.outBL, sig * env * distVal);
+	Out.ar(outChan, sig * env * distVal);
 }).send(s);
 
 SynthDef(\harmsWay, {
@@ -625,7 +625,6 @@ SynthDef(\drumSetSynth, {
 		var sigKick = Array.newClear(2), sigHihat = Array.newClear(2), sigSnare = Array.newClear(2), sigClap = Array.newClear(2);
 		var drumBuf = Array.newClear(8);
 
-		// if(count==0, {drumBuf = ~bufferDrumSK0}, {drumBuf = ~bufferDrumSK1});
 		drumBuf = ~bufferDrumSK[count];
 		distVal = IEnvGen.kr(~specSK.drumVol, In.kr(drumVolBus,1));
 		velocityVal = IEnvGen.kr(~specSK.velocity, velocity);
