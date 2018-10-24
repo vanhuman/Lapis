@@ -836,6 +836,51 @@ SynthDef(\fftDrone, {
 	Out.ar(~aBus.outA, gain * env * sig);
 }).add;
 
+SynthDef(\sineAtmos, {
+	arg gate = 1, ampBus, distBus, speedBus;
+	var sig, freqs, muls, sines, brown, white, env, distVal = 1, speedVal = 1;
+	speedVal = IEnvGen.kr(~specLS.speed181, In.kr(speedBus,1));
+	distVal = IEnvGen.kr(~specLS.dist181, In.kr(distBus,1));
+	env = EnvGen.kr(Env.asr, gate, doneAction: 2);
+	freqs = [
+		190,
+		TWChoose.kr(Impulse.kr(0.2), [80, 95], [0.8, 0.2]),
+		TWChoose.kr(Impulse.kr(0.25), [270, 525, 470], [0.5, 0.3, 0.2]),
+		900,
+		370,
+	];
+	muls = [1, 5, 1, 1, 0.5];
+	sines = Splay.ar(SinOsc.ar(freqs, mul: muls)) * 0.2;
+	sines = sines * LFNoise0.kr(TWChoose.kr(Impulse.kr(0.25), [2, 1, 4] * speedVal, [0.8, 0.1, 0.1]));
+	brown = SinOsc.kr(10 * speedVal) * BrownNoise.ar(0.07) * SinOsc.kr(0.01, 0).range(0,1);
+	white = SinOsc.kr(20 * speedVal) * WhiteNoise.ar(0.02) * SinOsc.kr(0.01, pi).range(0,1);
+	sig = sines + Pan2.ar(brown, LFNoise1.kr(0.05).range(-0.3, 0.3)) + Pan2.ar(white, LFNoise1.kr(0.05).range(-0.3, 0.3));
+	Out.ar(~aBus.outA, sig * In.kr(ampBus, 1) * env * distVal);
+}).add;
+
+SynthDef(\throb, {
+	arg gate = 1, ampBus, distBus, speedBus, greyholeBus;
+	var pulses, freqs, throb, env, distVal = 1, cutoffVal = 50, sines, speedVal = 5, feedbackVal, mixVal;
+	cutoffVal = IEnvGen.kr(~specLS.cutoff182, In.kr(distBus,1));
+	distVal = IEnvGen.kr(~specLS.dist182, In.kr(distBus,1));
+	speedVal = IEnvGen.kr(~specLS.speed182, In.kr(speedBus,1));
+	feedbackVal = IEnvGen.kr(~specLS.feedback182, In.kr(greyholeBus,1));
+	mixVal = IEnvGen.kr(~specLS.mix182, In.kr(greyholeBus,1));
+	env = EnvGen.kr(Env.asr, gate, doneAction: 2);
+	pulses = [
+		TWChoose.kr(Impulse.kr(0.2), [2, 2.5], [0.5, 0.5]),
+		2
+	];
+	freqs = [
+		60,
+		TWChoose.kr(Impulse.kr(0.1), [70, 80], [0.5, 0.5]),
+	];
+	sines = SinOsc.ar(freqs) + RLPF.ar(Saw.ar(freqs), cutoffVal, mul: 0.3 * distVal);
+	throb = LFPulse.ar(speedVal) * SinOsc.kr(pulses) * sines;
+	throb = LPF.ar(throb, SinOsc.kr(0.05).range(300, 10000));
+	throb = (mixVal * Greyhole.ar(throb, 0.2, feedback: feedbackVal)) + ((1 - mixVal) * throb);
+	Out.ar(~aBus.outA, throb * In.kr(ampBus, 1) * env);
+}).add;
 
 ///////////////////////////////////////////// Efx Synths //////////////////////////////////////
 // efx signal is sent in outA and outB synths (InOut program) both pre-fade (~aBus.outEfxPre) and post-fade (~aBus.outEfxPost)

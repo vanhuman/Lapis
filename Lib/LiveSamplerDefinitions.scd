@@ -174,7 +174,14 @@
 	dist171: ControlSpec.new(1, 10, \lin),
 	tempo171: ControlSpec.new(1,8),
 	diskPlayRate: Env.new([33/45,1],[1],[\lin]),
-	diskPlayRateMod: Env.new([0,0.05],[1],[\lin])
+	diskPlayRateMod: Env.new([0,0.05],[1],[\lin]),
+	dist181: Env.new([1,10],[1]),
+	speed181: Env.new([0.25, 0.25, 0.5, 1, 2], 0.25, \step),
+	cutoff182: Env.new([50,600],[1]),
+	dist182: Env.new([1,10],[1]),
+	feedback182: Env.new([0.0, 0.0, 0.5],[0.5, 0.5]),
+	mix182: Env.new([0.0, 0.0, 1],[0.3, 0.7]),
+	speed182: Env.new([1, 1, 2, 5, 6], 0.25, \step)
 );
 
 // control busses
@@ -187,9 +194,12 @@
 	// Faderfox LV1, LV2
 	midiLV1Fader1: Bus.control(s,1).set(0), midiLV1Fader2: Bus.control(s,1).set(0), midiLV1Fader3: Bus.control(s,1).set(0),
 	midiLV1Fader4: Bus.control(s,1).set(0), midiLV1Fader5: Bus.control(s,1).set(0), midiLV1Fader8: Bus.control(s,1).set(0),
+	midiLV1Fader12: Bus.control(s,1).set(0), midiLV1Fader13: Bus.control(s,1).set(0.5),
+	midiLV1Fader14: Bus.control(s,1).set(0), midiLV1Fader15: Bus.control(s,1).set(0.5),
 	midiLV1KnobA1: Bus.control(s,1).set(0.5), midiLV1KnobA2: Bus.control(s,1).set(0.5), midiLV1KnobB1: Bus.control(s,1).set(0.5),
 	midiLV1KnobB2: Bus.control(s,1).set(0.7), midiLV1KnobB3: Bus.control(s,1).set(0.7), midiLV1KnobC1: Bus.control(s,1).set(0.5),
-	midiLV1KnobC2: Bus.control(s,1).set(0), midiLV1KnobD1: Bus.control(s,1).set(0.5), midiLV1KnobD2: Bus.control(s,1).set(0),
+	midiLV1KnobC2: Bus.control(s,1).set(0),
+	midiLV1KnobD1: Bus.control(s,1).set(0.5), midiLV1KnobD2: Bus.control(s,1).set(0),
 	midiLV1JoyX: Bus.control(s,1).set(0), midiLV1JoyY: Bus.control(s,1).set(0.5), midiLV1CrossFader: Bus.control(s,1).set(0),
 	midiLV1KnobMasterVol: Bus.control(s,1).set(1),
 	midiLV2Fader1: Bus.control(s,1).set(0), midiLV2Fader3: Bus.control(s,1).set(0), midiLV2Fader4: Bus.control(s,1).set(0),

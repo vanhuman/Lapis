@@ -101,6 +101,9 @@ s.waitForBoot({
 		play1: nil, play1Act: 0, patt1:nil, startPos1: 0, len1: 0.5, ampSine1: 0, ampPluck1: 0, dist1: 0, amp1: 0,
 		tempoClock1: TempoClock.new(8);
 	);
+	var zone18 = (
+		play1: nil, play1Act: 0, play2: nil, play2Act: 0,
+	);
 	var zoneRec = (
 		ch1A: nil, ch1B: nil, ch2A: nil, ch2B: nil, dynOverflow: 0.05, dynLenMax: 30, dynLenMaxFrames: 30*~sRate,
 		dyn1: nil, dyn1St: nil, dyn2: nil, dyn2St: nil, dyn3: nil, dyn3St:nil, dyn4: nil, dyn4St: nil, len1: 5,
@@ -2108,6 +2111,57 @@ s.waitForBoot({
 			});
 			if((chan==14 && num==11), {
 				zone17.ampPluck1 = value;
+			});
+			// synthAtmos trigger & volume
+			if((chan==14 && num==12), {
+				~cBusLS.midiLV1Fader12.set(value);
+				if(value >= 0.01,{ // start zone
+					if(zone18.play1Act == 0, {
+						zone18.play1Act = 1;
+						zone18.play1 = Synth(\sineAtmos, [
+							\gate, 1,
+							\ampBus, ~cBusLS.midiLV1Fader12.index,
+							\distBus, ~cBusLS.midiLV1CrossFader.index,
+							\speedBus, ~cBusLS.midiLV1Fader13.index,
+					], target: ~aBus.synthGroup);
+						fCountZones.value("P+", 1);
+					});
+				},{ // stop zone
+					if(zone18.play1Act == 1, {
+						zone18.play1Act = 0;
+						zone18.play1.release;
+						fCountZones.value("P-", 1);
+					});
+				});
+			});
+			if((chan==14 && num==13), {
+				~cBusLS.midiLV1Fader13.set(value);
+			});
+			// throb trigger & volume
+			if((chan==14 && num==14), {
+				~cBusLS.midiLV1Fader14.set(value);
+				if(value >= 0.01,{ // start zone
+					if(zone18.play2Act == 0, {
+						zone18.play2Act = 1;
+						zone18.play2 = Synth(\throb, [
+							\gate, 1,
+							\ampBus, ~cBusLS.midiLV1Fader14.index,
+							\distBus, ~cBusLS.midiLV1CrossFader.index,
+							\speedBus, ~cBusLS.midiLV1Fader15.index,
+							\greyholeBus, ~cBusLS.midiLV1KnobD1.index,
+						], target: ~aBus.synthGroup);
+						fCountZones.value("P+", 1);
+					});
+				},{ // stop zone
+					if(zone18.play2Act == 1, {
+						zone18.play2Act = 0;
+						zone18.play2.release;
+						fCountZones.value("P-", 1);
+					});
+				});
+			});
+			if((chan==14 && num==15), {
+				~cBusLS.midiLV1Fader15.set(value);
 			});
 		}); // only process midi if coming from the right source
 	},
