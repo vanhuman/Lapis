@@ -2112,7 +2112,7 @@ s.waitForBoot({
 			if((chan==14 && num==11), {
 				zone17.ampPluck1 = value;
 			});
-			// synthAtmos trigger & volume
+			// sineAtmos trigger & volume
 			if((chan==14 && num==12), {
 				~cBusLS.midiLV1Fader12.set(value);
 				if(value >= 0.01,{ // start zone

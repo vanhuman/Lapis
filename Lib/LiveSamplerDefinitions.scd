@@ -23,8 +23,9 @@
 	apfMixPitch: Env.new([0,0,1,1,0,0],[0.05,0.05,0.15,0.5,0.25], [\lin]),
 	apfMixSchr: Env.new([1,1,0,0],[0.05,0.05,0.9], [\lin]),
 	mtfVol: Env.new([0,1,1], [0.9,0.1], [\lin]),
-	mtfDecay: Env.new([0,0,1,1], [0.5,0.4,0.1], [\lin]),
-	mtfMix: Env.new([0,0,1,1], [0.5,0.25,0.25], [\lin]), // mix FreeVerb
+	mtfDecay: Env.new([0,0,1,1], [0.55,0.35,0.1], [\lin]),
+	mtfSweep: Env.new([0, 0.5], [1], [\lin]),
+	mtfMix: Env.new([0,0,1,1], [0.25,0.25,0.5], [\lin]), // mix FreeVerb
 	mtfMixTap: Env.new([1,1,0,0], [0.9,0.08,0.02], [\lin]),  // mix Tab
 	mtfMixFreeze: Env.new([0,0,1,1], [0.9,0.08,0.02], [\lin]),  // mix Freeze
 	mtfFF: Env.new([500,10000], [1], [\lin]),

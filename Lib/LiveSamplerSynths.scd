@@ -1008,11 +1008,10 @@ SynthDef(\multiTapFreeze, 	{ // efx bank 2 fader 1
 	// there's no level control via outA or outB - control level by shortly taking down fader a bit
 	arg gate, decayBus, volBus, onExternalInput = 0, inChan1 = 0, inChan2 = 1, ffBus, freezeBus, distBus;
 	var sig, mixFreezeVal, mixTapVal, volVal;
-	var sigT, decayBusVal, sigTL, sigTR, mixVal = 1, tapVal1, tapVal2, tapVal3, tapVal4; // tap delay
+	var sigT, decayBusVal, sigTL, sigTR, mixVal = 1, tapVal1, tapVal2, tapVal3, tapVal4, sweepVal; // tap delay
 	var in, localL, localR, sigF, sigF1, sigF2, local, envLPF, envLPF2, hold, ffVal; // freeze
 	var pulseLen, pulse, pulseTrig, freezeVal;
 	var deltimes, sigPlate;
-	// var mtfBufL = LocalBuf(~sRate*3,1).clear, mtfBufR = LocalBuf(~sRate*3,1).clear;
 
 	// switch between input channels and sample playback
 	in = (onExternalInput * In.ar([inChan1,inChan2])) +
@@ -1022,8 +1021,6 @@ SynthDef(\multiTapFreeze, 	{ // efx bank 2 fader 1
 	volVal = IEnvGen.kr(~specLS.mtfVol, In.kr(volBus,1));
 
 	// tap delay --------------------------------
-	decayBusVal = IEnvGen.kr(~specLS.mtfDecay, In.kr(decayBus,1));
-	mixVal = IEnvGen.kr(~specLS.mtfMix, In.kr(decayBus,1));
 	tapVal1 = IEnvGen.kr(~specLS.mtfTap1, In.kr(decayBus,1));
 	tapVal2 = IEnvGen.kr(~specLS.mtfTap2, In.kr(decayBus,1));
 	tapVal3 = IEnvGen.kr(~specLS.mtfTap3, In.kr(decayBus,1));
@@ -1043,8 +1040,14 @@ SynthDef(\multiTapFreeze, 	{ // efx bank 2 fader 1
 	sigTR = Pan2.ar(sigTR, LFNoise1.ar(1.5));
 
 	// Freeverb on MultiTap
-	sigT = 0.5 * FreeVerb2.ar(sigTL, sigTR, mixVal, decayBusVal * LFNoise1.kr(0.5).range(0.8,1), 0.5); // mix room damping
-	// sigT = GVerb.ar(Mix.ar([sigTL, sigTR]), 10*decayBusVal, 3, 0.5, 1, 15, 0, 3, 2, 300, mul: mixVal);
+	mixVal = IEnvGen.kr(~specLS.mtfMix, In.kr(decayBus,1));
+	decayBusVal = IEnvGen.kr(~specLS.mtfDecay, In.kr(decayBus,1));
+	sweepVal = IEnvGen.kr(~specLS.mtfSweep, In.kr(ffBus,1));
+	// sigT = 0.5 * FreeVerb2.ar(sigTL, sigTR, mixVal, decayBusVal * LFNoise1.kr(0.5).range(0.8,1), 0.5); // mix room damping
+	sigT = 0.5 * (
+		( Greyhole.ar([sigTL, sigTR], 0.2, 0.5, 0.5 + (3 * decayBusVal * LFNoise1.kr(0.5).range(1 - sweepVal, 1)), feedback: 0.2) * mixVal )
+		+ ( [sigTL, sigTR] * (1 - mixVal) )
+	);
 
 	// freeze  --------------------------------
 	hold = In.kr(volBus,1);
