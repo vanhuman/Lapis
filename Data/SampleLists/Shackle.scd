@@ -40,7 +40,7 @@ c = (
 	31: ["station1 rbeq2", "MOROS/10-proc1-proc2.wav" , "solitude/sol verwketel1EQ2part"],
 	32: ["GDRVH/004 ARP25 noise part1.aif"],
 	33: ["plankje2SN1m-Slack_a.aiff"],
-	34: ["silent/ampmod vlow1m.aiff"],
+	34: ["Shackle/shackle-droneB.wav", "Shackle/shackle-droneB.wav", "silent/ampmod vlow1m-part1.aif"],
 	35: ["MOROS/01-proc1-proc3.aif"],
 
 	// LX blue keyset 2
@@ -202,6 +202,7 @@ e = ( // sample arrays for SynthKeys
 		],
 	left:
 		[
+		"SynthKeys/highFlute1.wav",
 		"SynthKeys/bass1.wav",
 		"SynthKeys/bass1+12.wav",
 		"SynthKeys/Albert1.aiff",

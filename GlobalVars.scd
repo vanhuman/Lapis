@@ -14,8 +14,8 @@
 
 if((~aBus.isNil || ~projectList.isNil), {
 
-	~projectID = \sh;
-	~projectList = (sh: "Shackle", ab: "ABATTOIR", sp: "Spoon3b", kid: "Kids", cr: "Crack", dg: "DetuningGuitar", sp2: "SpoonDuo", dr: "Drone", mw: "MoneyForYourWhaleII", eu: "Eurapco", sn: "SacredNoise", gm: "SoundOfTheMachine", pot: "ParishOfTama", lcm: "LCM", th: "TackHead", sh2: "Shackle2"
+	~projectID = \sm;
+	~projectList = (sh: "Shackle", ab: "ABATTOIR", sp: "Spoon3b", kid: "Kids", cr: "Crack", dg: "DetuningGuitar", sp2: "SpoonDuo", dr: "Drone", mw: "MoneyForYourWhaleII", eu: "Eurapco", sn: "SacredNoise", sm: "SoundOfTheMachine2019", pot: "ParishOfTama", lcm: "LCM", th: "TackHead", sh2: "Shackle2"
 	);
 	~projectNotes = (cr: "/Crack/Crack Notes.rtf");
 
@@ -49,10 +49,10 @@ if((~aBus.isNil || ~projectList.isNil), {
 		outAltChan: 2, // alternative output channel for incidental usage
 
 		// ---- Input ---------
-		inChan1: 50, // input channel 1 -- original channel plus 10 for direct (skipping 10 output busses), or use gained chans as specified below
+		inChan1: 51, // input channel 1 -- original channel plus 10 for direct (skipping 10 output busses), or use gained chans as specified below
 		inChan2: 51, // input channel 2
-		inChan1alt: 52, // alternative input channel for input 1
-		inChan2alt: 53, // alternative input channel for input 2
+		inChan1alt: 50, // alternative input channel for input 1
+		inChan2alt: 50, // alternative input channel for input 2
 		gainedChans: [0,1,2,3], // channels to be gained, always 4, mapped to 50, 51, 52, 53
 		// gainedChans: [0,1,14,15], // setting when using aggregate device of MOTU+Edirol
 		inBusGain: [6.dbamp,6.dbamp,6.dbamp,6.dbamp], // gain for gained channels in amp

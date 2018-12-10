@@ -56,6 +56,11 @@ HID.findAvailable.do {arg device;
 
 ["Serial", SerialPort.devices].postln;
 portName = SerialPort.devices.detect{|x| x.contains("tty.usb")};
+// ~names = "ls /dev/{tty,cu}.*".unixCmdGetStdOutLines;
+// ~names.postln;
+// portName = ~names.detect{|x| x.contains("tty.usb")};
+// portName = '/dev/tty.usbserial-A403JIJN';
+
 if(portName.notNil, {
 	("Connected to serial port" + portName ++ ".").postln;
 	ardSms = ArduinoSMS(portName, 115200);

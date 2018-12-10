@@ -113,6 +113,10 @@ s.waitForBoot({
 	var fMidiSeq, tMidiSeq, midiSeqAct = 0, midiSeqChange = 0, midiSeqSpeedInit = 0.9, midiSeqSpeed = 1, midiSeqLenFact = 0.5;
 	var midiSeqMode, midiFile, midiStart, midiBPM, midiPath, midiRecording = false, midiSeqSwing = 0.15, maxBpm = 240;
 
+	if (~gvdm == 1) {
+			cfg.synthMidiSeq = [1,1,1,0, 1,0,0,1, 0,2,2,2, 1,0,2,2];
+	};
+
 	// load global variables
 	"GlobalVars.scd".loadRelative();
 
@@ -384,6 +388,12 @@ s.waitForBoot({
 		midiSeqSpeed = bpm.reciprocal*120;
 		if(cfg.midiRestartSpeed, { midiSeqSpeed = midiSeqSpeedInit });
 
+		if (~gvdm == 1) {
+			~gvdmSeqNotes = [ 59, 61, 62, 64, 66, 67, 69, 72 ] + 12;
+			midiSeqSpeed = 4;
+			seqNotes = { ~gvdmSeqNotes.choose } ! count;
+		};
+
 		// seqNotes =  [ 50, 67, 63, 46, 54, 66 ]; // nummer 1
 		// seqLen =  [ 0.5, 0.25, 0.5, 0.25, 0.5, 0.25 ];
 		// seqNotes =  [ 45, 66, 50, 76, 78 ]; // nee
@@ -481,7 +491,11 @@ s.waitForBoot({
 						if(~theBusyDrone==1, {
 							seqNotes[rrand(3,count-1)] = ((3..14)++(18..29)++(33..55)++(59..78)).choose;
 						}, {
-							seqNotes[rrand(1,count-1)] = rrand(40,80);
+							if (~gvdm == 1) {
+								seqNotes[rrand(3,count-1)] = ~gvdmSeqNotes.choose;
+							} {
+								seqNotes[rrand(1,count-1)] = rrand(40,80);
+							}
 						});
 						// seqLen[rand(count)] = [0.25,0.5].wchoose([0.8,0.2]);
 						("Notes: " + seqNotes).postln;
@@ -501,8 +515,11 @@ s.waitForBoot({
 						if(~theBusyDrone==1, {
 							"## The Busy Drone Mode!".postln;
 							seqNotes =  [(3..14).choose] ++ [(33..55).choose] ++ [(3..14).choose] ++
-												({ ((3..14)++(18..29)++(33..55)++(59..78)).choose }!(count-3));
+							({ ((3..14)++(18..29)++(33..55)++(59..78)).choose }!(count-3));
 						});
+						if (~gvdm == 1) {
+							seqNotes = { ~gvdmSeqNotes.choose } ! count;
+						};
 						("Notes: " + seqNotes).postln;
 						changeCount = 0;
 					});

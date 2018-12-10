@@ -193,7 +193,6 @@ s.waitForBoot({
 				"InOut: output stopped.".postln;
 			},
 			{ // init sound
-				("outMainStereo=" + ~aBus.outMainStereo).postln;
 				~aBus.inGroup = Group.new();
 				~aBus.synthGroup = Group.new(~aBus.inGroup, \addAfter);
 				~aBus.outputGroup = Group.new(~aBus.synthGroup, \addAfter);
