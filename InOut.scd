@@ -1,5 +1,5 @@
 // InOut: Audio Output Central by Robert van Heumen 2013.
-// Tested with SC 3.6.6.
+// Tested with SC 3.10.2.
 
 // There are three audio busses you can send Synths to:
 // ~aBus.outA (Synth outBusA):
@@ -27,10 +27,6 @@
 //	send to output for monitor with realtime attenuation
 //	send to output for mains with realtime attenuation
 
-// Configuration switches on LX
-//	RED1 switches between original (RED1=off) and alternative (RED1=on) audio inputs as specified in GlobalVars.rtf
-//	RED4 switches between external (RED4=off) and internal (RED4=on, channel 11/12) audio inputs
-
 (
 s.waitForBoot({
 
@@ -49,7 +45,7 @@ s.waitForBoot({
 		midiSrc: "MUL", // filtering allowed midi sources; comma-separated list f.e.: MUL = Motu Ultralite, IAC1, IAC2, IAC3, LPK
 		background: "image", // background images method (pen or image)
 	);
-	var ardAna1Bus, midiLV2KnobMasterVol, fInitOutput, fSetImage, fProjectInfo, fServerMeter;
+	var ardAna1Bus, midiLV2KnobMasterVol, fInitOutput, fSetImage, fProjectInfo, fServerMeter, inBusGainBus;
 	var specOutAmp = Env.xyc([[0.0, 0.0, \lin], [0.001, 0.001,\exp],[0.2, 0.2, \lin],[1, 1.0]]);
 	var specOutAmpNoArd = Env.xyc([[0.0, 0.0, \lin], [0.001, 0.001,\exp],[0.2, 0.2, \lin],[0.5, 1.0], [1,1.0]]);
 	var screenHeight = Window.screenBounds.height, screenWidth = Window.screenBounds.width;
@@ -58,21 +54,19 @@ s.waitForBoot({
 	var outMonitorAttLabel, outMonitorAttVal, outMainAttLabel, outMainAttVal;
 	var oscOn = 0;
 	// var imageFileList = ["flower2","flower4","flower5","flower7","flower8","flower1","flower11"], imageSame = false;
-	// var imageFileList = ["sound"], imageSame = false;
+	var imageFileList = ["sound"], imageSame = false;
 	// var imageFileList = ["Point1","Point2","Point3","Point4","Point5","Point6"], imageSame = true;
-	var imageFileList = ["Sleeuwits", "Stankowski"], imageSame = false;
+	// var imageFileList = ["Sleeuwits", "Stankowski"], imageSame = false;
 	var imageFileDone = Array.new(imageFileList.size);
 	var fontLabel, fontButton, fontSmall;
 	var isRecording = 0;
-	var gainDefault = #[1,1,1,1];
-
-	cfg.docDir.postln;
 
 	~aBus = nil; // refresh global vars
 	"GlobalVars.scd".loadRelative();
+	"Lib/LapisDocumentation.scd".loadRelative();
 	~processBuf = Buffer.alloc(s, cfg.processLen, 2);
 	fontLabel = Font(~font,10); fontButton = Font(~font,12); fontSmall = Font(~font,9);
-	s.recChannels_(~aBus.recChannels); ("Number of recording channels set to" + s.recChannels).postln;
+	s.recChannels_(~aBus.recChannels);
 
 	///////////////////////////////////////////// Output Synths //////////////////////////////////////
 
@@ -80,13 +74,13 @@ s.waitForBoot({
 	// this is done in the same way in ServerMeterRvH.sc
 	if( Server.local.options.numInputBusChannels == 2 ) {
 		~aBus.gainedChans = ~aBus.gainedChans[0..1];
-		gainDefault = #[1,1];
+		~aBus.inBusGain = ~aBus.inBusGain[0..1];
 	};
 
 	SynthDef(\inBus, {
-		arg gate, gain = gainDefault;
-		// var in = SoundIn.ar([0,1,2,3]);
+		arg gate, gainBus;
 		var in = SoundIn.ar(~aBus.gainedChans);
+		var gain = In.kr(gainBus,~aBus.inBusGain.size);
 		if(~aBus.inputThru == 1, { Out.ar(~aBus.inputThruChan, in) });
 		SendPeakRMS.kr(in * gain, replyRate: 10, cmdName: "/InBus"); // send to ServerMeter
 		Out.ar(50, in * gain);
@@ -142,7 +136,7 @@ s.waitForBoot({
 
 		// tidy up the signal, getting ready to send out
 		sig = Select.ar(CheckBadValues.ar(sig, 0, 0), [sig, DC.ar(0), DC.ar(0), sig]);  // don't let bad math hit the speakers
-		if(~aBus.outMainSubFilter == 1, {sig = HPF.ar(sig, 50); "InOut: subfilter enabled.".postln;}); // reduce subsonics
+		if(~aBus.outMainSubFilter == 1, {sig = HPF.ar(sig, 50);}); // reduce subsonics
 
 		// analog efx output (mono) with limiter
 		if(~aBus.outAnalogEfx == 1, {
@@ -150,7 +144,7 @@ s.waitForBoot({
 		});
 
 		// master limiter
-		if(~aBus.outMainLimiter == 1, {sig = Limiter.ar(sig, 0.95).clip2(0.98); "InOut: limiter enabled.".postln;});
+		if(~aBus.outMainLimiter == 1, {sig = Limiter.ar(sig, 0.95).clip2(0.98);});
 
 		// monitor output
 		if(~aBus.outMonitor == 1, {
@@ -173,6 +167,8 @@ s.waitForBoot({
 	ardAna1Bus.set(specOutAmp.at(1));
 	midiLV2KnobMasterVol = Bus.control(s,1);
 	midiLV2KnobMasterVol.set(specOutAmp.at(1));
+	inBusGainBus = Bus.control(s,~aBus.inBusGain.size);
+	inBusGainBus.setn(~aBus.inBusGain);
 
 	///////////////////////////////////////////// Functions //////////////////////////////////////
 
@@ -190,7 +186,7 @@ s.waitForBoot({
 					mainOutChan.background_(Color.white);
 					if(~aBus.outMonitor == 1, {monOutChan.background_(Color.white)});
 				});
-				"InOut: output stopped.".postln;
+				"InOut: Output stopped.".postln;
 			},
 			{ // init sound
 				~aBus.inGroup = Group.new();
@@ -199,14 +195,14 @@ s.waitForBoot({
 				~aBus.efxGroup = Group.new(~aBus.outputGroup, \addAfter);
 				~aBus.mainGroup = Group.new(~aBus.efxGroup, \addAfter);
 				~aBus.resampleGroup = Group.new(~aBus.mainGroup, \addAfter);
-				~aBus.inBusSynth = Synth(\inBus, [\gain, ~aBus.inBusGain, \gate,1], target: ~aBus.inGroup);
+				~aBus.inBusSynth = Synth(\inBus, [\gainBus, inBusGainBus, \gate, 1], target: ~aBus.inGroup);
 				~aBus.outAsynth = Synth(\outBusA, [\volBus, midiLV2KnobMasterVol.index,
 					\gate,1], target: ~aBus.outputGroup);
 				~aBus.outBsynth = Synth(\outBusB, [\volBus, ardAna1Bus.index,
 					\gate,1], target: ~aBus.outputGroup);
 				~aBus.outBLsynth = Synth(\outBusBL, [\volBus, ardAna1Bus.index,
 					\gate,1], target: ~aBus.outputGroup);
-				~aBus.outMainsynth = Synth(\outBusMain, [\gate,1,
+				~aBus.outMainsynth = Synth(\outBusMain, [\gate, 1,
 					\monAtt, ~aBus.outMonitorAtt.asFloat, \mainAtt, ~aBus.outMainAtt.asFloat, \resampAtt, ~aBus.outResamplingAtt.asFloat,
 					\outMainStereo, ~aBus.outMainStereo
 				],
@@ -215,7 +211,14 @@ s.waitForBoot({
 				if(~aBus.outMonitor == 1, {monOutChan.background_(~colorOn)});
 				// outMainAttVal.value = ~aBus.outMainAtt;
 				// if(~aBus.outMonitor == 1, {outMonitorAttVal.value = ~aBus.outMonitorAtt; });
-				"InOut: output initialized.".postln;
+
+				~doc.mainOutA;
+				~doc.mainOutB;
+				~doc.mainOutBLimited;
+				("\nInOut: Number of recording channels set to" + s.recChannels).postln;
+				if(~aBus.outMainSubFilter == 1, {"\nInOut: Subfilter enabled.".postln;});
+				if(~aBus.outMainLimiter == 1, {"\nInOut: Limiter enabled.".postln;});
+				"\nInOut: Output initialized.".postln;
 		});
 	};
 
@@ -290,36 +293,15 @@ s.waitForBoot({
 	};
 
 	fProjectInfo = {
-		("\nProject "++~project++"...").postln;
+		~doc.generalConfig;
+		("\nProject loaded:" + ~project).postln;
 		("\nRED1: Switch inputs 1 & 2 between" +  ~aBus.inChan1 + "&" + ~aBus.inChan2 +
 			"to" + ~aBus.inChan1alt + "&" + ~aBus.inChan2alt).postln;
 		"RED2: Switch efx bank from deciMate & deLay to multiTapFreeze & ampPitchFol".postln;
 		"RED3: Switch efx source from sample playback to input channels".postln;
 		("RED4: Switch input channels between"
 			+~aBus.inChan1++" & "++~aBus.inChan2+"and"+~aBus.resamplingChan++" & "++(~aBus.resamplingChan+1)).postln;
-
-		"\nInOut keyboard shortcuts:".postln;
-		"	esc stops sound output".postln;
-		"	i posts project info".postln;
-		"	n posts Node info".postln;
-		"	m starts s.meter".postln;
-		"	o toggles OSC monitor ON/OFF".postln;
-		"	alt-r toggles recordiing ON/OFF".postln;
-
-		"\nLiveSampler keyboard shortcuts:".postln;
-		"	esc stops sound output".postln;
-		"	L clears buffer".postln;
-		"	a amplifies current zone".postln;
-		"	s saves buffer to disk".postln;
-		"	t loads ~testSampleList".postln;
-		"	r refreshes bufferView".postln;
-
-		"\nSynthKeys keyboard shortcuts:".postln;
-		"	esc stops sound output".postln;
-		"	s saves buffer to disk".postln;
-
-		"\nControllers keyboard shortcuts:".postln;
-		"	d toggles controller data postln\n".postln;
+		~doc.shortCuts;
 	};
 
 	fServerMeter = {
@@ -417,7 +399,7 @@ s.waitForBoot({
 				{(note == 3) && (~aBus.inInt == 0)} // switching inputs 1 & 2 to internal
 				{
 					("InOut: Switch inputs 1 & 2 from" + ~aBus.inChan1 + "&" + ~aBus.inChan2 +
-						"to" + ~aBus.resamplingChan + "&" + (~aBus.resamplingChan+1)).postln;
+						"to" + ~aBus.resamplingChan + "&" + (~aBus.resamplingChan+1) + "(internal)").postln;
 					~aBus.inChan1 = ~aBus.resamplingChan;
 					~aBus.inChan2 = ~aBus.resamplingChan + 1;
 					~aBus.inInt = 1;
@@ -454,7 +436,7 @@ s.waitForBoot({
 				}
 				{(note == 3) && (~aBus.inInt == 1)} // switching inputs 1 & 2 to back to what they were
 				{
-					("InOut: Switch inputs 1 & 2 from" + ~aBus.inChan1 + "&" + ~aBus.inChan2 + "to" +
+					("InOut: Switch inputs 1 & 2 from" + ~aBus.inChan1 + "&" + ~aBus.inChan2 + "(internal) to" +
 						if(~aBus.inAlt == 0, {~aBus.inChan1org}, {~aBus.inChan1alt})  + "&" +
 						if(~aBus.inAlt == 0, {~aBus.inChan2org}, {~aBus.inChan2alt})).postln;
 					~aBus.inChan1 = if(~aBus.inAlt == 0, {~aBus.inChan1org}, {~aBus.inChan1alt});
@@ -508,7 +490,7 @@ s.waitForBoot({
 	.states_([[~aBus.inChan1.asString ++ "," ++ ~aBus.inChan2.asString]]);
 
 	// input channel levels
-	4.do {arg i;
+	~aBus.gainedChans.size.do {arg i;
 		StaticText(~wInOut, Rect(146+(i*30), -2, 20, 15))
 		.background_(Color.white.alpha_(0.7)).font_(fontSmall).string_(50+i).align_(\center);
 		inGain[i] = (SmoothNumberBox(~wInOut, Rect(140+(i*30), 9, 30, 22))
@@ -517,7 +499,7 @@ s.waitForBoot({
 			.background_(Color.white)
 			.font_(fontButton)
 			.value_(~aBus.inBusGain[i].ampdb.round(0.1))
-			.clipHi_(21)
+			.clipHi_(64)
 			.clipLo_(-6.0)
 			// .canFocus_(false)
 			.scroll_step_(1)
@@ -526,7 +508,7 @@ s.waitForBoot({
 			.action_({
 				~aBus.inBusGain[i] = inGain[i].value.dbamp;
 				("In "++i++" Gain:" + ~aBus.inBusGain[i]).postln;
-				~aBus.inBusSynth.set(\gain,~aBus.inBusGain);
+				inBusGainBus.setn(~aBus.inBusGain);
 		}));
 	};
 	inGainLabel = StaticText(~wInOut, Rect(265, 13, 15, 16))
@@ -665,14 +647,14 @@ s.waitForBoot({
 	~wInOut.front;
 	if(~alwaysOnTop == 1, {~wInOut.alwaysOnTop_(true)});
 
+	// postln project information
+	fProjectInfo.value();
+
 	// initialize output
 	fInitOutput.value(1);
 
 	// image
 	fSetImage.value();
-
-	// postln project information
-	fProjectInfo.value();
 
 	// collect garbage
 	~wInOut.onClose_({

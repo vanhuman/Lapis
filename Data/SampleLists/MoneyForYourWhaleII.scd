@@ -4,13 +4,13 @@
 a = (
 	// LV1
 	2: ["stoel2-Dis_b.aiff"], // ------------ LIMIT
-	10: ["dr_AmbIntrigue2+Light1b.aif"], // ------------ BOW
-	18: ["GDRVH/BoC2 A97-1.aif", "melodic/mel tokyo01b.wav"], // ------------ EYE
+	10: ["Missing Persons/Destination Unknown 2.wav", "Missing Persons/Destination Unknown 1.wav"], // ------------ BOW
+	18: ["Missing Persons/Destination Unknown 3.wav", "Missing Persons/Destination Unknown 4.wav"], // ------------ EYE
 	26: ["amawaveseq2detune.aiff"], // ------------ ANCHOR SCREW
 	34: ["MOROS/08-proc3-proc1-13-proc1-proc1.wav"],
 	42: ["mortrob1.wav"], // ------------ SNAP
 	50: ["plankje4SN1-Thonk Hectic_a.aiff"], // ------------ PIN
-	58: ["lh-snare1-16bit.aif", "lh-snare4-16bit.aif", "lh-snare3-16bit-pt2.aif"] // ------------ SHACKLE SNAP
+	58: ["MFYW-sjaak-han/Sjaak.wav"] // ------------ SHACKLE SNAP
 );
 
 b = (
@@ -23,17 +23,17 @@ b = (
 	34: ["trapper2part2.aif", "trapper6part2.aif"], // ------------ PIN
 	42: ["MOROS//11-proc1-proc1.aif"],
 	50: ["MOROS/07-proc1-proc1.aif"], // ------------ BOW EYE
-	58: ["sines/s3 long01part.aiff", "sines/s3 long04 soft no pitch voices.aif"] // ------------ BOW
+	58: ["MFYW-sjaak-han/Sjaak.wav"] // ------------ BOW
 );
 
 c = (
 	// LX blue
 	24: ["MOROS/15-proc3-proc3.aif"],
-	25: ["moros-beat1.aiff"],
+	25: ["Parish/cementmixer1processed1.wav"],
 	26: ["speeldooscol.aif", "distorted/d mortB01.wav", "speeldoosTSFFT.aif"], // ------------ THIMBLE
 	27: ["glas&lepel10VRSP2+.aiff"], // ------------ PIN
 	28: ["melodic/mel 310-melodie-low"], // ------------ RIG
-	29: ["v belief ralph&heather.aiff"], // ------------ CHOICE
+	29: ["voice/tcp_d2_17_english_man_irdial.wav"], // ------------ CHOICE
 	30: ["aphextwin/avril altdelay.wav", "melodic/MDfreeze/theme_03_shortb.wav"],
 	31: ["station1 rbeq2", "MOROS/10-proc1-proc2.wav" , "solitude/sol verwketel1EQ2part"], // ------------ SHACKLE
 	32: ["GDRVH/004 ARP25 noise part1.aif"], // ------------ CUFF
@@ -42,8 +42,8 @@ c = (
 	35: ["MOROS/01-proc1-proc3.aif"], // ------------ BOLT
 
 	// LX blue keyset 2
-	36: ["voice/v marlowe.aif", "voice/v marlowe2.aif", "voice/v marlowe4a part.aif"],
-	37: ["v apache gun kill.aiff"],
+	36: ["voice/PlayerPianosR1_ed1.wav"],
+	37: ["voice/v feldman july67 02.aiff"],
 	38: ["aphextwin/@FX-MATRIXT7b.wav", "voice/v voicemail300404.aif"],
 	39: ["sci-fi/alien talk decimate.wav"],
 	40: ["prince/this is not a dream 1.wav","prince/this is not a dream 1.wav","Alien/moving on second.wav","Alien/moving on second.wav"],
@@ -97,12 +97,18 @@ d = ( // LX green keyset 2 -- settings for justPlay synth
 		"MFYW-II loops/Mahavishnu - Vital transformations.wav",
 		"MFYW-II loops/Mahavishnu - You know you know.wav",
 
-		"MFYW-II loops/Coma loop.wav",
-		"MFYW-II loops/DubBass1.wav",
-		"MFYW-II loops/Walz for the Restless+.wav",
-		"MFYW-II loops/MingusBeat.wav",
-		"",
-		"",
+		"Concord/dreamyLong1.wav",
+		"Concord/dreamyLong2.wav",
+		"Concord/drumloop1.wav",
+		"Concord/drumloop2.wav",
+		"Concord/shimmery1.wav",
+		"Concord/shimmeryLong1.wav",
+		// "MFYW-II loops/Coma loop.wav",
+		// "MFYW-II loops/DubBass1.wav",
+		// "MFYW-II loops/Walz for the Restless+.wav",
+		// "MFYW-II loops/MingusBeat.wav",
+		// "",
+		// "",
 
 		"Sunday Rhino/Recollections.wav",
 		"Sunday Rhino/Hat2b.wav",

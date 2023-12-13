@@ -4,12 +4,14 @@
 ////////// Recording //////////////////////////////////////
 
 SynthDef(\zoneRec, { // general recording zone for mono recording
-	arg gate, chan1, chan2, start, len, recZone, attenuation; // start/stop env, input chan, start pos (frames), length (secs), unique ID for curRecZone
+	arg gate, chan1, chan2, start, len, recZone, attenuation;
+	// start/stop env, input chan, start pos (frames), length (secs), unique ID for curRecZone
 	var playHead;
 	// update bufferView
 	if(~showBufferView == 1,{
 		playHead = (Phasor.ar(1,1, start, start + (len*~sRate), start)) % BufFrames.kr(~mainBufLS);
-		SendReply.kr(Impulse.kr(~cfgLS.bufferViewPlayHeadFreq), "/playHead", [playHead/~sRate, start/~sRate, len], recZone);
+		SendReply.kr(Impulse.kr(~cfgLS.bufferViewPlayHeadFreq), "/playHead",
+			[playHead/~sRate, start/~sRate, len], recZone);
 		SendReply.kr(Impulse.kr(~cfgLS.bufferViewRefreshFreq),"/bufferViewRefresh", start, recZone);
 	});
 	RecordBuf.ar(In.ar([chan1,chan2]), ~mainBufLS, start, loop: 0, recLevel: attenuation) *
@@ -17,12 +19,14 @@ SynthDef(\zoneRec, { // general recording zone for mono recording
 }).send(s);
 
 SynthDef(\zoneRecDyn, {  // dynamic length recording zone for mono recording
-	arg gate, chan1, chan2, start, len, recZone, attenuation;  // start/stop env, input chan, start pos (frames), length (secs), unique ID for curRecZone
+	arg gate, chan1, chan2, start, len, recZone, attenuation;
+	// start/stop env, input chan, start pos (frames), length (secs), unique ID for curRecZone
 	var playHead;
 	// update bufferView
 	if(~showBufferView == 1, {
 		playHead = (Phasor.ar(1,1, start, start + (len*~sRate), start)) % BufFrames.kr(~mainBufLS);
-		SendReply.kr(Impulse.kr(~cfgLS.bufferViewPlayHeadFreq), "/playHead", [playHead/~sRate, start/~sRate, len], recZone);
+		SendReply.kr(Impulse.kr(~cfgLS.bufferViewPlayHeadFreq), "/playHead",
+			[playHead/~sRate, start/~sRate, len], recZone);
 		SendReply.kr(Impulse.kr(~cfgLS.bufferViewRefreshFreq),"/bufferViewRefresh", start, recZone);
 	});
 	RecordBuf.ar(In.ar([chan1,chan2]), ~mainBufLS, start, loop: 0, recLevel: attenuation) *
@@ -33,14 +37,15 @@ SynthDef(\zoneRecDyn, {  // dynamic length recording zone for mono recording
 
 SynthDef(\zone2play1L, { // with zone2play1R triggered by LV1 fader1, going out of phase
 	arg gate, ampBus, startPosition = 0, lenBus, distBus, resetPosBus, ffBus, mixBus;
-	// start/stop env, start pos (frames), busses range 0-1 for length, amplitude, distortion, reset playhead, filter freq
+	// start/stop env, start pos (frames), busses range 0-1 for length, amplitude, distortion,
+	// 		reset playhead, filter freq
 	// control by: LV1 fader1, fader1, fader2, knobA1, crossfader, joyX, mastervolknob
 	var sig, lenBusVal, resetTrig, resetPosBusVal, playHead, mixBusVal;
 
-	lenBusVal = IEnvGen.kr(~specLS.len21L, In.kr(lenBus,1)); 	// in frames
-	resetPosBusVal = In.kr(resetPosBus,1) * lenBusVal; 		// in frames
-	startPosition = ~specLS.startPos21L.map(startPosition); 	// in frames
-	resetTrig = HPZ2.kr(In.kr(resetPosBus,1)); 					// detect a change in the resetPosBus value
+	lenBusVal = IEnvGen.kr(~specLS.len21L, In.kr(lenBus,1)); // in frames
+	resetPosBusVal = In.kr(resetPosBus,1) * lenBusVal; 	// in frames
+	startPosition = ~specLS.startPos21L.map(startPosition); // in frames
+	resetTrig = HPZ2.kr(In.kr(resetPosBus,1)); // detect a change in the resetPosBus value
 	mixBusVal = IEnvGen.kr(~specLS.mix21, In.kr(mixBus,1));
 
 	//	Poll.kr(Impulse.kr(20), startPosition/~sRate);
@@ -57,38 +62,39 @@ SynthDef(\zone2play1L, { // with zone2play1R triggered by LV1 fader1, going out 
 		[playHead/~sRate, startPosition/~sRate, lenBusVal/~sRate], 21)});
 
 	sig = BufRd.ar(2, ~mainBufLS, playHead,	1, 4) * EnvGen.kr(Env.adsr(0.1,0,1,0.1), gate, doneAction: 2);
-	sig = IEnvGen.kr(~specLS.amp21, In.kr(ampBus,1)) * sig; 		// volume bus
-	sig = ~specLS.dist21.map(In.kr(distBus,1)) * sig;						// distortion bus
-	sig = Balance2.ar(sig[0], sig[1],-1);										// panning hard left
-	sig = RLPF.ar(sig, ~specLS.ff21.map(In.kr(ffBus,1)), 0.5);		// low pass filter
+	sig = IEnvGen.kr(~specLS.amp21, In.kr(ampBus,1)) * sig; // volume bus
+	sig = ~specLS.dist21.map(In.kr(distBus,1)) * sig; // distortion bus
+	sig = Balance2.ar(sig[0], sig[1],-1); // panning hard left
+	sig = RLPF.ar(sig, ~specLS.ff21.map(In.kr(ffBus,1)), 0.5); // low pass filter
 	Out.ar(~aBus.outA, sig*mixBusVal);
 }).send(s);
 
 SynthDef(\zone2play1R, { // with zone2play1L triggered by LV1 fader1, going out of phase
 	arg gate, startPosition = 0, lenBus, ampBus, distBus, pitchBus, resetPosBus, ffBus, mixBus;
-	// start/stop env, start pos (frames), busses range 0-1 for length, amplitude, distortion, pitch, reset playhead, filter freq
+	// start/stop env, start pos (frames), busses range 0-1 for length, amplitude, distortion,
+	// 		pitch, reset playhead, filter freq
 	// control by: LV1 fader1, fader1, fader2, knobA1, crossfader, joyY, joyX, mastervolknob
 	var sig, lenBusVal, resetTrig, resetPosBusVal, playHead, mixBusVal;
 
-	lenBusVal = IEnvGen.kr(~specLS.len21R, In.kr(lenBus,1)); 	// in frames
-	resetPosBusVal = In.kr(resetPosBus,1) * lenBusVal; 		// in frames
-	startPosition = ~specLS.startPos21R.map(startPosition); 	// in frames
-	resetTrig = HPZ2.kr(In.kr(resetPosBus,1)); 					// detect a change in the resetPosBus value
+	lenBusVal = IEnvGen.kr(~specLS.len21R, In.kr(lenBus,1)); // in frames
+	resetPosBusVal = In.kr(resetPosBus,1) * lenBusVal; // in frames
+	startPosition = ~specLS.startPos21R.map(startPosition); // in frames
+	resetTrig = HPZ2.kr(In.kr(resetPosBus,1)); // detect a change in the resetPosBus value
 	mixBusVal = IEnvGen.kr(~specLS.mix21, In.kr(mixBus,1));
 
 	playHead = ( Phasor.ar(
-		resetTrig,																							// reset
+		resetTrig, // reset
 		~specLS.pitch21.map(In.kr(pitchBus,1)) * BufRateScale.kr(~mainBufLS), // rate
-		startPosition, 																					// start
-		startPosition + lenBusVal,																// end
-		startPosition + resetPosBusVal														// resetPos
+		startPosition, // start
+		startPosition + lenBusVal, // end
+		startPosition + resetPosBusVal // resetPos
 	) ) % BufFrames.kr(~mainBufLS);
 
 	sig = BufRd.ar(2, ~mainBufLS, playHead, 1, 4) * EnvGen.kr(Env.adsr(0.1,0,1,0.1), gate, doneAction: 2);
-	sig = IEnvGen.kr(~specLS.amp21, In.kr(ampBus,1)) * sig;		// volume bus
-	sig = ~specLS.dist21.map(In.kr(distBus,1)) * sig;						// distortion bus
-	sig = Balance2.ar(sig[0], sig[1],1);										// panning hard right
-	sig = RLPF.ar(sig, ~specLS.ff21.map(In.kr(ffBus,1)), 0.5);		// low pass filter
+	sig = IEnvGen.kr(~specLS.amp21, In.kr(ampBus,1)) * sig; // volume bus
+	sig = ~specLS.dist21.map(In.kr(distBus,1)) * sig; // distortion bus
+	sig = Balance2.ar(sig[0], sig[1],1); // panning hard right
+	sig = RLPF.ar(sig, ~specLS.ff21.map(In.kr(ffBus,1)), 0.5); // low pass filter
 	Out.ar(~aBus.outA, sig*mixBusVal);
 }).send(s);
 
@@ -98,18 +104,18 @@ SynthDef(\zone2play1hf, { // triggered by LV1 fader1 when value more than 0.97
 	// control by: LV1 fader1, fader2, knobA1, crossfader, joyX
 	var sig, lenBusVal, resetTrig, resetPosBusVal, playHead, mixBusVal;
 
-	lenBusVal = IEnvGen.kr(~specLS.len21R, In.kr(lenBus,1)); 	// in frames
-	resetPosBusVal = In.kr(resetPosBus,1) * lenBusVal;		// in frames
-	startPosition = ~specLS.startPos21R.map(startPosition);		// in frames
-	resetTrig = HPZ2.kr(In.kr(resetPosBus,1));						// detect change in the resetPosBus value
+	lenBusVal = IEnvGen.kr(~specLS.len21R, In.kr(lenBus,1)); // in frames
+	resetPosBusVal = In.kr(resetPosBus,1) * lenBusVal; // in frames
+	startPosition = ~specLS.startPos21R.map(startPosition); // in frames
+	resetTrig = HPZ2.kr(In.kr(resetPosBus,1)); // detect change in the resetPosBus value
 	mixBusVal = IEnvGen.kr(~specLS.mix21hf, In.kr(mixBus,1));
 
 	playHead = ( Phasor.ar(
-		resetTrig,												// reset
-		(2**4) * BufRateScale.kr(~mainBufLS), 	// rate
-		startPosition, 										// start
-		startPosition + lenBusVal,					// end
-		startPosition + resetPosBusVal			// resetPos
+		resetTrig, // reset
+		(2**4) * BufRateScale.kr(~mainBufLS), // rate
+		startPosition, // start
+		startPosition + lenBusVal, // end
+		startPosition + resetPosBusVal // resetPos
 	) ) % BufFrames.kr(~mainBufLS);
 
 	sig = BufRd.ar(2, ~mainBufLS, playHead, 1, 4) * EnvGen.kr(Env.adsr(0.1,0,1,0.1), gate, doneAction: 2);
@@ -123,18 +129,18 @@ SynthDef(\zone2play1lf, {  // triggered by LV1 fader1 when value more than 0.99
 	// control by: LV1 fader1, fader2, knobA1, crossfader, joyX
 	var sig, lenBusVal, resetTrig, resetPosBusVal, playHead, mixBusVal;
 
-	lenBusVal = IEnvGen.kr(~specLS.len21R, In.kr(lenBus,1));		// in frames
-	resetPosBusVal = In.kr(resetPosBus,1) * lenBusVal;			// in frames
-	startPosition = ~specLS.startPos21R.map(startPosition);			// in frames
-	resetTrig = HPZ2.kr(In.kr(resetPosBus,1));							// detect change in the resetPosBus value
+	lenBusVal = IEnvGen.kr(~specLS.len21R, In.kr(lenBus,1)); // in frames
+	resetPosBusVal = In.kr(resetPosBus,1) * lenBusVal; // in frames
+	startPosition = ~specLS.startPos21R.map(startPosition); // in frames
+	resetTrig = HPZ2.kr(In.kr(resetPosBus,1));// detect change in the resetPosBus value
 	mixBusVal = IEnvGen.kr(~specLS.mix21lf, In.kr(mixBus,1));
 
 	playHead = ( Phasor.ar(
-		resetTrig,												// reset
-		(0.5**4) * BufRateScale.kr(~mainBufLS), 	// rate
-		startPosition, 										// start
-		startPosition + lenBusVal,					// end
-		startPosition + resetPosBusVal			// resetPos
+		resetTrig, // reset
+		(0.5**4) * BufRateScale.kr(~mainBufLS), // rate
+		startPosition, // start
+		startPosition + lenBusVal, // end
+		startPosition + resetPosBusVal // resetPos
 	) ) % BufFrames.kr(~mainBufLS);
 
 	sig = BufRd.ar(2, ~mainBufLS, playHead, 1, 4) * EnvGen.kr(Env.adsr(0.1,0,1,0.1), gate, doneAction: 2);
@@ -145,7 +151,8 @@ SynthDef(\zone2play1lf, {  // triggered by LV1 fader1 when value more than 0.99
 ////////// Zone 3 MIDI //////////////////////////////////////
 
 SynthDef(\zone3play1, {
-	arg gate, lenBus, startPosition = 0, ampBus, distBus, pitchBus, resetPosBus, panSpdBus, ampModSpdBus, ampModOnBus, ffBus;
+	arg gate, lenBus, startPosition = 0, ampBus, distBus, pitchBus, resetPosBus, panSpdBus, ampModSpdBus,
+	ampModOnBus, ffBus;
 	var sig, lenBusVal, resetTrig = 1, resetPosBusVal, ampModSpdVal, ampModBusOnVal, ffBusVal, playHead;
 
 	lenBusVal = IEnvGen.kr(~specLS.len31, In.kr(lenBus,1));
@@ -164,12 +171,14 @@ SynthDef(\zone3play1, {
 		startPosition + resetPosBusVal
 	) ) % BufFrames.kr(~mainBufLS);
 	if(~showBufferView == 1,
-		{SendReply.kr(Impulse.kr(~cfgLS.bufferViewPlayHeadFreq), "/playHead", [playHead/~sRate, startPosition/~sRate, lenBusVal/~sRate], 31)});
+		{SendReply.kr(Impulse.kr(~cfgLS.bufferViewPlayHeadFreq), "/playHead",
+			[playHead/~sRate, startPosition/~sRate, lenBusVal/~sRate], 31)});
 
 	sig = BufRd.ar(2, ~mainBufLS, playHead, 1, 4 ) * EnvGen.kr(Env.adsr(0.1,0,1,0.1), gate, doneAction: 2);
 	sig = IEnvGen.kr(~specLS.amp21, In.kr(ampBus,1)) * sig;
 	sig = ~specLS.dist21.map(In.kr(distBus,1)) * sig;
-	sig = (ffBusVal.ceil * RHPF.ar(sig, IEnvGen.kr(~specLS.ff31, ffBusVal), 0.5, IEnvGen.kr(~specLS.mulHPF31, ffBusVal))) +
+	sig = (ffBusVal.ceil * RHPF.ar(sig, IEnvGen.kr(~specLS.ff31, ffBusVal), 0.5,
+		IEnvGen.kr(~specLS.mulHPF31, ffBusVal))) +
 	((1 - ffBusVal.ceil) * sig); // if ffBusVal=0, don't go through filter
 	sig = Balance2.ar(sig[0], sig[1], LFNoise1.ar(~specLS.panSpd31.map(In.kr(panSpdBus,1))));
 	sig =
@@ -219,7 +228,8 @@ SynthDef(\zone4play1, {
 	) * EnvGen.kr(Env.adsr(0.05,0,1,0.05), gate, doneAction: 2);
 	sig = IEnvGen.kr(~specLS.amp21, In.kr(ampBus,1)) * sig;
 	sig = ~specLS.dist21.map(In.kr(distBus,1)) * sig;
-	sig = RLPF.ar(sig, ~specLS.ff41.map(In.kr(ffBus,1) + (0.2 * LFNoise1.kr(ffSpeedVal))), 0.5 + (0.1 * LFNoise1.kr(1)));
+	sig = RLPF.ar(sig, ~specLS.ff41.map(In.kr(ffBus,1) + (0.2 * LFNoise1.kr(ffSpeedVal))),
+		0.5 + (0.1 * LFNoise1.kr(1)));
 	// sig = RLPF.ar(sig, ~specLS.ff41.map(In.kr(ffBus,1) + (0.2 * LFNoise1.kr(0.2))), 0.5 + (0.1 * LFNoise1.kr(1)));
 	// sig = RLPF.ar(sig, ~specLS.ff41.map(In.kr(ffBus,1) + (0.2 * LFNoise1.kr(2))), 0.5 + (0.1 * LFNoise1.kr(1)));
 	Out.ar(~aBus.outA, sig);
@@ -232,7 +242,8 @@ SynthDef(\zone4play1hf, {
 	//	trig = Impulse.ar(1 / IEnvGen.kr(~specLS.len41, In.kr(lenBus,1)));
 	trig = Impulse.ar((2**3) * BufRateScale.kr(~mainBufLS) / In.kr(lenBus,1));
 
-	sig = PlayBufAlt.ar(2, ~mainBufLS, (2**3) * BufRateScale.kr(~mainBufLS), trig, ~specLS.startPos21L.map(startPosition), 1, lag: ~cfgLS.playBufLag
+	sig = PlayBufAlt.ar(2, ~mainBufLS, (2**3) * BufRateScale.kr(~mainBufLS), trig,
+		~specLS.startPos21L.map(startPosition), 1, lag: ~cfgLS.playBufLag
 	) * EnvGen.kr(Env.adsr(0.05,0,1,0.05), gate, doneAction: 2);
 	sig = ~specLS.dist21hf.map(In.kr(distBus,1)) * sig;
 	Out.ar(~aBus.outA, sig);
@@ -243,7 +254,8 @@ SynthDef(\zone4play1lf, {
 	var trig, sig;
 
 	trig = Impulse.ar(1 / In.kr(lenBus,1));
-	sig = PlayBufAlt.ar(2, ~mainBufLS, (0.5**3) * BufRateScale.kr(~mainBufLS), trig, ~specLS.startPos21L.map(startPosition), 1, lag: ~cfgLS.playBufLag
+	sig = PlayBufAlt.ar(2, ~mainBufLS, (0.5**3) * BufRateScale.kr(~mainBufLS), trig,
+		~specLS.startPos21L.map(startPosition), 1, lag: ~cfgLS.playBufLag
 	) * EnvGen.kr(Env.adsr(0.05,0,1,0.05), gate, doneAction: 2);
 	sig = ~specLS.dist21lf.map(In.kr(distBus,1)) * sig;
 	Out.ar(~aBus.outA, sig);
@@ -273,7 +285,8 @@ SynthDef(\zone6play1, { // trigger button
 			[playHead/~sRate, ~specLS.startPos61.map(startPosition)/~sRate, lenBusVal*pitchBusVal], 61)
 	});
 
-	sig = PlayBufCF.ar(2, ~mainBufLS, pitchBusVal * BufRateScale.kr(~mainBufLS), trig, ~specLS.startPos61.map(startPosition), 1,
+	sig = PlayBufCF.ar(2, ~mainBufLS, pitchBusVal * BufRateScale.kr(~mainBufLS), trig,
+		~specLS.startPos61.map(startPosition), 1,
 		lag: ~cfgLS.playBufLag
 	) * EnvGen.kr(Env.adsr(0.05,0,1,0.05), gate, doneAction: 2);
 	sig = IEnvGen.kr(~specLS.dist61, In.kr(distBus,1)) * sig;
@@ -326,7 +339,8 @@ SynthDef(\zone6play2, { // side button
 			[playHead/~sRate, ~specLS.startPos62.map(startPosition)/~sRate, lenBusVal], 62)
 	});
 
-	sig = PlayBufCF.ar(2, ~mainBufLS, BufRateScale.kr(~mainBufLS), trig, ~specLS.startPos62.map(startPosition), 1, lag: ~cfgLS.playBufLag
+	sig = PlayBufCF.ar(2, ~mainBufLS, BufRateScale.kr(~mainBufLS), trig,
+		~specLS.startPos62.map(startPosition), 1, lag: ~cfgLS.playBufLag
 	) * EnvGen.kr(Env.adsr(0.05,0,1,0.05), gate, doneAction: 2);
 	sig = IEnvGen.kr(~specLS.dist61, In.kr(distBus,1)) * sig;
 	sig = RHPF.ar(sig, ~specLS.ff62.map(In.kr(ffBus,1)), 0.5);
@@ -353,7 +367,8 @@ SynthDef(\zone6play3, { // top button
 			[playHead/~sRate, ~specLS.startPos63.map(startPosition)/~sRate, lenBusVal], 63)
 	});
 
-	sig = PlayBufCF.ar(2, ~mainBufLS, BufRateScale.kr(~mainBufLS), trig, ~specLS.startPos63.map(startPosition), 1, lag: ~cfgLS.playBufLag
+	sig = PlayBufCF.ar(2, ~mainBufLS, BufRateScale.kr(~mainBufLS), trig,
+		~specLS.startPos63.map(startPosition), 1, lag: ~cfgLS.playBufLag
 	) * EnvGen.kr(Env.adsr(0.05,0,1,0.05), gate, doneAction: 2);
 	sig = IEnvGen.kr(~specLS.dist61, In.kr(distBus,1)) * sig;
 	sig = RLPF.ar(sig, ~specLS.ff63.map(In.kr(ffBus,1)), 0.5);
@@ -383,7 +398,8 @@ SynthDef(\zone6play4, { // base button 1
 			[playHead/~sRate, ~specLS.startPos64.map(startPosition)/~sRate, lenBusVal*pitchBusVal], 64)
 	});
 
-	sig = PlayBufCF.ar(2, ~mainBufLS, pitchBusVal * BufRateScale.kr(~mainBufLS), trig, ~specLS.startPos64.map(startPosition), 1,
+	sig = PlayBufCF.ar(2, ~mainBufLS, pitchBusVal * BufRateScale.kr(~mainBufLS), trig,
+		~specLS.startPos64.map(startPosition), 1,
 		lag: ~cfgLS.playBufLag
 	) * EnvGen.kr(Env.adsr(0.05,0,1,0.05), gate, doneAction: 2);
 	sig = IEnvGen.kr(~specLS.dist61, In.kr(distBus,1)) * sig;
@@ -451,7 +467,8 @@ SynthDef(\zone8play1, {
 
 	playHead = ( Phasor.ar(
 		resetTrig,
-		// IEnvGen.kr(~specLS.pitch81, In.kr(pitchBus,1)) * In.kr(pitchPattBus,1) *  // uncomment in case of using BufRd
+		// IEnvGen.kr(~specLS.pitch81, In.kr(pitchBus,1)) * In.kr(pitchPattBus,1) *
+		// uncomment in case of using BufRd
 		BufRateScale.kr(~mainBufLS) * In.kr(dirBus,1),
 		startPosition,
 		startPosition + lenBusVal,
@@ -498,7 +515,8 @@ SynthDef(\zone16play1_old_version, {
 		{SendReply.kr(Impulse.kr(~cfgLS.bufferViewPlayHeadFreq), "/playHead",
 			[playHead/~sRate, ~bufferLS.dyn1Start/~sRate, lenBusVal/~sRate], 161)});
 
-	// sig = Warp1.ar(2, ~mainBufLS, playHead / BufFrames.kr(~mainBufLS)) * EnvGen.kr(Env.adsr(0.1,0,1,0.1), gate, doneAction: 2);
+	// sig = Warp1.ar(2, ~mainBufLS, playHead / BufFrames.kr(~mainBufLS)) * EnvGen.kr(Env.adsr(0.1,0,1,0.1),
+	// 		gate, doneAction: 2);
 	sig = BufRd.ar(2, ~mainBufLS, playHead, 1, 4) * EnvGen.kr(Env.adsr(0.1,0,1,0.1), gate, doneAction: 2);
 	sig = IEnvGen.kr(~specLS.amp21, In.kr(ampBus,1)) * sig;
 	sig = ~specLS.dist21.map(In.kr(distBus,1)) * sig;
@@ -571,13 +589,16 @@ SynthDef(\zone16play1, {
 				~bufferLS.dyn2Start + (lenBusVal*2*~sRate),
 				~bufferLS.dyn2Start
 			) ) % BufFrames.kr(~mainBufLS);
-			SendReply.kr(Impulse.kr(~cfgLS.bufferViewPlayHeadFreq), "/playHead", [playHead/~sRate, ~bufferLS.dyn2Start/~sRate, lenBusVal], 162)
+			SendReply.kr(Impulse.kr(~cfgLS.bufferViewPlayHeadFreq), "/playHead",
+				[playHead/~sRate, ~bufferLS.dyn2Start/~sRate, lenBusVal], 162)
 		});
 
 		if(i==0, {
-			sig = PlayBufAlt.ar(2, ~mainBufLS, pitchSelected * BufRateScale.kr(~mainBufLS), trig, ~bufferLS.dyn2Start, 1, lag: ~cfgLS.playBufLag);
+			sig = PlayBufAlt.ar(2, ~mainBufLS, pitchSelected * BufRateScale.kr(~mainBufLS), trig,
+				~bufferLS.dyn2Start, 1, lag: ~cfgLS.playBufLag);
 		}, {
-			sig = PlayBufCF.ar(2, ~mainBufLS, -1.0 * pitchSelected * BufRateScale.kr(~mainBufLS), trig, ~bufferLS.dyn2Start + (lenBusVal*~sRate),
+			sig = PlayBufCF.ar(2, ~mainBufLS, -1.0 * pitchSelected * BufRateScale.kr(~mainBufLS), trig,
+				~bufferLS.dyn2Start + (lenBusVal*~sRate),
 				1, lag: ~cfgLS.playBufLag);
 		});
 		sig = sig * EnvGen.kr(Env.adsr(0.05,0,1,0.05), gate, doneAction: 2);
@@ -617,13 +638,16 @@ SynthDef(\zone16play1, {
 				~bufferLS.dyn3Start + (lenBusVal*2*~sRate),
 				~bufferLS.dyn3Start
 			) ) % BufFrames.kr(~mainBufLS);
-			SendReply.kr(Impulse.kr(~cfgLS.bufferViewPlayHeadFreq), "/playHead", [playHead/~sRate, ~bufferLS.dyn3Start/~sRate, lenBusVal], 163)
+			SendReply.kr(Impulse.kr(~cfgLS.bufferViewPlayHeadFreq), "/playHead",
+				[playHead/~sRate, ~bufferLS.dyn3Start/~sRate, lenBusVal], 163)
 		});
 
 		if(i==0, {
-			sig = PlayBufAlt.ar(2, ~mainBufLS, pitchSelected * BufRateScale.kr(~mainBufLS), trig, ~bufferLS.dyn3Start, 1, lag: ~cfgLS.playBufLag);
+			sig = PlayBufAlt.ar(2, ~mainBufLS, pitchSelected * BufRateScale.kr(~mainBufLS), trig,
+				~bufferLS.dyn3Start, 1, lag: ~cfgLS.playBufLag);
 		}, {
-			sig = PlayBufCF.ar(2, ~mainBufLS, -1.0 * pitchSelected * BufRateScale.kr(~mainBufLS), trig, ~bufferLS.dyn3Start + (lenBusVal*~sRate), 1, lag: ~cfgLS.playBufLag);
+			sig = PlayBufCF.ar(2, ~mainBufLS, -1.0 * pitchSelected * BufRateScale.kr(~mainBufLS), trig,
+				~bufferLS.dyn3Start + (lenBusVal*~sRate), 1, lag: ~cfgLS.playBufLag);
 		});
 		sig = sig * EnvGen.kr(Env.adsr(0.05,0,1,0.05), gate, doneAction: 2);
 		sig = IEnvGen.kr(~specLS.amp21, In.kr(ampBus,1)) * sig;
@@ -662,7 +686,8 @@ SynthDef(\zone16play4, {
 }).send(s);
 
 SynthDef(\diskPlay1, {
-	arg buf, gate, att, rel, distBus, volBus, ffBus, rateBus, rateModBus, effectSendBus, lp = 1, lpfOn = 1, rate = 1, gain = 1, out;
+	arg buf, gate, att, rel, distBus, volBus, ffBus, rateBus, rateModBus, effectSendBus,
+	lp = 1, lpfOn = 1, rate = 1, gain = 1, out;
 	var sig, rateBusVal, rateModBusVal, effectSendVal = 0;
 
 	effectSendVal = In.kr(effectSendBus,1);
@@ -679,7 +704,8 @@ SynthDef(\diskPlay1, {
 }).send(s);
 
 SynthDef(\diskPlay2, {
-	arg buf, gate, att, rel, distBus, volBus, ffBus, rateBus, rateModBus, effectSendBus, lp = 1, lpfOn = 1, rate = 1, gain = 1, out;
+	arg buf, gate, att, rel, distBus, volBus, ffBus, rateBus, rateModBus, effectSendBus,
+	lp = 1, lpfOn = 1, rate = 1, gain = 1, out;
 	var sig, rateBusVal, rateModBusVal, effectSendVal = 0;
 
 	effectSendVal = In.kr(effectSendBus,1);
@@ -696,7 +722,8 @@ SynthDef(\diskPlay2, {
 }).send(s);
 
 SynthDef(\stretchedFragments, {
-	arg start, time = 1, stretch = 1, amp = 1, dist = 0, attack = 0.001, release = 0.05, ampSine = 0, ampPluck = 0, freq = 440,
+	arg start, time = 1, stretch = 1, amp = 1, dist = 0, attack = 0.001, release = 0.05,
+	ampSine = 0, ampPluck = 0, freq = 440,
 	coef = 0.2, decay = 4;
 	var sig, sigKick, sigPluck, kickFreq, kickFreqList;
 
@@ -717,7 +744,8 @@ SynthDef(\stretchedFragments, {
 		delaytime: freq.reciprocal,
 		decaytime: decay,
 		coef: coef);
-	sig = (~specLS.dist171.map(dist) * ~specLS.amp171.map(amp) * sig) + DelayL.ar((ampSine*sigKick) + (ampPluck*sigPluck),0.2,0.1);
+	sig = (~specLS.dist171.map(dist) * ~specLS.amp171.map(amp) * sig)
+	+ DelayL.ar((ampSine*sigKick) + (ampPluck*sigPluck),0.2,0.1);
 	Out.ar(~aBus.outA, sig);
 }).store;
 
@@ -791,7 +819,8 @@ SynthDef(\whoosh, {
 	// sigH = GlitchRHPF.ar(sig,EnvGen.ar(envH,gate)) * EnvGen.ar(envAmpH,gate);
 	sigH = Pan2.ar(sigH,LFNoise1.ar(1));
 
-	sigDec = ((0.2 * CrossoverDistortion.ar(sigH,amp: 0.1,smooth: 0.5)) + (0.8 * Disintegrator.ar(sigH,probability: 0.9)))
+	sigDec = ((0.2 * CrossoverDistortion.ar(sigH,amp: 0.1,smooth: 0.5))
+		+ (0.8 * Disintegrator.ar(sigH,probability: 0.9)))
 	* EnvGen.ar(envDec,gate, doneAction: 2);
 
 	sig = (
@@ -807,7 +836,8 @@ SynthDef(\whoosh, {
 
 SynthDef(\fftDrone, {
 	arg gate = 1, distBus, pulseBus, cutoffBus;
-	var gain = 15, mags, phases, chain, sig, pulseVal = 0.3, env, distVal = 1, cutoffVal = 3000, bufSize = 2048, bins = 350;
+	var gain = 15, mags, phases, chain, sig, pulseVal = 0.3, env, distVal = 1,
+	cutoffVal = 3000, bufSize = 2048, bins = 350;
 
 	distVal = IEnvGen.kr(~specLS.distFftDrone, In.kr(distBus,1));
 	pulseVal = IEnvGen.kr(~specLS.pulseFftDrone, In.kr(pulseBus,1));
@@ -819,7 +849,8 @@ SynthDef(\fftDrone, {
 	mags = mags * (Array.series(bins, 1, -1/bins).squared);
 	mags = mags.reverse;
 
-	mags = ( pulseVal * mags * {LFPulse.kr(2 ** IRand(-3, 5)).range(0, 1)}.dup(bins) ) + ( (1-pulseVal) * mags );
+	mags = ( pulseVal * mags * {LFPulse.kr(2 ** IRand(-3, 5)).range(0, 1)}.dup(bins) )
+	+ ( (1-pulseVal) * mags );
 	phases = 0.dup(bins);
 	// chain = FFTTrigger(LocalBuf(bufSize), 0.4);
 	chain = FFTTrigger(LocalBuf(bufSize), Rand(0.3,0.5));
@@ -829,7 +860,8 @@ SynthDef(\fftDrone, {
 
 	sig = IFFT(chain).dup;
 	sig = (distVal*sig) + (distVal*3*PitchShift.ar(sig,pitchRatio:0.2));
-	// sig = (pulseVal * sig * LFPulse.kr(LFNoise0.kr(2).range(1,4),0, LFNoise1.kr(3).range(0.3,0.7))) + ((1-pulseVal)*sig);
+	// sig = (pulseVal * sig * LFPulse.kr(LFNoise0.kr(2).range(1,4),0, LFNoise1.kr(3).range(0.3,0.7)))
+	// + ((1-pulseVal)*sig);
 	5.do { sig = AllpassC.ar(sig, 0.2, {Rand(0.01,0.05)}!2,{Rand(1.0,3)}!2) };
 	sig = RLPF.ar(sig, {LFNoise1.kr(0.3).range(50,cutoffVal)}!2, 1);
 
@@ -854,7 +886,8 @@ SynthDef(\sineAtmos, {
 	sines = sines * LFNoise0.kr(TWChoose.kr(Impulse.kr(0.25), [2, 1, 4] * speedVal, [0.8, 0.1, 0.1]));
 	brown = SinOsc.kr(10 * speedVal) * BrownNoise.ar(0.07) * SinOsc.kr(0.01, 0).range(0,1);
 	white = SinOsc.kr(20 * speedVal) * WhiteNoise.ar(0.02) * SinOsc.kr(0.01, pi).range(0,1);
-	sig = sines + Pan2.ar(brown, LFNoise1.kr(0.05).range(-0.3, 0.3)) + Pan2.ar(white, LFNoise1.kr(0.05).range(-0.3, 0.3));
+	sig = sines + Pan2.ar(brown, LFNoise1.kr(0.05).range(-0.3, 0.3))
+	+ Pan2.ar(white, LFNoise1.kr(0.05).range(-0.3, 0.3));
 	Out.ar(~aBus.outA, sig * In.kr(ampBus, 1) * env * distVal);
 }).add;
 
@@ -928,7 +961,8 @@ SynthDef(\deLay,  {// efx bank 1 fader 2
 	var sig, sigPre, sigOut, mixDelayVal, mixDubVal, inLevelVal;
 	var sigDelay, sigDelayL, sigDelayR, delayTimeVal;
 	var sigDub, sigDubOut, amp, local, feedVal = 0.5;
-	var sigTrem, tremSpeedVal, mixTremVal, tremSpeedVariation0, tremSpeedVariation1, tremSpeedVariation2, tremVar0Mix, tremVar1Mix, tremVar2Mix;
+	var sigTrem, tremSpeedVal, mixTremVal, tremSpeedVariation0, tremSpeedVariation1,
+	tremSpeedVariation2, tremVar0Mix, tremVar1Mix, tremVar2Mix;
 	// var tremSpeedVarOff = 1;
 
 	delayTimeVal = IEnvGen.kr(~specLS.dlTime, In.kr(delayTimeBus,1));
@@ -1025,6 +1059,7 @@ SynthDef(\multiTapFreeze, 	{ // efx bank 2 fader 1
 	tapVal2 = IEnvGen.kr(~specLS.mtfTap2, In.kr(decayBus,1));
 	tapVal3 = IEnvGen.kr(~specLS.mtfTap3, In.kr(decayBus,1));
 	tapVal4 = IEnvGen.kr(~specLS.mtfTap4, In.kr(decayBus,1));
+
 	sigT = in;
 	sigTL =
 	(tapVal4*MultiTap.ar([0.1, 0.15, 0.7], [1,0.7,0.3], sigT[0], bufnum: ~mtfBufLLS)) +
@@ -1043,9 +1078,11 @@ SynthDef(\multiTapFreeze, 	{ // efx bank 2 fader 1
 	mixVal = IEnvGen.kr(~specLS.mtfMix, In.kr(decayBus,1));
 	decayBusVal = IEnvGen.kr(~specLS.mtfDecay, In.kr(decayBus,1));
 	sweepVal = IEnvGen.kr(~specLS.mtfSweep, In.kr(ffBus,1));
-	// sigT = 0.5 * FreeVerb2.ar(sigTL, sigTR, mixVal, decayBusVal * LFNoise1.kr(0.5).range(0.8,1), 0.5); // mix room damping
+	// sigT = 0.5 * FreeVerb2.ar(sigTL, sigTR, mixVal, decayBusVal * LFNoise1.kr(0.5).range(0.8,1), 0.5);
+	// mix room damping
 	sigT = 0.5 * (
-		( Greyhole.ar([sigTL, sigTR], 0.2, 0.5, 0.5 + (3 * decayBusVal * LFNoise1.kr(0.5).range(1 - sweepVal, 1)), feedback: 0.2) * mixVal )
+		( Greyhole.ar([sigTL, sigTR], 0.2, 0.5, 0.5 + (3 * decayBusVal * LFNoise1.kr(0.5).range(1 - sweepVal, 1)),
+			feedback: 0.2) * mixVal )
 		+ ( [sigTL, sigTR] * (1 - mixVal) )
 	);
 
@@ -1117,7 +1154,8 @@ SynthDef(\ampPitchFollow, {// efx bank 2 fader 2
 	sigNoiseL = Gate.ar(sigNoiseL, Amplitude.kr(sigL, 0.01, 0.01, add: -0.001));
 	sigNoiseR = ((ratioR * WhiteNoise.ar()) + ((1 - ratioR) * 3 * BrownNoise.ar())) * Amplitude.ar(sigR, 0.01, 0.01);
 	sigNoiseR = Gate.ar(sigNoiseR, Amplitude.kr(sigR, 0.01, 0.01, add: -0.001));
-	sigNoise = RHPF.ar([sigNoiseL, sigNoiseR], IEnvGen.kr(~specLS.mtfRLPFff, mixVal), 0.5, IEnvGen.kr(~specLS.mftRLPFmul, mixVal));
+	sigNoise = RHPF.ar([sigNoiseL, sigNoiseR], IEnvGen.kr(~specLS.mtfRLPFff, mixVal), 0.5,
+		IEnvGen.kr(~specLS.mftRLPFmul, mixVal));
 
 	// pitch following
 	ampL = thresh(Amplitude.kr(sigL, 0.05, 0.05), 0.01);
@@ -1141,7 +1179,6 @@ SynthDef(\ampPitchFollow, {// efx bank 2 fader 2
 	sigS = [Mix.ar(sigS),Mix.ar(sigSlap)];
 
 	sig = (sigNoise * mixValNoise) + (sigPitch * mixValPitch) + (sigS * mixValSchr);
-	// sig = (sigNoise * mixValNoise) + (sigPitch * mixValPitch);
 	sig = sig * EnvGen.kr(Env.adsr(0,0,1,0), gate, doneAction: 2);
 	Out.ar(~aBus.outMain, volVal * sig);
 }).send(s);

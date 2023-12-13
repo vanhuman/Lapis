@@ -32,7 +32,8 @@ s.waitForBoot({
 		ampCurZoneFactor: 1.5, // amplification factor for current zone
 		distortionMax: if(~distortionMax.notNil, {~distortionMax},{50}), // upper level for amplitude multiplication
 		deBug: 0, // when set to 1 some debugging message will be postlined
-		midiSrc: "MUL,EXT", // filtering allowed midi sources; comma-separated list with possibly: MUL = Motu Ultralite, IAC1, IAC2, IAC3, LPK
+		midiSrc: "MUL,EXT", // filtering allowed midi sources; comma-separated list with possibly:
+							// MUL = Motu Ultralite, IAC1, IAC2, IAC3, LPK
 		quantize:  0, // if value = 1 then loops of zone4 and zone3 will be quantized to cfg.bmp
 		bpm: 120, // BPM in quantize case
 		copySamples: 0, // set to 1 to activate sample copy on load - make sure the folder /Data/Samples/~project exists
@@ -44,7 +45,7 @@ s.waitForBoot({
 		docDir: Document.dir++"/Lapis/", // current location
 		libDir: "Data/", // library files location
 		localAddr: NetAddr("127.0.0.1", 57120), // to send OSC to other SC programs
-		dragEmptyBeforeLoad: 1, // 1: when dragging, empty buffer before load
+		dragEmptyBeforeLoad: 0, // 1: when dragging, empty buffer before load
 	);
 
 	// general
@@ -72,7 +73,11 @@ s.waitForBoot({
 	// background, grid, waveforms, playbackhead, selection, selection recording
 
 	// zones
-	var zone2 = (play1L: nil, play1R: nil, play1Act: 0, startPos1: 0, play1hf: nil, play1hfAct: 0, play1lf: nil, play1lfAct: 0);
+	var zone2 = (
+		play1L: nil, play1R: nil, play1Act: 0, startPos1: 0,
+		play1hf: nil, play1hfAct: 0, play1lf: nil, play1lfAct: 0,
+		pitch: true
+	);
 	var zone3 = (
 		play1: nil, play1Act: 0, startPos1: 0,
 		stepsOffset1: Array.new(24), stepsOffset1tmp: Array.new(24),
@@ -119,7 +124,8 @@ s.waitForBoot({
 	/////////////////////////////////////////////  initialize variables //////////////////////////////////////
 
 	// buffers
-	~bufferLS = ( // when changing these values: test thoroughly as some values might be interdependent, also connected with zoneRec
+	~bufferLS = (
+		// when changing these values: test thoroughly as some values might be interdependent, also connected with zoneRec
 		mainLen: ~sRate * 400, processLen: ~sRate * 30,
 		aStart: ~sRate * 0, aLen: ~sRate * 65, aTail: ~sRate * 5, bStart: ~sRate * 65, bLen: ~sRate * 85, bTail: ~sRate * 20,
 		dyn1Start: ~sRate * 150, dyn1Len: ~sRate * 5, dyn2Start: ~sRate * 180, dyn2Len: ~sRate * 5,
@@ -799,6 +805,11 @@ s.waitForBoot({
 					zone16.spModOn4 = 0;
 					"LiveSampler: Length modulation zone16play4 set to 'OFF'".postln;
 				}
+				{note == 18} // pitch zone2 off
+				{
+					zone2.pitch = false;
+					"LiveSampler: Pitch change zone2 set to 'OFF'".postln;
+				}
 				; // case
 			});
 
@@ -825,8 +836,9 @@ s.waitForBoot({
 				dpIndex = note - 72; // diskPlay array index
 				if(diskPlay.buf[dpIndex].notNil, { // a sample is defined for this index and file is found
 					if(diskPlay.playing[dpIndex] == 0, { // if not playing, start the synth
-						("diskPlay"++diskPlay.numChan[dpIndex]++":" + diskPlay.sampleList[dpIndex] + "from" +
+						("\nStart diskPlay"++diskPlay.numChan[dpIndex]++":" + diskPlay.sampleList[dpIndex] + "\n\t\tfrom" +
 							diskPlay.start[dpIndex] + "to" + diskPlay.len[dpIndex] + "secs" ).postln;
+						~doc.diskPlay;
 
 						// cue soundfile into a buffer
 						diskPlay.buf[dpIndex].close;
@@ -1093,6 +1105,11 @@ s.waitForBoot({
 					zone16.spModOn4 = 1;
 					"LiveSampler: Length modulation zone16play4 set to 'ON'".postln;
 				}
+				{note == 18} // pitch zone2 on
+				{
+					zone2.pitch = true;
+					"LiveSampler: Pitch change zone2 set to 'ON'".postln;
+				}
 				; // case
 			});
 
@@ -1202,25 +1219,31 @@ s.waitForBoot({
 				if(value >= 0.01, { // activate efx1
 					if(efx1Act == 0, {
 						if(efxBank == 1,
-							{~aBus.efx1Synth = Synth(\deciMate, [\gate,1,
-								\paramBus, ~cBusLS.midiLV1KnobB1.index,
-								\decBus, ~cBusLS.midiLV1KnobB2.index,
-								\ffBus, ~cBusLS.midiLV1KnobB3.index,
-								\volBus, ~cBusLS.midiLV1Fader3.index,
-								\onExternalInput, onExternalInput,
-								\inChan1, fGetInChanEfx.value()[0],
-								\inChan2, fGetInChanEfx.value()[1]
-							], target: ~aBus.efxGroup);},
-							{~aBus.efx1Synth = Synth(\multiTapFreeze, [\gate,1,
-								\decayBus, ~cBusLS.midiLV1KnobB1.index,
-								\volBus, ~cBusLS.midiLV1Fader3.index,
-								\ffBus, ~cBusLS.midiLV1KnobB2.index,
-								\freezeBus, ~cBusLS.midiLV1KnobB3.index,
-								\distBus, ~cBusLS.midiLV1CrossFader.index,
-								\onExternalInput, onExternalInput,
-								\inChan1, fGetInChanEfx.value()[0],
-								\inChan2, fGetInChanEfx.value()[1]
-						], target: ~aBus.efxGroup);});
+							{
+								~doc.efx1_1;
+								~aBus.efx1Synth = Synth(\deciMate, [\gate,1,
+									\paramBus, ~cBusLS.midiLV1KnobB1.index,
+									\decBus, ~cBusLS.midiLV1KnobB2.index,
+									\ffBus, ~cBusLS.midiLV1KnobB3.index,
+									\volBus, ~cBusLS.midiLV1Fader3.index,
+									\onExternalInput, onExternalInput,
+									\inChan1, fGetInChanEfx.value()[0],
+									\inChan2, fGetInChanEfx.value()[1]
+								], target: ~aBus.efxGroup);
+							},
+							{
+								~doc.efx1_2;
+								~aBus.efx1Synth = Synth(\multiTapFreeze, [\gate,1,
+									\decayBus, ~cBusLS.midiLV1KnobB1.index,
+									\volBus, ~cBusLS.midiLV1Fader3.index,
+									\ffBus, ~cBusLS.midiLV1KnobB2.index,
+									\freezeBus, ~cBusLS.midiLV1KnobB3.index,
+									\distBus, ~cBusLS.midiLV1CrossFader.index,
+									\onExternalInput, onExternalInput,
+									\inChan1, fGetInChanEfx.value()[0],
+									\inChan2, fGetInChanEfx.value()[1]
+								], target: ~aBus.efxGroup);
+						});
 						efx1Act = 1;
 						fCountZones.value("E+");
 					});
@@ -1240,24 +1263,31 @@ s.waitForBoot({
 				if(value >= 0.01, { // activate efx2
 					if(efx2Act == 0, {
 						if(efxBank == 1,
-							{~aBus.efx2Synth = Synth(\deLay, [\gate, 1,
-								\volBus, ~cBusLS.midiLV1Fader4.index,
-								\delayTimeBus, ~cBusLS.midiLV1KnobB1.index,
-								\inLevelBus, ~cBusLS.midiLV1KnobB3.index,
-								\tremSpeedBus, ~cBusLS.midiLV1KnobB2.index,
-								\onExternalInput, onExternalInput,
-								\inChan1, fGetInChanEfx.value()[0],
-								\inChan2, fGetInChanEfx.value()[1]
-							],
-							target: ~aBus.efxGroup);},
-							{~aBus.efx2Synth = Synth(\ampPitchFollow, [\gate, 1,
-								\volBus, ~cBusLS.midiLV1Fader4.index,
-								\onExternalInput, onExternalInput,
-								\mixBus, ~cBusLS.midiLV1KnobB1.index,
-								\inChan1, fGetInChanEfx.value()[0],
-								\inChan2, fGetInChanEfx.value()[1]
-							],
-							target: ~aBus.efxGroup);});
+							{
+								~doc.efx2_1;
+								~aBus.efx2Synth = Synth(\deLay, [\gate, 1,
+									\volBus, ~cBusLS.midiLV1Fader4.index,
+									\delayTimeBus, ~cBusLS.midiLV1KnobB1.index,
+									\inLevelBus, ~cBusLS.midiLV1KnobB3.index,
+									\tremSpeedBus, ~cBusLS.midiLV1KnobB2.index,
+									\onExternalInput, onExternalInput,
+									\inChan1, fGetInChanEfx.value()[0],
+									\inChan2, fGetInChanEfx.value()[1]
+								],
+								target: ~aBus.efxGroup);
+							},
+							{
+								~doc.efx2_2;
+								~aBus.efx2Synth = Synth(\ampPitchFollow, [\gate, 1,
+									\volBus, ~cBusLS.midiLV1Fader4.index,
+									\onExternalInput, onExternalInput,
+									\mixBus, ~cBusLS.midiLV1KnobB1.index,
+									\inChan1, fGetInChanEfx.value()[0],
+									\inChan2, fGetInChanEfx.value()[1]
+								],
+								target: ~aBus.efxGroup);
+
+						});
 						efx2Act = 1;
 						fCountZones.value("E+");
 					});
@@ -1290,6 +1320,7 @@ s.waitForBoot({
 				// trigger zone
 				if(value >= 0.01,{ // start zone
 					if(zone2.play1Act == 0, {
+						~doc.zone2;
 						zone2.play1Act = 1;
 						zone2.play1L =
 						Synth(\zone2play1L, [
@@ -1455,7 +1486,7 @@ s.waitForBoot({
 				zone17.dist1 = value;
 			});
 			// pitch
-			if((chan==12 && num==0), {
+			if((chan==12 && num==0 && zone2.pitch), {
 				~cBusLS.midiLV1JoyY.set(value);
 			});
 			// SP offset
@@ -1475,6 +1506,7 @@ s.waitForBoot({
 				// trigger zone
 				if(value >= 0.01, { // start zone
 					if(zone3.play1Act == 0, {
+						~doc.zone3;
 						zone3.play1Act = 1;
 						zone3.play1 =
 						Synth(\zone3play1, [
@@ -1581,6 +1613,7 @@ s.waitForBoot({
 				// trigger zone
 				if(value >= 0.01, { // start zone
 					if(zone4.play1Act == 0, {
+						~doc.zone4;
 						zone4.play1Act = 1;
 						zone4.play1 =
 						Synth(\zone4play1, [
@@ -1772,6 +1805,7 @@ s.waitForBoot({
 				// trigger zone
 				if(value >= 0.01, { // start zone
 					if(zone8.play1Act == 0, {
+						~doc.zone8;
 						zone8.play1Act = 1;
 						zone8.play1 =
 						Synth(\zone8play1, [
@@ -1863,19 +1897,20 @@ s.waitForBoot({
 				// trigger zone
 				if(value >= 0.01, { // start zone
 					if(zone16.play1Act == 0, {
+						~doc.zone16_1;
 						zone16.play1Act = 1;
 						zone16.play1 =
 						Synth(\zone16play1, [
 							\gate, 1,
 							\ampBus, ~cBusLS.midiLV2Fader5.index,
 							\distBus, ~cBusLS.midiLV2KnobC3.index,
-							\resetPosBus, ~cBusLS.spModBus161.index,
+							// \resetPosBus, ~cBusLS.spModBus161.index, // moved to synthdef
 							\lenBus, ~cBusLS.lenBus161.index,
 							\panBus, ~cBusLS.midiLV2KnobC1.index,
 							\ffBus, ~cBusLS.midiLV2KnobC2.index
 						], target: ~aBus.synthGroup);
 						fCountZones.value("P+");
-						// start sample pointer modulation
+						// start sample pointer modulation - this is moved to the synthdef
 						// if(zone16.spModOn1 == 1, {zone16.tModSP1 = Task(fModSP161).play});
 						// update curZoneStart & curZoneLen
 						~cBusLS.lenBus161.get({arg val;
@@ -1901,6 +1936,7 @@ s.waitForBoot({
 				// trigger zone
 				if(value >= 0.01, { // start zone
 					if(zone16.play2Act == 0, {
+						~doc.zone16_2;
 						zone16.play2Act = 1;
 						zone16.play2 =
 						Synth("zone16play2"++zone16.mode2, [
@@ -1935,6 +1971,7 @@ s.waitForBoot({
 				// trigger zone
 				if(value >= 0.01, { // start zone
 					if(zone16.play3Act == 0, {
+						~doc.zone16_3;
 						zone16.play3Act = 1;
 						zone16.play3 =
 						Synth("zone16play3"++zone16.mode3, [
@@ -1969,6 +2006,7 @@ s.waitForBoot({
 				// trigger zone
 				if(value >= 0.01, { // start zone
 					if(zone16.play4Act == 0, {
+						~doc.zone16_4;
 						zone16.play4Act = 1;
 						zone16.play4 =
 						Synth(\zone16play4, [
@@ -2033,6 +2071,7 @@ s.waitForBoot({
 				// trigger zone
 				if(value >= 0.01,{ // start zone
 					if(zone17.play1Act == 0, {
+						~doc.zone17;
 						zone17.play1Act = 1;
 						zone17.patt1 = Pwrand([
 							Pbind(
@@ -2117,6 +2156,7 @@ s.waitForBoot({
 				~cBusLS.midiLV1Fader12.set(value);
 				if(value >= 0.01,{ // start zone
 					if(zone18.play1Act == 0, {
+						~doc.zone18_1;
 						zone18.play1Act = 1;
 						zone18.play1 = Synth(\sineAtmos, [
 							\gate, 1,
@@ -2142,6 +2182,7 @@ s.waitForBoot({
 				~cBusLS.midiLV1Fader14.set(value);
 				if(value >= 0.01,{ // start zone
 					if(zone18.play2Act == 0, {
+						~doc.zone18_2;
 						zone18.play2Act = 1;
 						zone18.play2 = Synth(\throb, [
 							\gate, 1,
@@ -2625,7 +2666,7 @@ s.waitForBoot({
 				[60/8, 60/4, 60/2, 60/1, 60/0.5, 60/0.25] / cfg.bpm,
 				[25.6, 25.6, 25.6, 25.6, 25.6],[\step, \step, \step, \step, \step]);
 		},{
-			"\nDe-Quantizing mapping envelopes.".postln;
+			"\nLiveSampler: De-Quantizing mapping envelopes.".postln;
 			~specLS.len41 = Env.xyc([[0, 0.2,\exp],[64, 30, \lin],[127, 60]]);
 			~specLS.spModSpd31 = Env.new([0.02,10],[127],[\exp]);
 		});
@@ -2809,7 +2850,8 @@ s.waitForBoot({
 	.font_(fontLabel).align_(\center).background_(Color.white).stringColor_(Color.black)
 	.receiveDragHandler_({
 		var dragTemp = View.currentDrag;
-		if(dragTemp.isString, {dragTemp = dragTemp.split(nl)}); // if only one file is dragged, make it into an array with this trick
+		// if only one file is dragged, make it into an array with this trick
+		if(dragTemp.isString, {dragTemp = dragTemp.split(nl)});
 		// dragTemp.postln;
 		if(cfg.dragEmptyBeforeLoad == 1, {~mainBufLS.zero; "Buffer cleared.".postln;});
 		fBufferRead.value(dragTemp, ~mainBufLS.numFrames, ~bufferLS.aStart, 0);
@@ -2821,7 +2863,8 @@ s.waitForBoot({
 	.font_(fontLabel).align_(\center).background_(Color.white).stringColor_(Color.black)
 	.receiveDragHandler_({
 		var dragTemp = View.currentDrag;
-		if(dragTemp.isString, {dragTemp = dragTemp.split(nl)}); // if only one file is dragged, make it into an array with this trick
+		// if only one file is dragged, make it into an array with this trick
+		if(dragTemp.isString, {dragTemp = dragTemp.split(nl)});
 		// dragTemp.postln;
 		if(cfg.dragEmptyBeforeLoad == 1, {~mainBufLS.zero; "Buffer cleared.".postln;});
 		fBufferRead.value(dragTemp, ~bufferLS.bLen, ~bufferLS.bStart, 0);

@@ -1,5 +1,31 @@
 (
 //////////////// synths ////////////////////////////////
+SynthDef(\moving, {
+	arg freq1, gate, velocity, cutoffBus, efxBus, pitchBus, distBus;
+	var sig, sig2, sig3, local, velocityVal, cutoffVal, resVal, pitchVal, distVal;
+
+	velocityVal = IEnvGen.kr(~specSK.velocity, velocity);
+	cutoffVal = IEnvGen.kr(~specSK.cutoffmoving, In.kr(cutoffBus,1));
+	resVal = IEnvGen.kr(~specSK.resmoving, In.kr(efxBus,1));
+	pitchVal = IEnvGen.kr(~specSK.pitch, In.kr(pitchBus,1));
+	distVal = IEnvGen.kr(~specSK.dist1, In.kr(distBus,1));
+	freq1 = freq1 * pitchVal;
+
+	local = 0.95 * LocalIn.ar(2);
+	sig = SinOsc.ar(
+		BrownNoise.ar(30!2, [100, 100]), // multichannel expansion, also increase LocalIn channels
+		local * LFNoise1.kr(1!2, 1, 1) // mul, speed
+	);
+	// sig = sig.tanh;
+	LocalOut.ar(sig);
+	// sig2 = sig;
+	// sig2 = RLPF.ar(sig, [62.midicps, 62.midicps], 0.01);
+	// sig2 = HPF.ar(sig2, 1000);
+	sig3 = RLPF.ar(sig, freq1, resVal);
+	sig3 = HPF.ar(sig3, cutoffVal);
+	sig3 = sig3 * distVal * velocityVal * EnvGen.kr(Env.adsr(0.5,0.1,1,1.0,1), gate, doneAction: 2);
+	Out.ar(~aBus.outBL, sig3);
+}).send(s);
 
 SynthDef.new(\bocAmpMod, {
 	arg freq1, gate, cutoffBus, efxBus, pitchBus, velocity, distBus;
@@ -408,7 +434,8 @@ SynthDef.new(
 		pitchVal = IEnvGen.kr(~specSK.pitch, In.kr(pitchBus,1));
 		distVal = IEnvGen.kr(~specSK.dist4, In.kr(distBus,1));
 
-		sig = PlayBufCF.ar(2, buffer, BufRateScale.kr(buffer), 1, 0, 1) * EnvGen.kr(Env.adsr(0.05,0,1,0.05), gate, doneAction: 2);
+		sig = PlayBufCF.ar(2, buffer, BufRateScale.kr(buffer), 1, 0, 1)
+		* EnvGen.kr(Env.adsr(0.05,0,1,0.05), gate, doneAction: 2);
 		sig = sig * distVal * velocityVal;
 		sig = RLPF.ar(sig, cutoffVal, 0.5);
 
@@ -451,7 +478,8 @@ SynthDef(\zoneRecSK, {
 
 SynthDef.new(\pitchShifter, {
 	arg freq1, gate, cutoffBus, efxBus, velocity, pitchBus, distBus, inChan1 = 0, inChan2 = 0, outChan = 0;
-	var in, sig, env, ampmodVal, velocityVal, timeDispVal, pitchDispVal, pitchVal, distVal, cutoffVal, amp, variableVibrato = 1, vibratoSpeed, vibratoDepth;
+	var in, sig, env, ampmodVal, velocityVal, timeDispVal, pitchDispVal, pitchVal, distVal, cutoffVal,
+	amp, variableVibrato = 1, vibratoSpeed, vibratoDepth;
 
 	in = In.ar([inChan1,inChan2]);
 
@@ -463,11 +491,13 @@ SynthDef.new(\pitchShifter, {
 	distVal = IEnvGen.kr(~specSK.dist4, In.kr(distBus,1));
 	cutoffVal = IEnvGen.kr(~specSK.cutoff3, In.kr(cutoffBus,1));
 
-	vibratoSpeed = ( (1-variableVibrato) * 10 ) + ( variableVibrato * LFNoise1.kr(2).range(5,25) ) * (Amplitude.kr(in).linexp(0,1,1,10));
+	vibratoSpeed = ( (1-variableVibrato) * 10 ) + ( variableVibrato * LFNoise1.kr(2).range(5,25) )
+	* (Amplitude.kr(in).linexp(0,1,1,10));
 
 	freq1 = (freq1 / 60.midicps(~tuningA)) * pitchVal * 2;
 	env = EnvGen.kr(Env.asr(), gate, doneAction: 2);
-	sig = PitchShift.ar(in, windowSize: 0.2, pitchRatio: freq1, pitchDispersion: pitchDispVal, timeDispersion: timeDispVal);
+	sig = PitchShift.ar(in, windowSize: 0.2, pitchRatio: freq1, pitchDispersion: pitchDispVal,
+		timeDispersion: timeDispVal);
 	sig = Vibrato.ar(sig, vibratoSpeed, vibratoDepth);
 	sig = RLPF.ar(sig, cutoffVal, 0.5);
 
@@ -514,11 +544,15 @@ SynthDef(\harmsWay, {
 
 		velocityVal = IEnvGen.kr(~specSK.velocity, velocity);
 		cutoffVal = IEnvGen.kr(~specSK.cutoffDH, In.kr(cutoffBus,1));
-		efxVal = IEnvGen.kr( if(count==0, {~specSK.efxDH0},{~specSK.efxDH1}) , In.kr(efxBus,1)); // different mapping in darkHorns1 and 0
+		// different mapping in darkHorns1 and 0
+		efxVal = IEnvGen.kr( if(count==0, {~specSK.efxDH0},{~specSK.efxDH1}) , In.kr(efxBus,1));
 		pitchVal = IEnvGen.kr(~specSK.pitch, In.kr(pitchBus,1));
 		distVal = IEnvGen.kr(~specSK.distHW, In.kr(distBus,1));
-		if(count==1, {phaseMulVal = IEnvGen.kr(~specSK.phaseMul, In.kr(distBus,1)) }); // only include in darkHorns1
+		// only include in darkHorns1
+		if(count==1, {phaseMulVal = IEnvGen.kr(~specSK.phaseMul, In.kr(distBus,1)) });
 		freq1 = freq1 * pitchVal;
+
+		// [cutoffVal, efxVal, phaseMulVal].poll;
 
 		local = feedback * LocalIn.ar(2);
 		sig = SinOsc.ar(

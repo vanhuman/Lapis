@@ -314,7 +314,7 @@ s.waitForBoot({
 	OSCdef(\synthKeysBpm, {
 		arg msg;
 		var bpm = msg[1];
-		("synthKeysBpm:" + msg).postln;
+		("\nsynthKeysBpm:" + msg).postln;
 		try {
 			bpm = bpm.asInteger;
 			if(bpm > 0, {
@@ -422,9 +422,10 @@ s.waitForBoot({
 		midiBPM = fRoundMidiSpeed.value(midiSeqSpeed)[0];
 		midiSeqSpeed = fRoundMidiSpeed.value(midiSeqSpeed)[1];
 
-		("MIDI seq:" + midiSeqMode + "/" + count + "notes @" + midiBPM + "BPM" ).warn;
+		("\nStart MIDI sequence:" + midiSeqMode + "/" + count + "notes @" + midiBPM + "BPM" ).postln;
 		("Notes: " + seqNotes).postln;
 		("Lengths: " + seqLen).postln;
+		~doc.midiSeq;
 
 		// initialize MIDI file for write / note: BPM is not updated when changed in realtime!
 		if(cfg.midiWrite, {
@@ -487,7 +488,7 @@ s.waitForBoot({
 
 				if( (midiSeqChange == 1) || (i%50 == 49), {
 					if(changeCount < 10, { // change just one note
-						"MIDIseq change one".postln;
+						"\nMIDIseq change one".postln;
 						if(~theBusyDrone==1, {
 							seqNotes[rrand(3,count-1)] = ((3..14)++(18..29)++(33..55)++(59..78)).choose;
 						}, {
@@ -598,7 +599,7 @@ s.waitForBoot({
 					}, {
 						// stop MIDI sequence
 						tMidiSeq.stop; if(cfg.midiWrite and: { midiRecording }, { midiFile.write; midiRecording = false; });
-						"MIDI sequence stopped".postln;
+						"\nMIDI sequence stopped".postln;
 						midiSeqAct = 0;
 					});
 				});
@@ -611,7 +612,7 @@ s.waitForBoot({
 					}, {
 						// stop MIDI sequence
 						tMidiSeq.stop; if(cfg.midiWrite and: { midiRecording }, { midiFile.write; midiRecording = false; });
-						"MIDI sequence stopped".postln;
+						"\nMIDI sequence stopped".postln;
 						midiSeqAct = 0;
 					});
 				});
@@ -715,7 +716,7 @@ s.waitForBoot({
 						};
 					});
 					if(cfg.synthList[synth] != "", {
-						("Synth"+(synth)+cfg.synthList[synth]+if(val==0,{"de-activated"},{"activated"})).postln
+						("\nSynth"+(synth)+cfg.synthList[synth]+if(val==0,{"de-activated"},{"activated"})).postln
 					}, {
 						"No synth on this pad".postln;
 					});

@@ -18,7 +18,7 @@ s.waitForBoot({
 
 	//////////////// variables ////////////////////////////////
 
-	var pID = 1;
+	var pID = 2;
 	var synthListMain = [
 		"adcirc",
 		"bocAmpMod2",
@@ -37,13 +37,14 @@ s.waitForBoot({
 		"Prime",
 		"SampleKeys",
 		"SinAmpMod3",
-		"SampleKeysNoPitch"
+		"SampleKeysNoPitch",
+		"moving"
 	];
 	var project = (
 		synthList: [
 			[7,2,2,3,4,5,6,7,8,9,10,11,12,13,14,15],
 			[15,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],
-			[15,15,15,15,4,5,6,7,8,9,10,11,12,0,15,15],
+			[18,15,15,15,4,5,6,7,8,9,10,11,12,0,15,15],
 			[17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17]
 		],
 		semiShiftList: [
@@ -280,7 +281,7 @@ s.waitForBoot({
 							dispPlay[chan].states_([[countPlay[chan].asString]]);
 						}.defer();
 					});
-					notesPrev[chan] = note; // save this note for glide support
+					notesPrev[chan] = note+cfg.semiShiftList[chan]; // save this note for glide support
 			});
 		}); // filter to trigger pitch material
 
@@ -334,8 +335,12 @@ s.waitForBoot({
 				16.do { |chan|
 					if(controlList[chan]==1, {
 						// ("Control channel" + chan + "ON, updating busses").postln;
-						if( num==4, { drumVolBus[chan].set(val) }); // volume/distortion drumsets
-						if( num==5, { drumFilterBus[chan].set(val) }); // filter drumsets
+						if( num == 4, { drumVolBus[chan].set(val) }); // volume/distortion drumsets
+						if( num == 5, { drumFilterBus[chan].set(val) }); // filter drumsets
+						if( num == 0, { cutoffBus[chan].set(1.0 - val) });
+						if( num == 1, { efxBus[chan].set(1 - val) });
+						if( num == 2, { pitchBus[chan].set(1 - val) });
+						if( num == 3, { distBus[chan].set(1.0 - val) });
 					});
 				}
 

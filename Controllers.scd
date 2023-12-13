@@ -23,6 +23,10 @@ var iac1ID = 0, iac1i, mulID = 0, lpkID = 0, extID = 0, mulAvail, midiLabel, iac
 var fontLabel = Font(~font,10), fontButton = Font(~font,12);
 var hidRemap = 4; // number to add to HID cookies for remapping
 
+var postMidiData = false; // whether to postln controller data
+var postJoystickData = [false, false, false, false]; // whether to show joystick data for X, Y, Rotation, Slider
+var postArduinoData = false;
+
 "GlobalVars.scd".loadRelative();
 if(~oscSrc == "jx", {"/Users/robert/---data---/audio/junXion/HID2SC.j4xml/".openOS});
 
@@ -43,6 +47,14 @@ HID.findAvailable.do {arg device;
 			{(elid==15) || (elid==16)} {physValueMapped = 255 - physValue} // R & S
 			{elid==14} {physValueMapped = 7 - (physValue.round(1) / 45)} // Hat
 			;
+			if (
+				(postJoystickData[0] && elid==12)
+				|| (postJoystickData[1] && elid==13)
+				|| (postJoystickData[2] && elid==15)
+				|| (postJoystickData[3] && elid==16)
+			) {
+				("cookie, map, value, map" + [elid, elidMapped,physValue,physValueMapped]).postln;
+			};
 			// ("cookie, map, value, map" + [elid, elidMapped,physValue,physValueMapped]).postln;
 			localAddr.sendMsg("/hid/ex3d", elidMapped, physValueMapped);
 		};
@@ -73,7 +85,9 @@ if(portName.notNil, {
 				if(ardAna1 != ardAna1prev, {
 					localAddr.sendMsg("/ard/ana", 1,  ardAna1);
 					ardAna1prev = ardAna1;
-					// ("Arduino A1:"+[ardAna1,msg[0]]).postln;
+					if (postArduinoData) {
+						("Arduino A1:"+[ardAna1,msg[0]]).postln;
+					}
 				});
 		});
 		if(ardAna2enable == 1,
@@ -82,7 +96,9 @@ if(portName.notNil, {
 				if(ardAna2 != ardAna2prev, {
 					localAddr.sendMsg("/ard/ana", 2,  ardAna2);
 					ardAna2prev = ardAna2;
-					// ("Arduino A2:"+[ardAna2,msg[1]]).postln;
+					if (postArduinoData) {
+						("Arduino A2:"+[ardAna2,msg[1]]).postln;
+					}
 				});
 		});
 		if(ardDig2enable == 1,
@@ -91,7 +107,9 @@ if(portName.notNil, {
 				if(ardDig2 != ardDig2prev, {
 					localAddr.sendMsg("/ard/dig", 1, ardDig2);
 					ardDig2prev = ardDig2;
-					// ("Arduino D2:"+ardDig2).postln;
+					if (postArduinoData) {
+						("Arduino D2:"+ardDig2).postln;
+					}
 				});
 		});
 		if(ardDig3enable == 1,
@@ -100,7 +118,9 @@ if(portName.notNil, {
 				if(ardDig3 != ardDig3prev, {
 					localAddr.sendMsg("/ard/dig", 2, ardDig3);
 					ardDig3prev = ardDig3;
-					// ("Arduino D3:"+ardDig3).postln;
+					if (postArduinoData) {
+						("Arduino D3:"+ardDig3).postln;
+					}
 				});
 		});
 	};
@@ -133,7 +153,7 @@ MIDIIn.connectAll;
 
 MIDIdef.noteOn(\controllersNON,{
 	arg val, num, chan, src;
-	// ["NON", val, num, chan, src].postln;
+	if(postMidiData, { ["NON", chan, num, val].postln });
 	localAddr.sendMsg("/midi/noteOn", chan, num, val / 127,
 		case {src == iac1ID}{"IAC1"}{src == iac2ID}{"IAC2"}{src == mulID}{"MUL"}{src == lpkID}{"LPK"}{src == extID}{"EXT"});
 	}
@@ -150,7 +170,7 @@ MIDIdef.noteOff(\controllersNOF,{
 MIDIdef.cc(\controllersCC,{
 	arg val, num, chan, src;
 	//	["CC", val, num, chan, src].postln;
-	if(~postControllerData == 1, { ["CC", chan, num, val].postln });
+	if(postMidiData, { ["CC", chan, num, val].postln });
 	localAddr.sendMsg("/midi/control", chan, num, val / 127,
 		case {src == iac1ID}{"IAC1"}{src == iac2ID}{"IAC2"}{src == mulID}{"MUL"}{src == lpkID}{"LPK"}{src == extID}{"EXT"});
 	}
@@ -328,10 +348,35 @@ extAvail = SmoothButton(~wControllers, Rect(220,70,40,20))
 ~wControllers.view.keyDownAction_({
 	arg view, char, modifiers, unicode, keycode;
 	// [modifiers,keycode].postln;
-	// D toggles controller data postln
-	if((keycode == 2),  {
-		~postControllerData = (~postControllerData + 1)%2;
-		if(~postControllerData==1, { "Posting controller data".postln }, { "NOT posting controller data".postln });
+	// M
+	if((keycode == 46),  {
+		postMidiData = postMidiData.not;
+		if(postMidiData, { "Posting MIDI data".postln }, { "Stop posting MIDI data".postln });
+	});
+	// X
+	if((keycode == 7),  {
+		postJoystickData[0] = postJoystickData[0].not;
+		if(postJoystickData[0], { "Posting Joystick X data".postln }, { "Stop posting Joystick X data".postln });
+	});
+	// Y
+	if((keycode == 16),  {
+		postJoystickData[1] = postJoystickData[1].not;
+		if(postJoystickData[1], { "Posting Joystick Y data".postln }, { "Stop posting Joystick Y data".postln });
+	});
+	// R
+	if((keycode == 15),  {
+		postJoystickData[2] = postJoystickData[2].not;
+		if(postJoystickData[2], { "Posting Joystick R data".postln }, { "Stop posting Joystick R data".postln });
+	});
+	// S
+	if((keycode == 1),  {
+		postJoystickData[3] = postJoystickData[3].not;
+		if(postJoystickData[3], { "Posting Joystick S data".postln }, { "Stop posting Joystick S data".postln });
+	});
+	// A
+	if((keycode == 0),  {
+		postArduinoData = postArduinoData.not;
+		if(postArduinoData, { "Posting Arduino data".postln }, { "Stop posting Arduino data".postln });
 	});
 });
 
